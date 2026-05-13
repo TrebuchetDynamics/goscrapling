@@ -12,7 +12,7 @@ Purpose: map the upstream D4Vinci/Scrapling architecture into Go-friendly compon
 - Local describe: `v0.4.8-1-g6380ef0`
 - Upstream release observed: `v0.4.8`, published 2026-05-11
 
-The clone is reference-only and ignored by git. `goscrapling` should learn from the public design and behavior, but avoid copying implementation code.
+The clone is reference-only and ignored by git. `goscrapling` should learn from the public design and behavior, avoid copying implementation code, and track feature parity in `docs/research/scrapling-parity-matrix.md`.
 
 ## Top-Level Subsystems
 
@@ -117,7 +117,7 @@ Go mapping:
 
 ## Porting Doctrine
 
-`goscrapling` should be inspired by Scrapling, not a line-by-line port.
+`goscrapling` should be a true Go-native feature port of Scrapling, not a small scraper that merely borrows the adaptive-selector idea.
 
 Keep:
 
@@ -126,6 +126,7 @@ Keep:
 - Parser and response as the central user-facing objects.
 - Clear fetcher layers.
 - Test-first behavior fixtures.
+- Major Scrapling subsystems as the long-term parity target.
 
 Change for Go:
 
@@ -134,3 +135,4 @@ Change for Go:
 - Prefer small packages and typed structs over dynamic argument dictionaries.
 - Build concurrency through Go primitives instead of copying Python async structure.
 
+The parity matrix is the source of truth for what remains missing.

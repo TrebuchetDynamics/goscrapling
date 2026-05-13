@@ -1,14 +1,14 @@
 # goscrapling
 
-Go-native adaptive web scraping inspired by D4Vinci/Scrapling.
+Go-native Scrapling-style web scraping.
 
-`goscrapling` is a Go-native adaptive web scraping framework focused on resilient element selection. The current MVP parses static HTML, saves element fingerprints, and relocates elements after markup changes.
+`goscrapling` is a long-term Go-native feature port of D4Vinci/Scrapling. The goal is Scrapling-style parity across parser APIs, adaptive element relocation, fetchers, browser-backed fetching, spiders, CLI workflows, and agent/tool integration.
 
-This project is not affiliated with D4Vinci/Scrapling. It is a study-driven Go implementation of Scrapling-style ideas, not an official port.
+This project is not affiliated with D4Vinci/Scrapling. It is an independent Go implementation that uses Scrapling as public reference material.
 
 ## Current Status
 
-Adaptive parser MVP implemented.
+Very early and far from Scrapling parity.
 
 Implemented now:
 
@@ -18,12 +18,32 @@ Implemented now:
 - Relocate the same logical element after markup changes.
 - Drive all behavior with test-first fixtures.
 
-Not implemented yet:
+Missing major Scrapling subsystems:
 
 - HTTP fetchers.
 - Browser-backed fetching.
+- Response object with HTTP metadata.
+- Fetcher sessions and request option merging.
+- Proxy rotation.
 - Crawling and spider scheduling.
+- Robots, cache, checkpoints, and stats.
 - CLI, MCP, or Gormes/OpenClaw tool integration.
+
+The current adaptive parser is phase 0. It is not enough for the project to be considered a real Scrapling-style port.
+
+## Port Target
+
+The parity target is documented in:
+
+- [Scrapling Parity Matrix](docs/research/scrapling-parity-matrix.md)
+- [True Port Design](docs/superpowers/specs/2026-05-13-goscrapling-true-port-design.md)
+
+Next required milestone:
+
+1. Add a `Response` type that behaves like a parsed document plus HTTP metadata.
+2. Add a static `Fetcher` and `FetcherSession`.
+3. Test fetch behavior against local HTTP fixtures.
+4. Update the parity matrix as each Scrapling subsystem moves from planned to partial or done.
 
 ## Example
 
@@ -57,5 +77,7 @@ The local clone is ignored by git. Public documentation records only the observe
 ## Documentation
 
 - [Scrapling Architecture Map](docs/research/scrapling-architecture-map.md)
+- [Scrapling Parity Matrix](docs/research/scrapling-parity-matrix.md)
 - [Go Scraping OSS Survey](docs/research/go-scraping-oss-survey.md)
 - [Adaptive Parser MVP Design](docs/superpowers/specs/2026-05-13-goscrapling-adaptive-parser-design.md)
+- [True Port Design](docs/superpowers/specs/2026-05-13-goscrapling-true-port-design.md)
