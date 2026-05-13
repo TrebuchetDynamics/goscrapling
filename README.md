@@ -2,21 +2,49 @@
 
 Go-native adaptive web scraping inspired by D4Vinci/Scrapling.
 
-`goscrapling` is planned as a Go-native adaptive web scraping framework focused on resilient element selection, fingerprint-based relocation, browser-backed fetching, and production-friendly crawling.
+`goscrapling` is a Go-native adaptive web scraping framework focused on resilient element selection. The current MVP parses static HTML, saves element fingerprints, and relocates elements after markup changes.
 
 This project is not affiliated with D4Vinci/Scrapling. It is a study-driven Go implementation of Scrapling-style ideas, not an official port.
 
 ## Current Status
 
-Planning and documentation phase.
+Adaptive parser MVP implemented.
 
-The first implementation target is the adaptive parser MVP:
+Implemented now:
 
 - Parse static HTML into queryable selectors.
 - Select elements with CSS-like APIs.
 - Save an element fingerprint under a domain plus identifier.
 - Relocate the same logical element after markup changes.
 - Drive all behavior with test-first fixtures.
+
+Not implemented yet:
+
+- HTTP fetchers.
+- Browser-backed fetching.
+- Crawling and spider scheduling.
+- CLI, MCP, or Gormes/OpenClaw tool integration.
+
+## Example
+
+```go
+ctx := context.Background()
+store := goscrapling.NewMemoryStore()
+
+before, _ := goscrapling.Parse(strings.NewReader(`<article class="product" id="p1">Product 1</article>`), goscrapling.ParseOptions{
+    URL:   "https://example.com/products",
+    Store: store,
+})
+element, _ := before.CSS("#p1").First()
+_ = before.Save(ctx, element, "featured-product")
+
+after, _ := goscrapling.Parse(strings.NewReader(`<article class="product" data-id="p1"><span>Product 1</span></article>`), goscrapling.ParseOptions{
+    URL:   "https://example.com/products",
+    Store: store,
+})
+match, ok, _ := after.Relocate(ctx, "featured-product")
+fmt.Println(ok, match.Element.Text())
+```
 
 ## Reference Material
 
