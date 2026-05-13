@@ -69,5 +69,35 @@ func (d *Document) Save(ctx context.Context, element *Element, identifier string
 }
 
 func (d *Document) Relocate(ctx context.Context, identifier string) (Match, bool, error) {
-	return Match{}, false, errAdaptiveNotImplemented
+	if d == nil || d.store == nil {
+		return Match{}, false, ErrMissingStore
+	}
+
+	identifier = strings.TrimSpace(identifier)
+	if identifier == "" {
+		return Match{}, false, ErrEmptyIdentifier
+	}
+
+	target, ok, err := d.store.Load(ctx, Key{Domain: d.domain, Identifier: identifier})
+	if err != nil || !ok {
+		return Match{}, false, err
+	}
+
+	var best Match
+	found := false
+	d.query.Find("*").Each(func(_ int, selection *goquery.Selection) {
+		for _, node := range selection.Nodes {
+			candidate := &Element{doc: d, node: node}
+			score := scoreFingerprint(fingerprintNode(node), target)
+			if score < defaultMinScore {
+				continue
+			}
+			if !found || score > best.Score {
+				best = Match{Element: candidate, Score: score}
+				found = true
+			}
+		}
+	})
+
+	return best, found, nil
 }
