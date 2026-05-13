@@ -1,0 +1,460 @@
+{
+  "meta": {
+    "version": "1.0",
+    "port_target": "Go-native Scrapling-style feature port",
+    "upstream": {
+      "name": "D4Vinci/Scrapling",
+      "repo": "https://github.com/D4Vinci/Scrapling",
+      "observed_commit": "6380ef0f266a5fff898c18953d6b03ca320b2fd4",
+      "observed_release": "v0.4.8",
+      "local_checkout": "references/Scrapling"
+    },
+    "builder_loop": {
+      "entrypoint": "docs/development-skills/goscrapling-skill-manager/SKILL.md",
+      "plan": "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+      "coverage_ledger": "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+      "progress_schema": "docs/content/building-goscrapling/builder-loop/progress-schema.md",
+      "candidate_source": "docs/content/building-goscrapling/architecture_plan/progress.json",
+      "unit_test": "go test ./... -count=1",
+      "candidate_policy": [
+        "Prefer P0 planned rows with source_refs, write_scope, test_commands, acceptance, and done_signal.",
+        "Do not assign umbrella rows until a planner splits them.",
+        "Every implementation row starts with a failing test or fixture update.",
+        "Update progress.json and parity docs in the same slice that changes behavior."
+      ]
+    }
+  },
+  "phases": {
+    "phase-0-parser-adaptive": {
+      "name": "Phase 0 - Parser and adaptive selection foundation",
+      "subphases": {
+        "static-document": {
+          "name": "Static document and selector surface",
+          "items": [
+            {
+              "name": "Parse static HTML into queryable documents",
+              "status": "complete",
+              "priority": "P0",
+              "contract": "Parse HTML into a Document that preserves URL/domain metadata and supports CSS selection.",
+              "contract_status": "validated",
+              "slice_size": "small",
+              "execution_owner": "parser",
+              "source_refs": [
+                "references/Scrapling/scrapling/parser.py",
+                "document.go",
+                "selection.go",
+                "document_test.go"
+              ],
+              "ready_when": [
+                "A local HTML fixture can be parsed without network access."
+              ],
+              "write_scope": [
+                "document.go",
+                "selection.go",
+                "document_test.go"
+              ],
+              "test_commands": [
+                "go test ./... -run TestParseSelectsElementsWithCSS -count=1"
+              ],
+              "acceptance": [
+                "Document.CSS returns matching elements and Element exposes tag, text, and attributes."
+              ],
+              "done_signal": [
+                "TestParseSelectsElementsWithCSS passes."
+              ]
+            }
+          ]
+        },
+        "adaptive-storage": {
+          "name": "Adaptive fingerprints and relocation",
+          "items": [
+            {
+              "name": "Save adaptive fingerprints by domain and identifier",
+              "status": "complete",
+              "priority": "P0",
+              "contract": "Persist enough element identity to relocate the same logical element after markup changes while isolating records by domain.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "storage",
+              "source_refs": [
+                "references/Scrapling/scrapling/core/storage.py",
+                "adaptive_stub.go",
+                "fingerprint.go",
+                "store.go",
+                "store_test.go"
+              ],
+              "ready_when": [
+                "An element has been selected from a parsed document."
+              ],
+              "write_scope": [
+                "adaptive_stub.go",
+                "fingerprint.go",
+                "store.go",
+                "store_test.go"
+              ],
+              "test_commands": [
+                "go test ./... -run 'TestSaveStoresFingerprintByDomainAndIdentifier|TestSaveIsolatesFingerprintsByDomain|TestParseUsesDefaultDomainWhenURLIsMissing' -count=1"
+              ],
+              "acceptance": [
+                "Saved fingerprints are retrievable by domain and identifier.",
+                "The default domain path is deterministic when URL metadata is missing."
+              ],
+              "done_signal": [
+                "Store tests pass without shared global state."
+              ]
+            },
+            {
+              "name": "Relocate adaptive elements with deterministic scoring",
+              "status": "complete",
+              "priority": "P0",
+              "contract": "Score candidate elements from a changed document and return the best confident match without fabricating low-confidence matches.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "parser",
+              "source_refs": [
+                "references/Scrapling/scrapling/parser.py",
+                "score.go",
+                "relocate_test.go"
+              ],
+              "ready_when": [
+                "A fingerprint exists for the current domain and identifier."
+              ],
+              "write_scope": [
+                "score.go",
+                "adaptive_stub.go",
+                "relocate_test.go"
+              ],
+              "test_commands": [
+                "go test ./... -run TestRelocate -count=1"
+              ],
+              "acceptance": [
+                "Relocation handles ID changes, wrapper insertion, no-match cases, best-candidate selection, and tie order."
+              ],
+              "done_signal": [
+                "Relocation tests pass and low-confidence candidates return no match."
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "phase-1-response-fetcher": {
+      "name": "Phase 1 - Response and static fetcher parity",
+      "subphases": {
+        "response": {
+          "name": "Response object",
+          "items": [
+            {
+              "name": "Response combines HTTP metadata with parsed document behavior",
+              "status": "planned",
+              "priority": "P0",
+              "contract": "Expose a Scrapling-style response surface that carries URL, status, headers, body bytes, encoding, and selector methods over the parsed document.",
+              "contract_status": "draft",
+              "slice_size": "medium",
+              "execution_owner": "fetcher",
+              "source_refs": [
+                "references/Scrapling/docs/api-reference/response.md",
+                "references/Scrapling/scrapling/fetchers/requests.py",
+                "references/Scrapling/scrapling/engines/static.py"
+              ],
+              "ready_when": [
+                "Response interface design records whether Document is embedded, wrapped, or adapted."
+              ],
+              "write_scope": [
+                "response.go",
+                "response_test.go",
+                "document.go"
+              ],
+              "test_commands": [
+                "go test ./... -run TestResponse -count=1"
+              ],
+              "acceptance": [
+                "A local fixture can build a Response and query it with CSS while preserving HTTP metadata."
+              ],
+              "done_signal": [
+                "Response tests prove metadata and selector behavior together."
+              ]
+            }
+          ]
+        },
+        "static-fetcher": {
+          "name": "Static HTTP fetcher",
+          "items": [
+            {
+              "name": "Static Fetcher and FetcherSession over net/http",
+              "status": "planned",
+              "priority": "P0",
+              "contract": "Fetch static pages with request option merging, default headers, timeout control, cookies, and local HTTP fixture tests.",
+              "contract_status": "draft",
+              "slice_size": "medium",
+              "execution_owner": "fetcher",
+              "source_refs": [
+                "references/Scrapling/docs/fetching/static.md",
+                "references/Scrapling/docs/api-reference/fetchers.md",
+                "references/Scrapling/scrapling/fetchers/requests.py"
+              ],
+              "ready_when": [
+                "Response object behavior is defined."
+              ],
+              "write_scope": [
+                "fetcher.go",
+                "fetcher_session.go",
+                "fetcher_test.go"
+              ],
+              "test_commands": [
+                "go test ./... -run 'TestFetcher|TestFetcherSession' -count=1"
+              ],
+              "acceptance": [
+                "httptest fixtures prove GET, custom headers, cookies, non-2xx responses, redirect policy, and timeout/error classification."
+              ],
+              "done_signal": [
+                "Static fetcher tests pass without live network calls."
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "phase-2-storage": {
+      "name": "Phase 2 - Durable adaptive storage",
+      "subphases": {
+        "persistent-store": {
+          "name": "Persistent store",
+          "items": [
+            {
+              "name": "File-backed adaptive store with compatibility migration",
+              "status": "planned",
+              "priority": "P1",
+              "contract": "Persist adaptive fingerprints beyond process memory with explicit schema versioning and deterministic migration tests.",
+              "contract_status": "draft",
+              "slice_size": "medium",
+              "execution_owner": "storage",
+              "source_refs": [
+                "references/Scrapling/docs/development/adaptive_storage_system.md",
+                "references/Scrapling/scrapling/core/storage.py",
+                "store.go"
+              ],
+              "ready_when": [
+                "The in-memory store contract remains stable after response/fetcher design."
+              ],
+              "write_scope": [
+                "store.go",
+                "store_file.go",
+                "store_file_test.go",
+                "testdata/adaptive_store/"
+              ],
+              "test_commands": [
+                "go test ./... -run TestFileStore -count=1"
+              ],
+              "acceptance": [
+                "A file-backed store can save, reload, isolate domains, and reject incompatible schema versions visibly."
+              ],
+              "done_signal": [
+                "File store tests pass with temp directories only."
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "phase-3-browser": {
+      "name": "Phase 3 - Browser-backed fetching",
+      "subphases": {
+        "browser-fetcher": {
+          "name": "Browser fetchers",
+          "items": [
+            {
+              "name": "BrowserFetcher interface and chromedp/playwright adapter decision",
+              "status": "planned",
+              "priority": "P1",
+              "contract": "Define a Go browser fetcher contract for dynamic pages, page actions, wait conditions, resource blocking, and response extraction before binding to an engine.",
+              "contract_status": "draft",
+              "slice_size": "medium",
+              "execution_owner": "browser",
+              "source_refs": [
+                "references/Scrapling/docs/fetching/dynamic.md",
+                "references/Scrapling/docs/fetching/stealthy.md",
+                "references/Scrapling/scrapling/fetchers/chrome.py",
+                "references/Scrapling/scrapling/fetchers/stealth_chrome.py",
+                "references/Scrapling/scrapling/engines/_browsers/_page.py"
+              ],
+              "ready_when": [
+                "Static Response and FetcherSession behavior is validated."
+              ],
+              "not_ready_when": [
+                "The row tries to implement stealth, proxy rotation, and browser actions in one slice."
+              ],
+              "write_scope": [
+                "browser.go",
+                "browser_test.go",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md"
+              ],
+              "test_commands": [
+                "go test ./... -run TestBrowserFetcherContract -count=1"
+              ],
+              "acceptance": [
+                "A fake browser engine fixture proves the public contract before choosing the real engine dependency."
+              ],
+              "done_signal": [
+                "Browser fetcher contract tests pass without launching a real browser."
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "phase-4-spider": {
+      "name": "Phase 4 - Spider and crawler runtime",
+      "subphases": {
+        "spider-core": {
+          "name": "Spider core",
+          "items": [
+            {
+              "name": "Spider request, result, scheduler, and session contracts",
+              "status": "planned",
+              "priority": "P1",
+              "contract": "Port Scrapling spider concepts into typed Go request/result/session/scheduler interfaces with deterministic fixture scheduling.",
+              "contract_status": "draft",
+              "slice_size": "large",
+              "execution_owner": "spider",
+              "source_refs": [
+                "references/Scrapling/docs/spiders/architecture.md",
+                "references/Scrapling/docs/spiders/requests-responses.md",
+                "references/Scrapling/scrapling/spiders/request.py",
+                "references/Scrapling/scrapling/spiders/result.py",
+                "references/Scrapling/scrapling/spiders/scheduler.py",
+                "references/Scrapling/scrapling/spiders/session.py"
+              ],
+              "ready_when": [
+                "FetcherSession is complete and request/response behavior is fixture-backed."
+              ],
+              "not_ready_when": [
+                "The row includes robots, cache, checkpoint, sitemap templates, and live crawling in the same slice."
+              ],
+              "write_scope": [
+                "spider/",
+                "spider_test.go",
+                "testdata/spider/"
+              ],
+              "test_commands": [
+                "go test ./... -run TestSpider -count=1"
+              ],
+              "acceptance": [
+                "A fake fetcher drives deterministic scheduling, callback results, and session reuse."
+              ],
+              "done_signal": [
+                "Spider core tests pass using only fake fetchers and local fixtures."
+              ]
+            },
+            {
+              "name": "Robots, cache, checkpoint, and stats as separate crawler slices",
+              "status": "planned",
+              "priority": "P2",
+              "contract": "Add production crawler controls after spider core is proven: robots.txt, cache, checkpoint resume, stats, and polite concurrency.",
+              "contract_status": "draft",
+              "slice_size": "umbrella",
+              "execution_owner": "spider",
+              "source_refs": [
+                "references/Scrapling/scrapling/spiders/robotstxt.py",
+                "references/Scrapling/scrapling/spiders/cache.py",
+                "references/Scrapling/scrapling/spiders/checkpoint.py",
+                "references/Scrapling/docs/spiders/advanced.md"
+              ],
+              "ready_when": [
+                "Spider core has a stable request/result/scheduler contract."
+              ],
+              "not_ready_when": [
+                "This umbrella has not been split into one row per production control."
+              ],
+              "write_scope": [
+                "spider/",
+                "testdata/spider/"
+              ],
+              "test_commands": [
+                "go test ./... -run TestSpider -count=1"
+              ],
+              "acceptance": [
+                "Planner splits this umbrella into robots, cache, checkpoint, and stats rows before builder work."
+              ],
+              "done_signal": [
+                "No builder takes this umbrella directly."
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "phase-5-cli-tooling": {
+      "name": "Phase 5 - CLI, MCP, and Gormes integration",
+      "subphases": {
+        "tool-surfaces": {
+          "name": "Operator and agent tool surfaces",
+          "items": [
+            {
+              "name": "CLI extraction workflow parity",
+              "status": "planned",
+              "priority": "P2",
+              "contract": "Map Scrapling CLI extract and shell workflows into a Go command surface only after core fetcher and parser behavior is stable.",
+              "contract_status": "draft",
+              "slice_size": "medium",
+              "execution_owner": "cli",
+              "source_refs": [
+                "references/Scrapling/scrapling/cli.py",
+                "references/Scrapling/docs/cli/overview.md",
+                "references/Scrapling/docs/cli/extract-commands.md",
+                "references/Scrapling/docs/cli/interactive-shell.md"
+              ],
+              "ready_when": [
+                "Response and static fetcher APIs are stable enough for command output fixtures."
+              ],
+              "write_scope": [
+                "cmd/goscrapling/",
+                "internal/cli/",
+                "testdata/cli/"
+              ],
+              "test_commands": [
+                "go test ./... -run TestCLI -count=1"
+              ],
+              "acceptance": [
+                "CLI fixtures prove deterministic extraction output and error messages without live network calls."
+              ],
+              "done_signal": [
+                "CLI tests pass from local fixtures."
+              ]
+            },
+            {
+              "name": "Gormes web-search tool adapter",
+              "status": "planned",
+              "priority": "P2",
+              "contract": "Expose goscrapling as a production-friendly Go web search/scraping tool for Gormes without importing Gormes runtime dependencies into the core library.",
+              "contract_status": "draft",
+              "slice_size": "medium",
+              "execution_owner": "integration",
+              "source_refs": [
+                "README.md",
+                "docs/research/go-scraping-oss-survey.md"
+              ],
+              "ready_when": [
+                "Static fetcher and response objects are validated.",
+                "Tool input/output schema is designed separately from library APIs."
+              ],
+              "write_scope": [
+                "integrations/gormes/",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md"
+              ],
+              "test_commands": [
+                "go test ./... -run TestGormesIntegration -count=1"
+              ],
+              "acceptance": [
+                "A fake tool call can fetch a local page, extract selected content, and return structured evidence."
+              ],
+              "done_signal": [
+                "Integration tests pass without reaching the network."
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

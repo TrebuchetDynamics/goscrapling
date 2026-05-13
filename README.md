@@ -37,6 +37,9 @@ The parity target is documented in:
 
 - [Scrapling Parity Matrix](docs/research/scrapling-parity-matrix.md)
 - [True Port Design](docs/superpowers/specs/2026-05-13-goscrapling-true-port-design.md)
+- [Scrapling Feature Map](docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md)
+- [Upstream Coverage Ledger](docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md)
+- [Progress Ledger](docs/content/building-goscrapling/architecture_plan/progress.json)
 
 Next required milestone:
 
@@ -78,6 +81,9 @@ The local clone is ignored by git. Public documentation records only the observe
 
 - [Scrapling Architecture Map](docs/research/scrapling-architecture-map.md)
 - [Scrapling Parity Matrix](docs/research/scrapling-parity-matrix.md)
+- [Scrapling Feature Map](docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md)
+- [Upstream Coverage Ledger](docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md)
+- [Progress Schema](docs/content/building-goscrapling/builder-loop/progress-schema.md)
 - [Go Scraping OSS Survey](docs/research/go-scraping-oss-survey.md)
 - [Adaptive Parser MVP Design](docs/superpowers/specs/2026-05-13-goscrapling-adaptive-parser-design.md)
 - [True Port Design](docs/superpowers/specs/2026-05-13-goscrapling-true-port-design.md)
