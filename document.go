@@ -3,6 +3,7 @@ package goscrapling
 import (
 	"context"
 	"io"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html"
@@ -12,8 +13,6 @@ type ParseOptions struct {
 	URL   string
 	Store Store
 }
-
-type Store interface{}
 
 type Document struct {
 	root   *html.Node
@@ -33,7 +32,7 @@ func Parse(r io.Reader, opts ParseOptions) (*Document, error) {
 		root:   root,
 		query:  goquery.NewDocumentFromNode(root),
 		url:    opts.URL,
-		domain: "default",
+		domain: adaptiveDomain(opts.URL),
 		store:  opts.Store,
 	}, nil
 }
@@ -54,7 +53,19 @@ func (d *Document) CSS(selector string) Selection {
 }
 
 func (d *Document) Save(ctx context.Context, element *Element, identifier string) error {
-	return errAdaptiveNotImplemented
+	if d == nil || d.store == nil {
+		return ErrMissingStore
+	}
+	if element == nil || element.node == nil {
+		return ErrNilElement
+	}
+
+	identifier = strings.TrimSpace(identifier)
+	if identifier == "" {
+		return ErrEmptyIdentifier
+	}
+
+	return d.store.Save(ctx, Key{Domain: d.domain, Identifier: identifier}, fingerprintNode(element.node))
 }
 
 func (d *Document) Relocate(ctx context.Context, identifier string) (Match, bool, error) {

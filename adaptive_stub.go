@@ -2,7 +2,12 @@ package goscrapling
 
 import "errors"
 
-var errAdaptiveNotImplemented = errors.New("goscrapling: adaptive behavior is not implemented")
+var (
+	errAdaptiveNotImplemented = errors.New("goscrapling: adaptive behavior is not implemented")
+	ErrMissingStore           = errors.New("goscrapling: missing adaptive store")
+	ErrNilElement             = errors.New("goscrapling: nil element")
+	ErrEmptyIdentifier        = errors.New("goscrapling: empty identifier")
+)
 
 type Match struct {
 	Element *Element
