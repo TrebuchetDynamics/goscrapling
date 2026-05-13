@@ -40,6 +40,7 @@ The parity target is documented in:
 - [Scrapling Feature Map](docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md)
 - [Upstream Coverage Ledger](docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md)
 - [Progress Ledger](docs/content/building-goscrapling/architecture_plan/progress.json)
+- [Agent Queue](docs/content/building-goscrapling/builder-loop/agent-queue.md)
 
 Next required milestone:
 
@@ -47,6 +48,17 @@ Next required milestone:
 2. Add a static `Fetcher` and `FetcherSession`.
 3. Test fetch behavior against local HTTP fixtures.
 4. Update the parity matrix as each Scrapling subsystem moves from planned to partial or done.
+
+Progress control:
+
+```sh
+go run ./cmd/progress validate
+go run ./cmd/progress write
+```
+
+`validate` checks the canonical progress ledger. `write` regenerates the
+builder-loop handoff, agent queue, next slices, blocked slices, and umbrella
+cleanup pages from `progress.json`.
 
 ## Example
 
@@ -84,6 +96,7 @@ The local clone is ignored by git. Public documentation records only the observe
 - [Scrapling Feature Map](docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md)
 - [Upstream Coverage Ledger](docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md)
 - [Progress Schema](docs/content/building-goscrapling/builder-loop/progress-schema.md)
+- [Agent Queue](docs/content/building-goscrapling/builder-loop/agent-queue.md)
 - [Go Scraping OSS Survey](docs/research/go-scraping-oss-survey.md)
 - [Adaptive Parser MVP Design](docs/superpowers/specs/2026-05-13-goscrapling-adaptive-parser-design.md)
 - [True Port Design](docs/superpowers/specs/2026-05-13-goscrapling-true-port-design.md)

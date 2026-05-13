@@ -54,6 +54,7 @@ Run these checks before claiming a slice is complete:
 
 ```sh
 go test ./... -count=1
+go run ./cmd/progress validate
 jq empty docs/content/building-goscrapling/architecture_plan/progress.json
 git diff --check
 ```
@@ -61,6 +62,12 @@ git diff --check
 For a docs-only progress change, `go test ./... -count=1` still matters because
 `progress_docs_test.go` validates the progress ledger and upstream coverage
 ledger.
+
+After editing `progress.json`, regenerate the queue surfaces:
+
+```sh
+go run ./cmd/progress write
+```
 
 ## Boundaries
 
