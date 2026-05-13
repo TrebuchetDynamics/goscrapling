@@ -49,9 +49,10 @@ Run:
 
 ```bash
 go test ./...
+go list -m all
 ```
 
-Expected: command exits successfully. It may report that no packages matched before source files exist.
+Expected: before source files exist, `go test ./...` may print `go: warning: "./..." matched no packages` and `no packages to test`. `go list -m all` must exit successfully and show `github.com/TrebuchetDynamics/goscrapling` plus the pinned dependencies.
 
 - [ ] **Step 3: Commit**
 
@@ -885,4 +886,3 @@ git commit -m "chore: finalize adaptive parser mvp"
 ```
 
 If no files changed, do not create an empty commit.
-
