@@ -10,6 +10,10 @@ is not an owned divergence by itself.
 Use this page before splitting or building rows. Missing implementation work
 must become or refine rows in `progress.json`; this page is not a side backlog.
 
+Use [Scrapling Behavior Atoms](scrapling-behavior-atoms.md) for the
+behavior-level parity checklist. Use [Project Boundaries](boundaries.md) when a
+row needs a package-boundary or donor-compatibility decision.
+
 ## Reading Rules
 
 - `covered` means goscrapling has repository evidence and tests.

@@ -8,6 +8,10 @@ upstream surface is mapped only when every feature-bearing source class below
 has a feature-map anchor, a Go target, and either a `progress.json` row or an
 explicit owned/excluded decision.
 
+Use [Scrapling Behavior Atoms](scrapling-behavior-atoms.md) for behavior-level
+coverage. Use [Project Boundaries](boundaries.md) for owned Go-native package
+and compatibility decisions.
+
 ## Completeness Standard
 
 1. Inventory the upstream source class.
