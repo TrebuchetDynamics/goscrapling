@@ -42,3 +42,59 @@ func TestSaveStoresFingerprintByDomainAndIdentifier(t *testing.T) {
 		t.Fatalf("expected id p1, got %q", fp.Attributes["id"])
 	}
 }
+
+func TestSaveIsolatesFingerprintsByDomain(t *testing.T) {
+	ctx := context.Background()
+	store := NewMemoryStore()
+
+	first, err := Parse(strings.NewReader(`<article class="product" id="p1">First</article>`), ParseOptions{URL: "https://example.com/a", Store: store})
+	if err != nil {
+		t.Fatalf("Parse first: %v", err)
+	}
+	second, err := Parse(strings.NewReader(`<article class="product" id="p2">Second</article>`), ParseOptions{URL: "https://other.example/a", Store: store})
+	if err != nil {
+		t.Fatalf("Parse second: %v", err)
+	}
+
+	firstElement, _ := first.CSS(".product").First()
+	secondElement, _ := second.CSS(".product").First()
+	if err := first.Save(ctx, firstElement, "shared"); err != nil {
+		t.Fatalf("Save first: %v", err)
+	}
+	if err := second.Save(ctx, secondElement, "shared"); err != nil {
+		t.Fatalf("Save second: %v", err)
+	}
+
+	firstFP, ok, err := store.Load(ctx, Key{Domain: "example.com", Identifier: "shared"})
+	if err != nil || !ok {
+		t.Fatalf("Load first ok=%v err=%v", ok, err)
+	}
+	secondFP, ok, err := store.Load(ctx, Key{Domain: "other.example", Identifier: "shared"})
+	if err != nil || !ok {
+		t.Fatalf("Load second ok=%v err=%v", ok, err)
+	}
+	if firstFP.Text != "First" || secondFP.Text != "Second" {
+		t.Fatalf("expected isolated fingerprints, got %q and %q", firstFP.Text, secondFP.Text)
+	}
+}
+
+func TestParseUsesDefaultDomainWhenURLIsMissing(t *testing.T) {
+	ctx := context.Background()
+	store := NewMemoryStore()
+	doc, err := Parse(strings.NewReader(`<article class="product">Default</article>`), ParseOptions{Store: store})
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	element, _ := doc.CSS(".product").First()
+	if err := doc.Save(ctx, element, "item"); err != nil {
+		t.Fatalf("Save: %v", err)
+	}
+
+	fp, ok, err := store.Load(ctx, Key{Domain: "default", Identifier: "item"})
+	if err != nil || !ok {
+		t.Fatalf("Load ok=%v err=%v", ok, err)
+	}
+	if fp.Text != "Default" {
+		t.Fatalf("expected Default text, got %q", fp.Text)
+	}
+}
