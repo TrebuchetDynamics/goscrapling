@@ -13,6 +13,7 @@
       "entrypoint": "docs/development-skills/goscrapling-skill-manager/SKILL.md",
       "plan": "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
       "coverage_ledger": "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+      "agent_queue": "docs/content/building-goscrapling/builder-loop/agent-queue.md",
       "progress_schema": "docs/content/building-goscrapling/builder-loop/progress-schema.md",
       "candidate_source": "docs/content/building-goscrapling/architecture_plan/progress.json",
       "unit_test": "go test ./... -count=1",
@@ -145,20 +146,24 @@
           "name": "Response object",
           "items": [
             {
-              "name": "Response combines HTTP metadata with parsed document behavior",
+              "name": "Response metadata and selector contract",
               "status": "planned",
               "priority": "P0",
-              "contract": "Expose a Scrapling-style response surface that carries URL, status, headers, body bytes, encoding, and selector methods over the parsed document.",
-              "contract_status": "draft",
-              "slice_size": "medium",
+              "contract": "Expose a Response that carries URL, status code, headers, final body URL, request metadata, and selector behavior over the parsed document.",
+              "contract_status": "fixture_ready",
+              "slice_size": "small",
               "execution_owner": "fetcher",
               "source_refs": [
                 "references/Scrapling/docs/api-reference/response.md",
+                "references/Scrapling/docs/fetching/choosing.md",
                 "references/Scrapling/scrapling/fetchers/requests.py",
                 "references/Scrapling/scrapling/engines/static.py"
               ],
               "ready_when": [
-                "Response interface design records whether Document is embedded, wrapped, or adapted."
+                "A local response fixture can be constructed without network access."
+              ],
+              "not_ready_when": [
+                "The row tries to implement JSON helpers, body decoding, or HTTP fetching in the same slice."
               ],
               "write_scope": [
                 "response.go",
@@ -166,13 +171,49 @@
                 "document.go"
               ],
               "test_commands": [
-                "go test ./... -run TestResponse -count=1"
+                "go test ./... -run TestResponseMetadataAndSelectorContract -count=1"
               ],
               "acceptance": [
-                "A local fixture can build a Response and query it with CSS while preserving HTTP metadata."
+                "A local fixture can build a Response, inspect URL/status/headers, and query it with CSS."
               ],
               "done_signal": [
-                "Response tests prove metadata and selector behavior together."
+                "Response metadata and selector contract test passes."
+              ]
+            },
+            {
+              "name": "Response body, text, bytes, and JSON helpers",
+              "status": "planned",
+              "priority": "P0",
+              "contract": "Expose body bytes, decoded text, and JSON decoding helpers on Response without hiding parse or decode errors.",
+              "contract_status": "draft",
+              "slice_size": "small",
+              "execution_owner": "fetcher",
+              "source_refs": [
+                "references/Scrapling/docs/api-reference/response.md",
+                "references/Scrapling/docs/fetching/static.md",
+                "references/Scrapling/scrapling/engines/toolbelt/custom.py"
+              ],
+              "blocked_by": [
+                "Response metadata and selector contract"
+              ],
+              "ready_when": [
+                "Response metadata and selector contract is complete."
+              ],
+              "not_ready_when": [
+                "The row tries to add HTTP fetching or session behavior."
+              ],
+              "write_scope": [
+                "response.go",
+                "response_test.go"
+              ],
+              "test_commands": [
+                "go test ./... -run TestResponseBodyHelpers -count=1"
+              ],
+              "acceptance": [
+                "Response exposes immutable body bytes, decoded text, and typed JSON decoding with visible errors for invalid JSON."
+              ],
+              "done_signal": [
+                "Response body helper tests pass."
               ]
             }
           ]
@@ -181,10 +222,10 @@
           "name": "Static HTTP fetcher",
           "items": [
             {
-              "name": "Static Fetcher and FetcherSession over net/http",
+              "name": "Static Fetcher method surface over net/http",
               "status": "planned",
               "priority": "P0",
-              "contract": "Fetch static pages with request option merging, default headers, timeout control, cookies, and local HTTP fixture tests.",
+              "contract": "Provide static GET, POST, PUT, and DELETE methods over net/http that return Response values from local HTTP fixtures.",
               "contract_status": "draft",
               "slice_size": "medium",
               "execution_owner": "fetcher",
@@ -193,22 +234,102 @@
                 "references/Scrapling/docs/api-reference/fetchers.md",
                 "references/Scrapling/scrapling/fetchers/requests.py"
               ],
+              "blocked_by": [
+                "Response metadata and selector contract",
+                "Response body, text, bytes, and JSON helpers"
+              ],
               "ready_when": [
-                "Response object behavior is defined."
+                "Response metadata and body helper rows are complete."
+              ],
+              "not_ready_when": [
+                "The row tries to include FetcherSession, proxy rotation, browser impersonation, or retry taxonomy."
               ],
               "write_scope": [
                 "fetcher.go",
-                "fetcher_session.go",
                 "fetcher_test.go"
               ],
               "test_commands": [
-                "go test ./... -run 'TestFetcher|TestFetcherSession' -count=1"
+                "go test ./... -run TestStaticFetcherMethods -count=1"
               ],
               "acceptance": [
-                "httptest fixtures prove GET, custom headers, cookies, non-2xx responses, redirect policy, and timeout/error classification."
+                "httptest fixtures prove GET, POST, PUT, DELETE, custom headers, request body handling, status codes, and response parsing."
               ],
               "done_signal": [
-                "Static fetcher tests pass without live network calls."
+                "Static fetcher method tests pass without live network calls."
+              ]
+            },
+            {
+              "name": "FetcherSession option merging and cookies",
+              "status": "planned",
+              "priority": "P0",
+              "contract": "Provide a FetcherSession that merges session defaults with per-request options while preserving cookies across requests.",
+              "contract_status": "draft",
+              "slice_size": "medium",
+              "execution_owner": "fetcher",
+              "source_refs": [
+                "references/Scrapling/docs/fetching/static.md",
+                "references/Scrapling/scrapling/engines/static.py",
+                "references/Scrapling/scrapling/fetchers/requests.py"
+              ],
+              "blocked_by": [
+                "Static Fetcher method surface over net/http"
+              ],
+              "ready_when": [
+                "Static Fetcher method surface over net/http is complete."
+              ],
+              "not_ready_when": [
+                "The row tries to add proxy rotation, browser impersonation, or retry taxonomy."
+              ],
+              "write_scope": [
+                "fetcher_session.go",
+                "fetcher_session_test.go",
+                "fetcher.go"
+              ],
+              "test_commands": [
+                "go test ./... -run TestFetcherSessionOptionMergingAndCookies -count=1"
+              ],
+              "acceptance": [
+                "httptest fixtures prove default headers, per-request overrides, cookies, and connection reuse through one session object."
+              ],
+              "done_signal": [
+                "FetcherSession option merging and cookie tests pass."
+              ]
+            },
+            {
+              "name": "Redirect, timeout, retry, and error taxonomy",
+              "status": "planned",
+              "priority": "P0",
+              "contract": "Classify static fetcher redirects, timeouts, retries, and blocked unsafe redirects with deterministic error values.",
+              "contract_status": "draft",
+              "slice_size": "medium",
+              "execution_owner": "fetcher",
+              "source_refs": [
+                "references/Scrapling/docs/fetching/static.md",
+                "references/Scrapling/scrapling/engines/static.py",
+                "references/Scrapling/scrapling/engines/toolbelt/navigation.py"
+              ],
+              "blocked_by": [
+                "FetcherSession option merging and cookies"
+              ],
+              "ready_when": [
+                "FetcherSession option merging and cookies is complete."
+              ],
+              "not_ready_when": [
+                "The row tries to add proxy rotation or TLS/browser impersonation."
+              ],
+              "write_scope": [
+                "fetcher.go",
+                "fetcher_errors.go",
+                "fetcher_test.go"
+              ],
+              "test_commands": [
+                "go test ./... -run TestFetcherRedirectTimeoutRetryErrors -count=1"
+              ],
+              "acceptance": [
+                "httptest fixtures prove safe redirects, disabled redirects, timeout errors, retry counts, and blocked private-address redirects."
+              ],
+              "done_signal": [
+                "Redirect, timeout, retry, and error taxonomy tests pass."
               ]
             }
           ]

@@ -51,7 +51,7 @@ func TestRunWriteRegeneratesMarkedDocs(t *testing.T) {
 	if strings.Contains(string(agentQueue), "old content") {
 		t.Fatalf("agent queue still contains old content: %s", agentQueue)
 	}
-	if !strings.Contains(string(agentQueue), "Response combines HTTP metadata with parsed document behavior") {
+	if !strings.Contains(string(agentQueue), "Response metadata and selector contract") {
 		t.Fatalf("agent queue missing generated row: %s", agentQueue)
 	}
 }

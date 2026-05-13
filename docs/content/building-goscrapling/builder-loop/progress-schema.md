@@ -15,6 +15,8 @@ modeled after the Gormes port ledger, but smaller.
 | `slice_size` | contract rows | `small`, `medium`, `large`, or `umbrella`. |
 | `execution_owner` | contract rows | Logical area such as `parser`, `storage`, `fetcher`, `browser`, `spider`, `cli`, `integration`, or `docs`. |
 | `source_refs` | contract rows | Upstream and local files used to derive the row. |
+| `blocked_by` | optional | Row names or conditions that must be satisfied before the row becomes assignable. |
+| `unblocks` | optional | Downstream rows enabled by this row. |
 | `ready_when` | contract rows | Conditions that make the row safe to assign. |
 | `not_ready_when` | broad or risky rows | Conditions that make the row too broad or unsafe. |
 | `write_scope` | contract rows | Files or package areas a builder may edit. |
@@ -30,8 +32,17 @@ modeled after the Gormes port ledger, but smaller.
   acceptance, and done signal.
 - Complete contract rows must use `contract_status: validated`.
 - Broad rows stay planned until split into builder-sized rows.
+- Generated builder-loop docs are regenerated from `progress.json` with `go run ./cmd/progress write`.
 - New upstream feature-bearing files require updates to the coverage ledger,
   feature map, and progress ledger in the same planning pass.
+
+## Generated Surfaces
+
+- `builder-loop-handoff.md` shows shared skill handoff facts from `meta.builder_loop`.
+- `agent-queue.md` lists unblocked, non-umbrella contract rows with enough metadata for a TDD implementation pass.
+- `next-slices.md` ranks the same assignable rows in table form.
+- `blocked-slices.md` keeps dependency-blocked rows visible without making them assignable.
+- `umbrella-cleanup.md` lists planned umbrella rows that must be split before builder work.
 
 ## Validation
 
