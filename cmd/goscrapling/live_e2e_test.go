@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +17,8 @@ func TestLivePracticeSitesEndToEnd(t *testing.T) {
 
 	binary := buildGoscraplingBinary(t)
 	outputDir := t.TempDir()
-	userAgent := "User-Agent: goscrapling-live-e2e/1.0 (testing; https://github.com/TrebuchetDynamics/goscrapling)"
+	client := &http.Client{Timeout: 15 * time.Second}
+	userAgentHeader := "User-Agent: " + liveE2EUserAgentValue
 
 	tests := []struct {
 		name        string
@@ -126,14 +129,12 @@ func TestLivePracticeSitesEndToEnd(t *testing.T) {
 			url:      "https://www.wikipedia.org/",
 			selector: "strong.localized-slogan",
 			want:     []string{"The Free Encyclopedia"},
-			args:     []string{"-H", userAgent},
 		},
 		{
 			name:     "old-reddit",
 			url:      "https://old.reddit.com/",
 			selector: "title",
 			want:     []string{"reddit", "front page"},
-			args:     []string{"-H", userAgent},
 		},
 		{
 			name:     "security-crawl-maze",
@@ -146,14 +147,22 @@ func TestLivePracticeSitesEndToEnd(t *testing.T) {
 			url:      "https://github.com/topics",
 			selector: "h1",
 			want:     []string{"Topics"},
-			args:     []string{"-H", userAgent},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.delayBefore > 0 {
-				time.Sleep(tt.delayBefore)
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			defer cancel()
+			robots := fetchRobotsDecision(ctx, client, tt.url, liveE2EUserAgentValue)
+			if !robots.allowed {
+				t.Skipf("robots: %s", robots.reason)
+			}
+
+			delay := maxDuration(tt.delayBefore, robots.crawlDelay)
+			if delay > 0 {
+				t.Logf("honoring robots/test delay: %s", delay)
+				time.Sleep(delay)
 			}
 
 			outputPath := filepath.Join(outputDir, tt.name+".txt")
@@ -161,6 +170,7 @@ func TestLivePracticeSitesEndToEnd(t *testing.T) {
 			if tt.selector != "" {
 				args = append(args, "--css-selector", tt.selector)
 			}
+			args = append(args, "-H", userAgentHeader)
 			args = append(args, tt.args...)
 
 			result := runGoscraplingBinary(t, binary, args...)
@@ -184,4 +194,11 @@ func TestLivePracticeSitesEndToEnd(t *testing.T) {
 			t.Logf("%s extracted %d bytes", tt.url, len(body))
 		})
 	}
+}
+
+func maxDuration(a time.Duration, b time.Duration) time.Duration {
+	if a > b {
+		return a
+	}
+	return b
 }
