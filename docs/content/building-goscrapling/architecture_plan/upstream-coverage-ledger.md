@@ -47,18 +47,24 @@ core source-class names below when the local upstream checkout exists.
 | Upstream source class | Feature-map anchor | Go target | Progress anchor | Coverage |
 |---|---|---|---|---|
 | `scrapling/parser.py` | Parser and selector objects | `Document`, `Element`, `Selection` | Phase 0 | partial |
-| `scrapling/core/storage.py` | Adaptive storage | `AdaptiveStore`, `MemoryStore`, future file store | Phase 0, Phase 2 | partial |
-| `scrapling/core/mixins.py`, `scrapling/core/custom_types.py`, `scrapling/core/_types.py` | Parser and selector objects | root package types, future typed helpers | Phase 0 future splits | planned |
-| `scrapling/core/translator.py`, `scrapling/core/shell.py`, `scrapling/core/_shell_signatures.py` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | planned |
-| `scrapling/core/ai.py` | MCP and AI docs | future integration packages | Phase 5 | planned |
-| `scrapling/engines/static.py` | Response object, static fetcher | `Response`, `Fetcher`, `FetcherSession` | Phase 1 | planned |
-| `scrapling/engines/_browsers/**` | Browser fetching | `browser` package | Phase 3 | planned |
-| `scrapling/engines/toolbelt/proxy_rotation.py`, `scrapling/engines/toolbelt/fingerprints.py`, `scrapling/engines/toolbelt/navigation.py`, `scrapling/engines/toolbelt/ad_domains.py` | Proxy rotation and browser support | fetcher/browser options | Future split under Phase 1 or Phase 3 | vague |
-| `scrapling/fetchers/requests.py` | Static fetcher | `Fetcher`, `FetcherSession` | Phase 1 | planned |
-| `scrapling/fetchers/chrome.py` | Browser fetching | `browser` package | Phase 3 | planned |
+| `scrapling/core/storage.py` | Adaptive storage | `AdaptiveStore`, `MemoryStore`, `FileStore`, future `SQLiteStore` | Phase 0, Phase 2 | partial |
+| `scrapling/core/mixins.py` | Parser and selector objects | selector generation helpers | Phase 0 | planned |
+| `scrapling/core/custom_types.py`, `scrapling/core/_types.py` | Parser and selector objects | root package types, future custom handler types | Phase 0 | planned |
+| `scrapling/core/translator.py` | Parser and selector objects | XPath/CSS translator helpers | Phase 0 | planned |
+| `scrapling/core/shell.py`, `scrapling/core/_shell_signatures.py`, `scrapling/core/utils/_shell.py` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | planned |
+| `scrapling/core/utils/_utils.py` | Parser and adaptive storage | parser/adaptive helper behavior | Phase 0 | planned |
+| `scrapling/core/ai.py` | MCP and AI docs | `integrations/mcp` | Phase 5 | planned |
+| `scrapling/engines/static.py` | Response object, static fetcher | `Response`, `Fetcher`, `FetcherSession` | Phase 1 | partial |
+| `scrapling/engines/_browsers/**` | Browser fetching | `BrowserFetcher`, future browser engine adapters and sessions | Phase 3 | partial |
+| `scrapling/engines/toolbelt/proxy_rotation.py` | Proxy rotation | `ProxyRotator`, fetcher/spider proxy options | Phase 1, Phase 4 | planned |
+| `scrapling/engines/toolbelt/fingerprints.py` | Static fetcher, Browser fetching | explicit identity and stealth option boundaries | Phase 1, Phase 3 | planned |
+| `scrapling/engines/toolbelt/navigation.py`, `scrapling/engines/toolbelt/ad_domains.py`, `scrapling/engines/constants.py` | Browser fetching, Proxy rotation | browser context/resource controls and proxy error helpers | Phase 1, Phase 3 | planned |
+| `scrapling/fetchers/requests.py` | Static fetcher | `Fetcher`, `FetcherSession` | Phase 1 | partial |
+| `scrapling/fetchers/chrome.py` | Browser fetching | `BrowserFetcher`, future browser engine adapters | Phase 3 | partial |
 | `scrapling/fetchers/stealth_chrome.py` | Browser fetching, stealth controls | `browser` package plus explicit stealth options | Phase 3 future split | planned |
-| `scrapling/spiders/**` | Spider runtime | `spider` package | Phase 4 | planned |
-| `scrapling/cli.py` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | planned |
+| `scrapling/spiders/**` | Spider runtime | `spider` package | Phase 4 | partial |
+| `scrapling/cli.py` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | partial |
+| `Dockerfile`, `pyproject.toml`, `server.json` | Install, Docker, packaging, examples, and benchmarks | `cmd/goscrapling`, docs, integration metadata | Phase 5 | planned |
 | `scrapling/py.typed` | Packaging/type marker | none | Coverage ledger | excluded |
 
 ## Scrapling Docs Coverage
@@ -66,13 +72,14 @@ core source-class names below when the local upstream checkout exists.
 | Upstream docs class | Feature-map anchor | Go target | Progress anchor | Coverage |
 |---|---|---|---|---|
 | `docs/parsing/**` | Parser and selector objects, adaptive storage | root package | Phase 0, Phase 2 | partial |
-| `docs/api-reference/selector.md`, `docs/api-reference/custom-types.md` | Parser and selector objects | root package types | Phase 0 future splits | planned |
-| `docs/api-reference/response.md` | Response object | `Response` | Phase 1 | planned |
-| `docs/api-reference/fetchers.md`, `docs/fetching/**` | Fetchers and browser fetching | `Fetcher`, `FetcherSession`, `browser` | Phase 1, Phase 3 | planned |
-| `docs/api-reference/proxy-rotation.md` | Proxy rotation | fetcher/browser options | Future split | vague |
-| `docs/spiders/**` | Spider runtime | `spider` package | Phase 4 | planned |
-| `docs/cli/**` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | planned |
-| `docs/ai/mcp-server.md`, `docs/api-reference/mcp-server.md` | MCP and AI integration | future integration packages | Phase 5 | planned |
+| `docs/api-reference/selector.md`, `docs/api-reference/custom-types.md` | Parser and selector objects | root package types and selector helpers | Phase 0 | planned |
+| `docs/api-reference/response.md` | Response object | `Response` | Phase 1 | partial |
+| `docs/api-reference/fetchers.md`, `docs/fetching/**` | Fetchers and browser fetching | `Fetcher`, `FetcherSession`, `browser` | Phase 1, Phase 3 | partial |
+| `docs/api-reference/proxy-rotation.md` | Proxy rotation | `ProxyRotator`, fetcher/browser/spider proxy options | Phase 1, Phase 4 | planned |
+| `docs/spiders/**` | Spider runtime | `spider` package | Phase 4 | partial |
+| `docs/cli/**` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | partial |
+| `docs/ai/mcp-server.md`, `docs/api-reference/mcp-server.md` | MCP and AI integration | `integrations/mcp` | Phase 5 | planned |
+| `docs/benchmarks.md`, `docs/tutorials/**`, `docs/overview.md` | Install, Docker, packaging, examples, and benchmarks | docs, examples, benchmarks | Phase 5 | planned |
 | translated README files, assets, stylesheets, ReadTheDocs config | docs and branding | docs only | Coverage ledger | excluded |
 
 ## What Counts As Unmapped

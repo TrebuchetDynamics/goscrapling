@@ -1,0 +1,2 @@
+// Reference-only py2many output. Do not copy into production packages.
+// Source: references/Scrapling/scrapling/spiders/robotstxt.py

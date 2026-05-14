@@ -43,7 +43,7 @@ Hard rules:
 | XPath selection | `Selector.xpath` | planned | Needs dependency evaluation and test fixtures. |
 | Text search | `find_by_text`, docs selection pages | planned | Needs exact/contains/regex behavior decisions. |
 | Similar element search | `find_similar`, parser tests | planned | Related to adaptive scoring but user-facing API is missing. |
-| Selection collections | `Selectors` class | partial | `Selection.Len` and `First` exist. Needs iteration, text extraction, attr extraction, filtering, chaining, and get/getall-style helpers. |
+| Selection collections | `Selectors` class | partial | `Selection.Len`, `First`, `Text`, and `HTML` exist. Needs iteration, attr extraction, filtering, chaining, and get/getall-style helpers. |
 | Element traversal | ancestors, parent, siblings, children | planned | Required to approach Scrapling parser ergonomics. |
 | Selector generation | `core/mixins.py` | planned | Needed for CSS/XPath generation parity. |
 | Custom types | `core/custom_types.py`, docs `api-reference/custom-types.md` | planned | Go equivalent should be typed wrappers, not dynamic Python types. |
@@ -59,30 +59,30 @@ Hard rules:
 | Auto-save from CSS/XPath selectors | `auto_save=True` | planned | Needed for recognizably Scrapling-style adaptive usage. |
 | Adaptive selector fallback | `adaptive=True` | planned | Needed so failed selectors can automatically relocate saved elements. |
 | Domain override | `adaptive_domain` | planned | Current domain derivation exists; explicit override is missing. |
-| Pluggable storage | `StorageSystemMixin` | partial | `Store` interface exists. Durable adapters missing. |
+| Pluggable storage | `StorageSystemMixin` | partial | `Store` interface and JSON `FileStore` exist with schema-version checks. SQLite parity remains planned. |
 | SQLite default storage | `SQLiteStorageSystem` | planned | Required for useful production parity. |
 
 ## Fetcher And Response Parity
 
 | Scrapling Area | Upstream Reference | goscrapling Status | Notes |
 | --- | --- | --- | --- |
-| Response object | `engines/toolbelt/custom.py`, docs `fetching/choosing.md` | planned | Must behave like a parsed document plus HTTP metadata. |
-| Static HTTP fetcher | `fetchers/requests.py`, `engines/static.py` | planned | Next major implementation slice. |
+| Response object | `engines/toolbelt/custom.py`, docs `fetching/choosing.md` | partial | Response now behaves like a parsed document with URL/status/header/request metadata, body bytes, text, and JSON decoding. Cookies, history, meta, and captured XHR remain future work. |
+| Static HTTP fetcher | `fetchers/requests.py`, `engines/static.py` | partial | Basic GET, POST, PUT, DELETE, session defaults, cookies, connection reuse, redirects, timeouts, retry attempts, and error taxonomy are fixture-backed. Query params, form/JSON request helpers, browser-style headers, proxies, and response history remain planned. |
 | Async HTTP fetcher | `AsyncFetcher` | planned | Go equivalent should use context and goroutines rather than Python-style awaitable API. |
-| Fetcher sessions | `FetcherSession`, async sessions | planned | Required for connection reuse, default config, and spider integration. |
-| Request options merging | fetcher tests | planned | Needs typed options and tests for defaults versus per-request overrides. |
+| Fetcher sessions | `FetcherSession`, async sessions | partial | Synchronous Go-native session behavior has default headers, per-request overrides, cookies, and connection reuse. Async-style coordination remains future Go API work. |
+| Request options merging | fetcher tests | partial | Session default headers and per-request overrides are covered. Broader request option merging remains planned. |
 | Headers and browser-ish defaults | `toolbelt/fingerprints.py` | planned | Needs careful, honest implementation without overclaiming stealth. |
 | Proxies and proxy rotation | `proxy_rotation.py`, docs `api-reference/proxy-rotation.md` | planned | Needed before spider production use. |
-| Response history/cookies/body/status | fetcher docs/tests | planned | Response metadata must be part of phase 1 of fetcher work. |
+| Response history/cookies/body/status | fetcher docs/tests | partial | Body, status helpers, and session cookie persistence are covered; response cookie access and redirect history remain planned. |
 
 ## Browser Fetcher Parity
 
 | Scrapling Area | Upstream Reference | goscrapling Status | Notes |
 | --- | --- | --- | --- |
-| Dynamic browser fetcher | `fetchers/chrome.py`, docs `fetching/dynamic.md` | planned | Needs `rod` versus `chromedp` decision. |
+| Dynamic browser fetcher | `fetchers/chrome.py`, docs `fetching/dynamic.md` | partial | Engine-neutral `BrowserFetcher` contract is fake-engine tested; real Playwright/chromedp/Rod adapter remains planned. |
 | Stealth browser fetcher | `fetchers/stealth_chrome.py`, docs `fetching/stealthy.md` | planned | Hard parity area; avoid unsupported anti-bot claims until proven. |
 | Browser sessions | `engines/_browsers/` | planned | Required for reuse and spider sessions. |
-| Wait selector/network idle | browser docs/tests | planned | Test with local HTTP fixtures first. |
+| Wait selector/network idle | browser docs/tests | partial | Contract fields are covered through a fake engine; real browser fixture remains planned. |
 | Captured XHR | response docs | planned | Important for modern web extraction. |
 | Proxy/browser context settings | browser fetcher docs | planned | Later phase after basic browser fetch is stable. |
 | Cloudflare challenge solving | stealth docs | deferred | High-risk claim; implement only after evidence and tests. |
@@ -91,26 +91,26 @@ Hard rules:
 
 | Scrapling Area | Upstream Reference | goscrapling Status | Notes |
 | --- | --- | --- | --- |
-| Spider base type | `spiders/spider.py` | planned | Go design likely uses interfaces and callback funcs instead of subclassing. |
-| Request type | `spiders/request.py` | planned | Must include URL, method/body, callback, priority, session ID, metadata, retry count. |
-| Response follow helpers | `engines/toolbelt/custom.py` | planned | Needed for spider ergonomics. |
-| Scheduler | `spiders/scheduler.py` | planned | Priority queue and duplicate filtering by fingerprint. |
-| Request fingerprinting | `spiders/request.py` | planned | Must be deterministic and test-first. |
-| Session manager | `spiders/session.py` | planned | Routes requests to static/dynamic/stealth sessions. |
+| Spider base type | `spiders/spider.py` | partial | Go-native `Crawler` and callback funcs exist; start URL helpers, lifecycle hooks, streaming, and concurrency controls remain planned. |
+| Request type | `spiders/request.py` | partial | URL, method/body, callback, priority, session ID, metadata, and dedupe flag are covered; retry/blocking metadata remains planned. |
+| Response follow helpers | `engines/toolbelt/custom.py` | partial | Relative URL resolution, meta merge, callback/session override, priority, and referer flow are fixture-backed. Broader response ergonomics remain future work. |
+| Scheduler | `spiders/scheduler.py` | done | Priority queue and duplicate filtering by deterministic request fingerprint are covered. Checkpoint snapshot/restore belongs to the checkpoint row. |
+| Request fingerprinting | `spiders/request.py` | partial | URL/method/body/session fingerprints are deterministic with header and fragment options; kwargs/retry-related dimensions remain future work. |
+| Session manager | `spiders/session.py` | partial | Named session routing plus eager/lazy startup is covered with fake sessions; static/dynamic/stealth session adapters remain planned. |
 | Engine concurrency | `spiders/engine.py` | planned | Go implementation should use context, worker pools, and backpressure. |
 | Allowed domains | engine tests | planned | Required for crawler safety. |
 | Robots.txt | `spiders/robotstxt.py` | planned | Required for production-friendly crawling. |
 | Development response cache | `spiders/cache.py` | planned | Useful for test/debug cycles. |
 | Checkpoint pause/resume | `spiders/checkpoint.py` | planned | Required parity for long crawls. |
-| Crawl result and stats | `spiders/result.py` | planned | Required for observability. |
+| Crawl result and stats | `spiders/result.py` | partial | Items, errors, skipped duplicates, request counts, and per-session counts are covered; richer timing/status/cache/export stats remain planned. |
 | Generic templates | `spiders/templates/` | planned | Later convenience layer. |
 
 ## CLI, Shell, AI, And Tooling Parity
 
 | Scrapling Area | Upstream Reference | goscrapling Status | Notes |
 | --- | --- | --- | --- |
-| CLI fetch/extract | `cli.py`, docs `cli/` | planned | Should wrap fetcher/parser APIs after they stabilize. |
-| Interactive shell | `core/shell.py` | deferred | Useful but not required before fetcher/spider parity. |
+| CLI fetch/extract | `cli.py`, docs `cli/` | partial | `goscrapling extract get/post/put/delete` is fixture-backed for local/static pages, headers, timeout, CSS selection, txt/html output, bodies, JSON, query params, and parse errors. Markdown, AI-targeted cleanup, and browser modes remain planned. |
+| Interactive shell | `core/shell.py` | planned | Scripted shell command fixtures should come before a full REPL dependency. |
 | MCP server | `core/ai.py`, docs `ai/mcp-server.md` | planned | Important if `goscrapling` becomes a Gormes/OpenClaw web-search tool. |
 | Agent skill metadata | `agent-skill/` | deferred | Only after CLI/MCP shape is real. |
 | Benchmarks | `benchmarks.py`, docs `benchmarks.md` | planned | Needed after comparable fetcher/parser surfaces exist. |
@@ -130,4 +130,3 @@ Hard rules:
 ## Current Reality
 
 `goscrapling` is far from parity. It currently covers only a small part of parser/adaptive behavior. That is acceptable only if the project continues toward this matrix. If the matrix is not the target, the project should not claim to be a real Scrapling-style port.
-

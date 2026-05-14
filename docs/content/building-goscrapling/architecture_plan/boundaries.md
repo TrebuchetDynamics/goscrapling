@@ -3,6 +3,23 @@
 goscrapling is a Go-native Scrapling-style feature port. Scrapling is the
 parity oracle, not the package architecture template.
 
+## Product Positioning Boundary
+
+The project is worth building as an evidence-backed Go-native extraction
+engine for portfolio and Gormes/OpenClaw use. It should not be presented as a
+complete Scrapling clone until parser, adaptive storage, fetchers,
+browser-backed fetching, spiders, CLI surfaces, and tool integrations have
+passing tests and completed progress rows.
+
+Preferred external positioning:
+
+> goscrapling is a Go-native web extraction engine inspired by Scrapling, built
+> for agent runtimes and single-binary deployments.
+
+Do not claim stealth, Cloudflare-solving, production proxy rotation, or complete
+Scrapling parity until those rows are explicitly implemented, tested, and
+documented.
+
 ## Scrapling Compatibility Boundary
 
 `compat/scrapling` is allowed for upstream evidence, drift manifests, fixtures,
@@ -71,3 +88,9 @@ Gormes/OpenClaw integration must depend on goscrapling library APIs. The core
 library must not import Gormes runtime packages. A future tool adapter belongs
 under `integrations/gormes` or a separate command surface after fetcher and
 response behavior are stable.
+
+Gormes owns tool registration, approval policy, truncation, channel rendering,
+and typed unavailable results. goscrapling owns extraction behavior, response
+construction, selector APIs, browser fetcher contracts, and spider primitives.
+The first integration slice should prove static fetch plus CSS extraction from
+local fixtures before browser or crawler behavior is exposed to Gormes.

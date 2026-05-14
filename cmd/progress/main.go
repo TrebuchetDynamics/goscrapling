@@ -10,7 +10,7 @@ import (
 	"github.com/TrebuchetDynamics/goscrapling/internal/progress"
 )
 
-const usage = "usage: progress [--repo-root <path>] {validate|write}"
+const usage = "usage: progress [--repo-root <path>] {validate|write|map-validate|map-write}"
 
 var errParse = errors.New("parse error")
 
@@ -46,6 +46,15 @@ func run(stdout, stderr io.Writer, args []string) error {
 		return err
 	case "write":
 		return writeDocs(stdout, root)
+	case "map-validate":
+		appMap, err := loadValidAppMap(root)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(stdout, "app-map: validated %d entries\n", len(appMap.Entries))
+		return err
+	case "map-write":
+		return writeAppMap(stdout, root)
 	default:
 		_, _ = fmt.Fprintf(stderr, "unknown progress command %q\n", args[0])
 		return fmt.Errorf("%w\n%s", errParse, usage)
@@ -109,6 +118,40 @@ func loadValid(root string) (*progress.Progress, error) {
 		return nil, err
 	}
 	return p, nil
+}
+
+func loadValidAppMap(root string) (*progress.AppMap, error) {
+	appMap, err := progress.LoadAppMap(filepath.Join(root, "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json"))
+	if err != nil {
+		return nil, fmt.Errorf("load app map: %w", err)
+	}
+	if err := progress.ValidateAppMap(appMap); err != nil {
+		return nil, err
+	}
+	if err := progress.ValidateAppMapCoverage(root, appMap); err != nil {
+		return nil, err
+	}
+	p, err := loadValid(root)
+	if err != nil {
+		return nil, err
+	}
+	if err := progress.ValidateAppMapReferences(root, appMap, p); err != nil {
+		return nil, err
+	}
+	return appMap, nil
+}
+
+func writeAppMap(stdout io.Writer, root string) error {
+	appMap, err := loadValidAppMap(root)
+	if err != nil {
+		return err
+	}
+	target := "docs/content/building-goscrapling/architecture_plan/upstream-app-map.md"
+	if err := os.WriteFile(filepath.Join(root, target), []byte(progress.RenderAppMapMarkdown(appMap)), 0o644); err != nil {
+		return fmt.Errorf("write %s: %w", target, err)
+	}
+	_, err = fmt.Fprintf(stdout, "app-map: regenerated %s\n", target)
+	return err
 }
 
 func rewriteMarker(path, kind, body string) error {

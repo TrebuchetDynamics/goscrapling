@@ -4,85 +4,157 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Response metadata and selector contract
+## 1. Adaptive selector fallback and auto-save modes
+
+- Phase: `phase-0-parser-adaptive / adaptive-storage`
+- Priority: `P0`
+- Owner: `parser`
+- Size: `medium`
+- Contract status: `draft`
+- Contract: Port Scrapling adaptive selector ergonomics: auto_save on CSS/XPath queries, adaptive lookup by identifier, retrieve helper, percentage threshold, and adaptive_domain override.
+- Ready when: Save and relocate adaptive rows are validated.
+- Write scope: `document.go`, `adaptive_stub.go`, `adaptive_selector_test.go`
+- Test commands: `go test ./... -run TestAdaptiveSelectorModes -count=1`
+- Acceptance: Fixtures prove auto-save, adaptive fallback, manual retrieve, threshold control, and domain override behavior.
+- Done signal: Adaptive selector mode tests pass.
+- Source refs: `references/Scrapling/scrapling/parser.py`, `references/Scrapling/docs/parsing/adaptive.md`
+
+## 2. Selector pseudo-elements, extraction helpers, and custom types
+
+- Phase: `phase-0-parser-adaptive / static-document`
+- Priority: `P0`
+- Owner: `parser`
+- Size: `medium`
+- Contract status: `draft`
+- Contract: Port Scrapling selector extraction ergonomics: ::text, ::attr(name), get/getall, regex extraction, JSON parsing, TextHandler/TextHandlers, and AttributesHandler behavior.
+- Ready when: Basic CSS selection and Response selector behavior are validated.
+- Write scope: `document.go`, `selection.go`, `custom_types.go`, `selector_extraction_test.go`
+- Test commands: `go test ./... -run TestSelectorExtractionHelpers -count=1`
+- Acceptance: String fixtures prove ::text, ::attr, get/getall, regex extraction, JSON parsing, and typed handler behavior.
+- Done signal: Selector extraction helper tests pass.
+- Source refs: `references/Scrapling/scrapling/parser.py`, `references/Scrapling/scrapling/core/custom_types.py`, `references/Scrapling/docs/parsing/selection.md`, `references/Scrapling/docs/api-reference/custom-types.md`
+
+## 3. Adaptive fingerprint parity review and diagnostics
+
+- Phase: `phase-0-parser-adaptive / adaptive-storage`
+- Priority: `P1`
+- Owner: `parser`
+- Size: `medium`
+- Contract status: `draft`
+- Contract: Compare Go fingerprints/scoring with upstream adaptive behavior and expose diagnostics for missed or low-confidence relocations.
+- Ready when: Relocation is deterministic and file storage is validated.
+- Write scope: `fingerprint.go`, `score.go`, `adaptive_diagnostics.go`, `adaptive_diagnostics_test.go`
+- Test commands: `go test ./... -run TestAdaptiveDiagnostics -count=1`
+- Acceptance: Fixtures cover score explanations, threshold failures, and fingerprint fields documented against upstream behavior.
+- Done signal: Adaptive diagnostics tests pass.
+- Source refs: `references/Scrapling/scrapling/parser.py`, `references/Scrapling/scrapling/core/utils/_utils.py`, `references/Scrapling/docs/development/adaptive_storage_system.md`
+
+## 4. Response cookies, history, meta, and captured XHR fields
 
 - Phase: `phase-1-response-fetcher / response`
-- Priority: `P0`
+- Priority: `P1`
 - Owner: `fetcher`
-- Size: `small`
-- Contract status: `fixture_ready`
-- Contract: Expose a Response that carries URL, status code, headers, final body URL, request metadata, and selector behavior over the parsed document.
-- Ready when: A local response fixture can be constructed without network access.
-- Not ready when: The row tries to implement JSON helpers, body decoding, or HTTP fetching in the same slice.
-- Write scope: `response.go`, `response_test.go`, `document.go`
-- Test commands: `go test ./... -run TestResponseMetadataAndSelectorContract -count=1`
-- Acceptance: A local fixture can build a Response, inspect URL/status/headers, and query it with CSS.
-- Done signal: Response metadata and selector contract test passes.
-- Source refs: `references/Scrapling/docs/api-reference/response.md`, `references/Scrapling/docs/fetching/choosing.md`, `references/Scrapling/scrapling/fetchers/requests.py`, `references/Scrapling/scrapling/engines/static.py`
+- Size: `medium`
+- Contract status: `draft`
+- Contract: Extend Response parity with response cookies, redirect history, metadata, request/response header detail, encoding, and captured XHR attachment points.
+- Ready when: Response metadata/body rows and redirect taxonomy are complete.
+- Write scope: `response.go`, `response_test.go`, `fetcher.go`
+- Test commands: `go test ./... -run TestResponseExtendedMetadata -count=1`
+- Acceptance: httptest and constructed fixtures prove cookies, history, meta merging, encoding, and captured XHR storage without live browser dependencies.
+- Done signal: Response extended metadata tests pass.
+- Source refs: `references/Scrapling/scrapling/engines/toolbelt/custom.py`, `references/Scrapling/scrapling/engines/toolbelt/convertor.py`, `references/Scrapling/docs/api-reference/response.md`
 
-## 2. File-backed adaptive store with compatibility migration
+## 5. Static proxy support and proxy error classification
+
+- Phase: `phase-1-response-fetcher / static-fetcher`
+- Priority: `P1`
+- Owner: `fetcher`
+- Size: `medium`
+- Contract status: `draft`
+- Contract: Add explicit per-request and per-session proxy configuration with visible proxy error classification before rotation is introduced.
+- Ready when: Fetcher error taxonomy is validated.
+- Write scope: `fetcher.go`, `fetcher_proxy.go`, `fetcher_proxy_test.go`
+- Test commands: `go test ./... -run TestStaticFetcherProxySupport -count=1`
+- Acceptance: Local proxy fixtures prove proxy routing, proxy auth, bypass errors, and operator-visible error kinds.
+- Done signal: Static proxy support tests pass.
+- Source refs: `references/Scrapling/scrapling/engines/static.py`, `references/Scrapling/scrapling/engines/toolbelt/navigation.py`, `references/Scrapling/docs/fetching/static.md`
+
+## 6. SQLite adaptive store parity
 
 - Phase: `phase-2-storage / persistent-store`
 - Priority: `P1`
 - Owner: `storage`
 - Size: `medium`
 - Contract status: `draft`
-- Contract: Persist adaptive fingerprints beyond process memory with explicit schema versioning and deterministic migration tests.
-- Ready when: The in-memory store contract remains stable after response/fetcher design.
-- Write scope: `store.go`, `store_file.go`, `store_file_test.go`, `testdata/adaptive_store/`
-- Test commands: `go test ./... -run TestFileStore -count=1`
-- Acceptance: A file-backed store can save, reload, isolate domains, and reject incompatible schema versions visibly.
-- Done signal: File store tests pass with temp directories only.
-- Source refs: `references/Scrapling/docs/development/adaptive_storage_system.md`, `references/Scrapling/scrapling/core/storage.py`, `store.go`
+- Contract: Add a SQLite-backed adaptive store matching Scrapling default durable storage behavior while preserving the Go Store interface.
+- Ready when: FileStore compatibility row is complete and Store interface remains stable.
+- Write scope: `store_sqlite.go`, `store_sqlite_test.go`, `testdata/adaptive_store/`
+- Test commands: `go test ./... -run TestSQLiteStore -count=1`
+- Acceptance: Temp-database fixtures prove save/load, domain isolation, close behavior, and schema compatibility errors.
+- Done signal: SQLite store tests pass with temp databases.
+- Source refs: `references/Scrapling/scrapling/core/storage.py`, `references/Scrapling/docs/development/adaptive_storage_system.md`
 
-## 3. BrowserFetcher interface and chromedp/playwright adapter decision
+## 7. Real browser adapter with JavaScript fixture
 
 - Phase: `phase-3-browser / browser-fetcher`
 - Priority: `P1`
 - Owner: `browser`
 - Size: `medium`
 - Contract status: `draft`
-- Contract: Define a Go browser fetcher contract for dynamic pages, page actions, wait conditions, resource blocking, and response extraction before binding to an engine.
-- Ready when: Static Response and FetcherSession behavior is validated.
-- Not ready when: The row tries to implement stealth, proxy rotation, and browser actions in one slice.
-- Write scope: `browser.go`, `browser_test.go`, `docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md`
-- Test commands: `go test ./... -run TestBrowserFetcherContract -count=1`
-- Acceptance: A fake browser engine fixture proves the public contract before choosing the real engine dependency.
-- Done signal: Browser fetcher contract tests pass without launching a real browser.
-- Source refs: `references/Scrapling/docs/fetching/dynamic.md`, `references/Scrapling/docs/fetching/stealthy.md`, `references/Scrapling/scrapling/fetchers/chrome.py`, `references/Scrapling/scrapling/fetchers/stealth_chrome.py`, `references/Scrapling/scrapling/engines/_browsers/_page.py`
+- Contract: Bind BrowserFetcher to one real Go browser engine and prove dynamic content extraction against a local JavaScript fixture.
+- Ready when: BrowserFetcher interface row is validated.
+- Write scope: `browser.go`, `browser_adapter.go`, `browser_integration_test.go`, `testdata/browser/`
+- Test commands: `go test ./... -run TestBrowserAdapter -count=1`
+- Acceptance: Local fixture proves navigation, JavaScript-rendered content, timeout, and Response conversion.
+- Done signal: Real browser adapter tests pass or are skipped only with documented local dependency gating.
+- Source refs: `references/Scrapling/scrapling/fetchers/chrome.py`, `references/Scrapling/scrapling/engines/_browsers/_controllers.py`, `references/Scrapling/docs/fetching/dynamic.md`
 
-## 4. Spider request, result, scheduler, and session contracts
+## 8. Allowed domains and offsite filtering
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
 - Owner: `spider`
-- Size: `large`
-- Contract status: `draft`
-- Contract: Port Scrapling spider concepts into typed Go request/result/session/scheduler interfaces with deterministic fixture scheduling.
-- Ready when: FetcherSession is complete and request/response behavior is fixture-backed.
-- Not ready when: The row includes robots, cache, checkpoint, sitemap templates, and live crawling in the same slice.
-- Write scope: `spider/`, `spider_test.go`, `testdata/spider/`
-- Test commands: `go test ./... -run TestSpider -count=1`
-- Acceptance: A fake fetcher drives deterministic scheduling, callback results, and session reuse.
-- Done signal: Spider core tests pass using only fake fetchers and local fixtures.
-- Source refs: `references/Scrapling/docs/spiders/architecture.md`, `references/Scrapling/docs/spiders/requests-responses.md`, `references/Scrapling/scrapling/spiders/request.py`, `references/Scrapling/scrapling/spiders/result.py`, `references/Scrapling/scrapling/spiders/scheduler.py`, `references/Scrapling/scrapling/spiders/session.py`
-
-## 5. CLI extraction workflow parity
-
-- Phase: `phase-5-cli-tooling / tool-surfaces`
-- Priority: `P2`
-- Owner: `cli`
 - Size: `medium`
 - Contract status: `draft`
-- Contract: Map Scrapling CLI extract and shell workflows into a Go command surface only after core fetcher and parser behavior is stable.
-- Ready when: Response and static fetcher APIs are stable enough for command output fixtures.
-- Write scope: `cmd/goscrapling/`, `internal/cli/`, `testdata/cli/`
-- Test commands: `go test ./... -run TestCLI -count=1`
-- Acceptance: CLI fixtures prove deterministic extraction output and error messages without live network calls.
-- Done signal: CLI tests pass from local fixtures.
-- Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/overview.md`, `references/Scrapling/docs/cli/extract-commands.md`, `references/Scrapling/docs/cli/interactive-shell.md`
+- Contract: Add allowed_domains-style filtering and offsite request statistics before live crawling controls are layered on top.
+- Ready when: Spider core scheduler and stats are stable.
+- Write scope: `spider/`, `testdata/spider/`
+- Test commands: `go test ./... -run TestSpiderAllowedDomains -count=1`
+- Acceptance: Fake requests prove offsite drops, allowed host matching, and stats increments.
+- Done signal: Allowed-domain tests pass.
+- Source refs: `references/Scrapling/scrapling/spiders/engine.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 6. Gormes web-search tool adapter
+## 9. Crawler engine concurrency, domain limits, and download delay
+
+- Phase: `phase-4-spider / spider-core`
+- Priority: `P1`
+- Owner: `spider`
+- Size: `medium`
+- Contract status: `draft`
+- Contract: Add the crawler engine loop controls for global concurrency, per-domain concurrency, backpressure, context cancellation, and download delays.
+- Ready when: Spider core request/result/session/scheduler contracts are validated.
+- Write scope: `spider/`, `testdata/spider/`
+- Test commands: `go test ./... -run TestSpiderEngineConcurrency -count=1`
+- Acceptance: Fake sessions prove bounded concurrency, per-domain limits, cancellation, and deterministic delay behavior.
+- Done signal: Spider engine concurrency tests pass.
+- Source refs: `references/Scrapling/scrapling/spiders/engine.py`, `references/Scrapling/docs/spiders/architecture.md`, `references/Scrapling/docs/spiders/advanced.md`
+
+## 10. Development response cache
+
+- Phase: `phase-4-spider / spider-core`
+- Priority: `P1`
+- Owner: `spider`
+- Size: `medium`
+- Contract status: `draft`
+- Contract: Add spider development cache behavior keyed by request fingerprint with encoded response bodies and cache hit/miss stats.
+- Ready when: Request fingerprints and Response body helpers are validated.
+- Write scope: `spider/cache.go`, `spider/cache_test.go`, `testdata/spider/cache/`
+- Test commands: `go test ./... -run TestSpiderResponseCache -count=1`
+- Acceptance: Temp-dir fixtures prove cache put/get/clear, binary-safe bodies, method separation, and cache stats.
+- Done signal: Spider response cache tests pass.
+- Source refs: `references/Scrapling/scrapling/spiders/cache.py`, `references/Scrapling/docs/spiders/advanced.md`
+
+## 11. Gormes web-search tool adapter
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P2`
@@ -90,10 +162,42 @@ non-umbrella, and builder-ready.
 - Size: `medium`
 - Contract status: `draft`
 - Contract: Expose goscrapling as a production-friendly Go web search/scraping tool for Gormes without importing Gormes runtime dependencies into the core library.
-- Ready when: Static fetcher and response objects are validated., Tool input/output schema is designed separately from library APIs.
-- Write scope: `integrations/gormes/`, `docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md`
+- Ready when: Static fetcher and response objects are validated, Tool input/output schema is designed separately from library APIs, Gormes integration boundary is documented as an adapter, not a core dependency.
+- Not ready when: The row tries to replace Gormes web search, browser tools, or channel rendering in one slice, The adapter needs live network access to prove its first behavior.
+- Write scope: `integrations/gormes/`, `docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md`, `docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md`
 - Test commands: `go test ./... -run TestGormesIntegration -count=1`
-- Acceptance: A fake tool call can fetch a local page, extract selected content, and return structured evidence.
-- Done signal: Integration tests pass without reaching the network.
-- Source refs: `README.md`, `docs/research/go-scraping-oss-survey.md`
+- Acceptance: A fake tool call can fetch a local page, extract selected content, and return structured evidence, The adapter output includes enough evidence for Gormes to render or truncate without depending on goscrapling internals.
+- Done signal: Integration tests pass without reaching the network, The Gormes boundary docs link back to the goscrapling strategy page.
+- Source refs: `README.md`, `docs/research/go-scraping-oss-survey.md`, `docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md`
+
+## 12. CLI interactive shell command surface
+
+- Phase: `phase-5-cli-tooling / tool-surfaces`
+- Priority: `P3`
+- Owner: `cli`
+- Size: `large`
+- Contract status: `draft`
+- Contract: Map Scrapling's interactive shell concepts into a Go command surface with scripted evaluation first, before any full REPL dependency.
+- Ready when: Static CLI extract behavior is stable.
+- Not ready when: The row tries to build a full interactive REPL before scripted command fixtures exist.
+- Write scope: `cmd/goscrapling/`, `internal/cli/`, `internal/cli/testdata/`
+- Test commands: `go test ./... -run TestCLIShell -count=1`
+- Acceptance: Scripted shell fixtures prove command evaluation and page shortcut behavior without live web access.
+- Done signal: Shell command tests pass from local fixtures.
+- Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/interactive-shell.md`, `references/Scrapling/scrapling/core/shell.py`, `references/Scrapling/scrapling/core/_shell_signatures.py`
+
+## 13. Public docs, examples, and API reference parity
+
+- Phase: `phase-5-cli-tooling / tool-surfaces`
+- Priority: `P3`
+- Owner: `docs`
+- Size: `medium`
+- Contract status: `draft`
+- Contract: Maintain Go docs/examples for parser, adaptive scraping, fetchers, browser fetching, spiders, CLI, MCP, and migration guidance mapped from upstream docs.
+- Ready when: Core APIs have stable examples for each subsystem.
+- Write scope: `README.md`, `docs/`, `example_test.go`
+- Test commands: `go test ./... -run TestExamples -count=1`
+- Acceptance: Examples compile and docs point each major upstream feature group to a Go status or owned exclusion.
+- Done signal: Example tests and docs checks pass.
+- Source refs: `references/Scrapling/docs/index.md`, `references/Scrapling/docs/overview.md`, `references/Scrapling/docs/tutorials/migrating_from_beautifulsoup.md`, `references/Scrapling/docs/tutorials/replacing_ai.md`
 <!-- PROGRESS:END -->

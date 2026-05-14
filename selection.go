@@ -22,6 +22,31 @@ func (s Selection) First() (*Element, bool) {
 	return s.elements[0], true
 }
 
+func (s Selection) Text() string {
+	parts := make([]string, 0, len(s.elements))
+	for _, element := range s.elements {
+		text := element.Text()
+		if text != "" {
+			parts = append(parts, text)
+		}
+	}
+	return strings.Join(parts, "\n")
+}
+
+func (s Selection) HTML() (string, error) {
+	parts := make([]string, 0, len(s.elements))
+	for _, element := range s.elements {
+		body, err := element.HTML()
+		if err != nil {
+			return "", err
+		}
+		if body != "" {
+			parts = append(parts, body)
+		}
+	}
+	return strings.Join(parts, "\n"), nil
+}
+
 type Element struct {
 	doc  *Document
 	node *html.Node
@@ -54,6 +79,17 @@ func (e *Element) Attr(name string) (string, bool) {
 	}
 
 	return "", false
+}
+
+func (e *Element) HTML() (string, error) {
+	if e == nil || e.node == nil {
+		return "", nil
+	}
+	var output strings.Builder
+	if err := html.Render(&output, e.node); err != nil {
+		return "", err
+	}
+	return output.String(), nil
 }
 
 func normalizeSpace(value string) string {

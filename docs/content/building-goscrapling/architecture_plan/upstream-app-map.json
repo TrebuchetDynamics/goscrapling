@@ -1,0 +1,1123 @@
+{
+  "meta": {
+    "version": "1.0",
+    "upstream": {
+      "name": "D4Vinci/Scrapling",
+      "repo": "https://github.com/D4Vinci/Scrapling",
+      "observed_commit": "6380ef0f266a5fff898c18953d6b03ca320b2fd4",
+      "observed_release": "v0.4.8",
+      "local_checkout": "references/Scrapling"
+    },
+    "generated_markdown": "docs/content/building-goscrapling/architecture_plan/upstream-app-map.md",
+    "py2many_probe_dir": "docs/research/python-to-go-probes/py2many"
+  },
+  "entries": [
+    {
+      "id": "01-package-public-exports",
+      "title": "Package Metadata And Public Exports",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/__init__.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/core/__init__.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/core/utils/__init__.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/__init__.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/_browsers/__init__.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/toolbelt/__init__.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/fetchers/__init__.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/__init__.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/templates/__init__.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "Package metadata and public exports",
+      "behavior_atoms": [
+        "Export Scrapling-visible parser, fetcher, browser, spider, CLI, and tool symbols through stable package surfaces"
+      ],
+      "go_target": "root package exports plus future package-level adapters",
+      "progress_rows": [
+        "Parse static HTML into queryable documents",
+        "Response metadata and selector contract",
+        "Static Fetcher method surface over net/http",
+        "BrowserFetcher interface and chromedp/playwright adapter decision",
+        "Spider request, result, scheduler, and session contracts",
+        "CLI static extract GET command"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "manual_rewrite",
+      "notes": [
+        "Python module export wiring is a parity signal, but Go package shape remains intentionally Go-native."
+      ]
+    },
+    {
+      "id": "02-python-typing-marker",
+      "title": "Python Typing Marker",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/py.typed",
+          "kind": "source"
+        }
+      ],
+      "coverage_status": "excluded",
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "Python packaging type marker has no Go runtime or docs parity requirement."
+      ]
+    },
+    {
+      "id": "03-parser-selectors-custom-types",
+      "title": "Parser, Selectors, Custom Types, And Translator",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/core/_types.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/core/custom_types.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/core/mixins.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/core/translator.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/parser.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "Parser and selector objects",
+      "behavior_atoms": [
+        "Parse HTML into queryable documents and element selections",
+        "Preserve selector helpers, pseudo-elements, extraction handlers, traversal, filtering, and XPath/CSS translation behavior"
+      ],
+      "go_target": "Document, Element, Selection, selector helper types, and future translator helpers",
+      "progress_rows": [
+        "Parse static HTML into queryable documents",
+        "Selector pseudo-elements, extraction helpers, and custom types",
+        "XPath selection and CSS-to-XPath translator parity",
+        "Traversal, filtering, and text search helpers",
+        "Selector generation helpers"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "manual_rewrite",
+      "static_reference_paths": [
+        "docs/research/python-to-go-probes/py2many/go/parser.go.txt",
+        "docs/research/python-to-go-probes/py2many/go/core__custom_types.go.txt",
+        "docs/research/python-to-go-probes/py2many/summary.md"
+      ],
+      "notes": [
+        "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
+      ]
+    },
+    {
+      "id": "04-adaptive-storage",
+      "title": "Adaptive Storage And Relocation Helpers",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/core/storage.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/core/utils/_utils.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "Adaptive storage",
+      "behavior_atoms": [
+        "Store adaptive fingerprints by domain and identifier",
+        "Relocate elements through deterministic fingerprint scoring and expose adaptive selector fallback modes"
+      ],
+      "go_target": "AdaptiveStore, MemoryStore, FileStore, relocation scoring, future SQLiteStore",
+      "progress_rows": [
+        "Save adaptive fingerprints by domain and identifier",
+        "Relocate adaptive elements with deterministic scoring",
+        "Adaptive selector fallback and auto-save modes",
+        "Adaptive fingerprint parity review and diagnostics",
+        "File-backed adaptive store with compatibility migration",
+        "SQLite adaptive store parity"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "manual_rewrite"
+    },
+    {
+      "id": "05-response-static-fetchers",
+      "title": "Static Response And Fetchers",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/engines/static.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/toolbelt/convertor.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/toolbelt/custom.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/fetchers/requests.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "Static fetcher",
+      "behavior_atoms": [
+        "Fetch static responses with requests-style options, sessions, redirects, retries, and response conversion helpers",
+        "Expose response metadata, body helpers, selector access, cookies, history, meta, and captured XHR attachment points"
+      ],
+      "go_target": "Response, Fetcher, FetcherSession, static request options, and response conversion helpers",
+      "progress_rows": [
+        "Response metadata and selector contract",
+        "Response body, text, bytes, and JSON helpers",
+        "Response cookies, history, meta, and captured XHR fields",
+        "Static Fetcher method surface over net/http",
+        "FetcherSession option merging and cookies",
+        "Redirect, timeout, retry, and error taxonomy",
+        "Static request options: params, forms, JSON, auth, verify, and cookies",
+        "Async and concurrent static fetcher API"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "manual_rewrite",
+      "static_reference_paths": [
+        "docs/research/python-to-go-probes/py2many/go/engines__static.go.txt",
+        "docs/research/python-to-go-probes/py2many/summary.md"
+      ],
+      "notes": [
+        "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
+      ]
+    },
+    {
+      "id": "06-proxy-impersonation-network-helpers",
+      "title": "Proxy Rotation, Impersonation, And Network Helper Constants",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/engines/constants.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/toolbelt/proxy_rotation.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "Proxy rotation",
+      "behavior_atoms": [
+        "Represent proxy rotation strategies and network error classifications as explicit fetcher/spider options",
+        "Keep browser impersonation and HTTP/3 behavior bounded by testable Go dependencies"
+      ],
+      "go_target": "ProxyRotator, static proxy support, proxy error classification, and explicit impersonation boundaries",
+      "progress_rows": [
+        "Static proxy support and proxy error classification",
+        "Proxy rotator strategies",
+        "Static browser impersonation, HTTP/3, and stealthy headers boundary",
+        "Spider static, dynamic, stealth, and proxy session adapters"
+      ],
+      "coverage_status": "planned",
+      "translation_suitability": "manual_rewrite",
+      "static_reference_paths": [
+        "docs/research/python-to-go-probes/py2many/go/engines__toolbelt__proxy_rotation.go.txt",
+        "docs/research/python-to-go-probes/py2many/summary.md"
+      ],
+      "notes": [
+        "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
+      ]
+    },
+    {
+      "id": "07-browser-stealth-fetchers",
+      "title": "Browser And Stealth Fetchers",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/engines/_browsers/_base.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/_browsers/_config_tools.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/_browsers/_controllers.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/_browsers/_page.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/_browsers/_stealth.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/_browsers/_types.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/_browsers/_validators.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/toolbelt/ad_domains.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/toolbelt/fingerprints.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/engines/toolbelt/navigation.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/fetchers/chrome.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/fetchers/stealth_chrome.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "Browser fetching",
+      "behavior_atoms": [
+        "Map browser fetcher lifecycle, page operations, waits, downloads, screenshots, XHR capture, context options, resource blocking, and stealth options to explicit Go adapters",
+        "Keep stealth and challenge handling operator-visible and test-backed"
+      ],
+      "go_target": "BrowserFetcher, future browser package adapters, browser sessions, page pools, context options, and stealth option structs",
+      "progress_rows": [
+        "BrowserFetcher interface and chromedp/playwright adapter decision",
+        "Real browser adapter with JavaScript fixture",
+        "Browser sessions and page pool lifecycle",
+        "Browser wait conditions, page actions, downloads, screenshots, and XHR capture",
+        "Browser context options and resource blocking",
+        "Stealth browser controls and fingerprint options",
+        "Cloudflare challenge strategy boundary"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "manual_rewrite",
+      "static_reference_paths": [
+        "docs/research/python-to-go-probes/py2many/go/engines__toolbelt__navigation.go.txt",
+        "docs/research/python-to-go-probes/py2many/go/engines___browsers___validators.go.txt",
+        "docs/research/python-to-go-probes/py2many/summary.md"
+      ],
+      "notes": [
+        "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
+      ]
+    },
+    {
+      "id": "08-spider-core-crawler-engine",
+      "title": "Spider Core And Crawler Engine",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/spiders/engine.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/request.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/result.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/scheduler.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/session.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/spider.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "Spider runtime",
+      "behavior_atoms": [
+        "Model spider request/result/session/scheduler contracts and crawler engine execution semantics",
+        "Preserve concurrency, domain limits, download delays, lifecycle hooks, streaming, item hooks, stats, and session adapter boundaries"
+      ],
+      "go_target": "spider package request/result/session/scheduler types and crawler engine",
+      "progress_rows": [
+        "Spider request, result, scheduler, and session contracts",
+        "Crawler engine concurrency, domain limits, and download delay",
+        "Allowed domains and offsite filtering",
+        "Blocked response detection and retry hooks",
+        "Spider lifecycle hooks, streaming, item hooks, and expanded stats",
+        "Spider static, dynamic, stealth, and proxy session adapters"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "manual_rewrite"
+    },
+    {
+      "id": "09-spider-production-controls",
+      "title": "Robots, Cache, Checkpoint, And Production Crawler Controls",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/spiders/cache.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/checkpoint.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/robotstxt.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "Spider runtime",
+      "behavior_atoms": [
+        "Preserve robots.txt decisions, crawl-delay handling, development response cache behavior, and checkpoint pause/resume state"
+      ],
+      "go_target": "spider package robots manager, response cache, checkpoint store, and crawler controls",
+      "progress_rows": [
+        "Robots.txt manager and delay directives",
+        "Development response cache",
+        "Checkpoint pause and resume"
+      ],
+      "coverage_status": "planned",
+      "translation_suitability": "probe_candidate",
+      "static_reference_paths": [
+        "docs/research/python-to-go-probes/py2many/go/spiders__robotstxt.go.txt",
+        "docs/research/python-to-go-probes/py2many/go/spiders__cache.go.txt",
+        "docs/research/python-to-go-probes/py2many/go/spiders__checkpoint.go.txt",
+        "docs/research/python-to-go-probes/py2many/summary.md"
+      ],
+      "notes": [
+        "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
+      ]
+    },
+    {
+      "id": "10-link-extraction-spider-templates",
+      "title": "Link Extraction And Spider Templates",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/spiders/links.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/templates/crawler.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/spiders/templates/sitemap.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "Spider runtime",
+      "behavior_atoms": [
+        "Extract and normalize links, then expose crawler and sitemap templates as higher-level spider building blocks"
+      ],
+      "go_target": "spider package LinkExtractor plus crawler and sitemap templates",
+      "progress_rows": [
+        "LinkExtractor and crawl templates"
+      ],
+      "coverage_status": "planned",
+      "translation_suitability": "probe_candidate",
+      "static_reference_paths": [
+        "docs/research/python-to-go-probes/py2many/go/spiders__links.go.txt",
+        "docs/research/python-to-go-probes/py2many/go/spiders__templates__crawler.go.txt",
+        "docs/research/python-to-go-probes/py2many/go/spiders__templates__sitemap.go.txt",
+        "docs/research/python-to-go-probes/py2many/summary.md"
+      ],
+      "notes": [
+        "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
+      ]
+    },
+    {
+      "id": "11-cli-extract-shell",
+      "title": "CLI Extract And Shell",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/cli.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/core/_shell_signatures.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/core/shell.py",
+          "kind": "source"
+        },
+        {
+          "ref": "references/Scrapling/scrapling/core/utils/_shell.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "CLI shell and extract commands",
+      "behavior_atoms": [
+        "Expose extract commands for static, browser, stealth, markdown, and AI-targeted modes",
+        "Map Scrapling shell shortcuts and interactive concepts into scripted Go command fixtures before a full REPL"
+      ],
+      "go_target": "cmd/goscrapling and internal/cli",
+      "progress_rows": [
+        "CLI static extract GET command",
+        "CLI static extract method and request body expansion",
+        "CLI extract markdown, AI-targeted, and browser modes",
+        "CLI interactive shell command surface",
+        "Install command, Docker image, and dependency packaging docs"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "manual_rewrite",
+      "static_reference_paths": [
+        "docs/research/python-to-go-probes/py2many/go/cli.go.txt",
+        "docs/research/python-to-go-probes/py2many/go/core__shell.go.txt",
+        "docs/research/python-to-go-probes/py2many/summary.md"
+      ],
+      "notes": [
+        "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
+      ]
+    },
+    {
+      "id": "12-mcp-ai-tools",
+      "title": "MCP And AI Tools",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/scrapling/core/ai.py",
+          "kind": "source"
+        }
+      ],
+      "feature_anchor": "MCP and AI docs",
+      "behavior_atoms": [
+        "Expose deterministic MCP scraping tool schemas and no-live-LLM integration boundaries"
+      ],
+      "go_target": "integrations/mcp and future integration packages",
+      "progress_rows": [
+        "MCP scraping tool server"
+      ],
+      "coverage_status": "planned",
+      "translation_suitability": "manual_rewrite",
+      "static_reference_paths": [
+        "docs/research/python-to-go-probes/py2many/go/core__ai.go.txt",
+        "docs/research/python-to-go-probes/py2many/summary.md"
+      ],
+      "notes": [
+        "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
+      ]
+    },
+    {
+      "id": "13-tests-parser-adaptive",
+      "title": "Upstream Parser And Adaptive Tests",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/tests/parser/__init__.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/parser/test_adaptive.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/parser/test_ancestor_navigation.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/parser/test_attributes_handler.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/parser/test_find_similar_advanced.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/parser/test_general.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/parser/test_parser_advanced.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/parser/test_selectors_filter.py",
+          "kind": "test"
+        }
+      ],
+      "feature_anchor": "Parser and selector objects",
+      "go_target": "parser and adaptive test fixtures in root package",
+      "progress_rows": [
+        "Parse static HTML into queryable documents",
+        "Selector pseudo-elements, extraction helpers, and custom types",
+        "XPath selection and CSS-to-XPath translator parity",
+        "Traversal, filtering, and text search helpers",
+        "Selector generation helpers",
+        "Relocate adaptive elements with deterministic scoring"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "not_applicable"
+    },
+    {
+      "id": "14-tests-fetchers-browser",
+      "title": "Upstream Fetcher And Browser Tests",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/tests/fetchers/__init__.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/async/__init__.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/async/test_dynamic.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/async/test_dynamic_session.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/async/test_requests.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/async/test_requests_session.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/async/test_stealth.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/async/test_stealth_session.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/sync/__init__.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/sync/test_dynamic.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/sync/test_requests.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/sync/test_requests_session.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/sync/test_stealth_session.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/test_base.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/test_constants.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/test_impersonate_list.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/test_merge_request_args.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/test_pages.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/test_proxy_rotation.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/test_response_handling.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/test_utils.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/fetchers/test_validator.py",
+          "kind": "test"
+        }
+      ],
+      "feature_anchor": "Static fetcher",
+      "go_target": "fetcher, response, proxy, browser, and fake-browser fixture tests",
+      "progress_rows": [
+        "Response metadata and selector contract",
+        "Response body, text, bytes, and JSON helpers",
+        "Static Fetcher method surface over net/http",
+        "FetcherSession option merging and cookies",
+        "Redirect, timeout, retry, and error taxonomy",
+        "Static proxy support and proxy error classification",
+        "Proxy rotator strategies",
+        "BrowserFetcher interface and chromedp/playwright adapter decision",
+        "Stealth browser controls and fingerprint options"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "not_applicable"
+    },
+    {
+      "id": "15-tests-spiders",
+      "title": "Upstream Spider Tests",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/tests/spiders/__init__.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_cache.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_checkpoint.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_engine.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_force_stop_checkpoint.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_links.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_request.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_result.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_robotstxt.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_scheduler.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_session.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_sitemap.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_spider.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/spiders/test_templates.py",
+          "kind": "test"
+        }
+      ],
+      "feature_anchor": "Spider runtime",
+      "go_target": "spider package fake-fetcher and scheduler fixtures",
+      "progress_rows": [
+        "Spider request, result, scheduler, and session contracts",
+        "Crawler engine concurrency, domain limits, and download delay",
+        "Robots.txt manager and delay directives",
+        "Development response cache",
+        "Checkpoint pause and resume",
+        "LinkExtractor and crawl templates"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "not_applicable"
+    },
+    {
+      "id": "16-tests-cli-core-ai",
+      "title": "Upstream CLI, Core, Storage, And AI Tests",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/tests/__init__.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/ai/__init__.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/ai/test_ai_mcp.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/cli/__init__.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/cli/test_cli.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/cli/test_shell_functionality.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/core/__init__.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/core/test_shell_core.py",
+          "kind": "test"
+        },
+        {
+          "ref": "references/Scrapling/tests/core/test_storage_core.py",
+          "kind": "test"
+        }
+      ],
+      "feature_anchor": "CLI shell and extract commands",
+      "go_target": "internal/cli, adaptive storage tests, and integrations/mcp fixtures",
+      "progress_rows": [
+        "CLI static extract GET command",
+        "CLI static extract method and request body expansion",
+        "CLI interactive shell command surface",
+        "Save adaptive fingerprints by domain and identifier",
+        "File-backed adaptive store with compatibility migration",
+        "MCP scraping tool server"
+      ],
+      "coverage_status": "partial",
+      "translation_suitability": "not_applicable"
+    },
+    {
+      "id": "17-docs-parser-adaptive",
+      "title": "Upstream Parser And Adaptive Docs",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/docs/api-reference/custom-types.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/api-reference/selector.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/development/adaptive_storage_system.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/development/scrapling_custom_types.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/parsing/adaptive.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/parsing/main_classes.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/parsing/selection.md",
+          "kind": "doc"
+        }
+      ],
+      "feature_anchor": "Parser and selector objects",
+      "go_target": "root parser/adaptive docs, examples, and API reference",
+      "progress_rows": [
+        "Selector pseudo-elements, extraction helpers, and custom types",
+        "XPath selection and CSS-to-XPath translator parity",
+        "Adaptive selector fallback and auto-save modes",
+        "Public docs, examples, and API reference parity"
+      ],
+      "coverage_status": "planned",
+      "translation_suitability": "not_applicable"
+    },
+    {
+      "id": "18-docs-response-fetching-browser",
+      "title": "Upstream Response, Fetching, Proxy, And Browser Docs",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/docs/api-reference/fetchers.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/api-reference/proxy-rotation.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/api-reference/response.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/fetching/choosing.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/fetching/dynamic.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/fetching/static.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/fetching/stealthy.md",
+          "kind": "doc"
+        }
+      ],
+      "feature_anchor": "Static fetcher",
+      "go_target": "Response, Fetcher, FetcherSession, ProxyRotator, and browser docs",
+      "progress_rows": [
+        "Response cookies, history, meta, and captured XHR fields",
+        "Static request options: params, forms, JSON, auth, verify, and cookies",
+        "Proxy rotator strategies",
+        "Real browser adapter with JavaScript fixture",
+        "Stealth browser controls and fingerprint options",
+        "Public docs, examples, and API reference parity"
+      ],
+      "coverage_status": "planned",
+      "translation_suitability": "not_applicable"
+    },
+    {
+      "id": "19-docs-spider-runtime",
+      "title": "Upstream Spider Docs",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/docs/api-reference/spiders.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/spiders/advanced.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/spiders/architecture.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/spiders/generic-templates.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/spiders/getting-started.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/spiders/proxy-blocking.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/spiders/requests-responses.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/spiders/sessions.md",
+          "kind": "doc"
+        }
+      ],
+      "feature_anchor": "Spider runtime",
+      "go_target": "spider package docs, examples, and templates",
+      "progress_rows": [
+        "Spider request, result, scheduler, and session contracts",
+        "Crawler engine concurrency, domain limits, and download delay",
+        "Robots.txt manager and delay directives",
+        "LinkExtractor and crawl templates",
+        "Spider static, dynamic, stealth, and proxy session adapters",
+        "Public docs, examples, and API reference parity"
+      ],
+      "coverage_status": "planned",
+      "translation_suitability": "not_applicable"
+    },
+    {
+      "id": "20-docs-cli-mcp-ai",
+      "title": "Upstream CLI, MCP, And AI Docs",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/docs/ai/mcp-server.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/api-reference/mcp-server.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/cli/extract-commands.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/cli/interactive-shell.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/cli/overview.md",
+          "kind": "doc"
+        }
+      ],
+      "feature_anchor": "CLI shell and extract commands",
+      "go_target": "cmd/goscrapling, internal/cli, and integrations/mcp docs",
+      "progress_rows": [
+        "CLI static extract GET command",
+        "CLI static extract method and request body expansion",
+        "CLI extract markdown, AI-targeted, and browser modes",
+        "CLI interactive shell command surface",
+        "MCP scraping tool server",
+        "Public docs, examples, and API reference parity"
+      ],
+      "coverage_status": "planned",
+      "translation_suitability": "not_applicable"
+    },
+    {
+      "id": "21-docs-public-examples-benchmarks",
+      "title": "Upstream Public Docs, Tutorials, Donate Page, And Benchmarks",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/docs/benchmarks.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/donate.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/index.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/overview.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/tutorials/migrating_from_beautifulsoup.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/tutorials/replacing_ai.md",
+          "kind": "doc"
+        }
+      ],
+      "feature_anchor": "Install, Docker, packaging, examples, and benchmarks",
+      "go_target": "README.md, docs, example tests, benchmarks, and generated scorecards",
+      "progress_rows": [
+        "Public docs, examples, and API reference parity",
+        "Benchmarks and parity scorecard",
+        "Install command, Docker image, and dependency packaging docs"
+      ],
+      "coverage_status": "planned",
+      "translation_suitability": "not_applicable"
+    },
+    {
+      "id": "22-docs-translated-readmes",
+      "title": "Translated README Files",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/docs/README_AR.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/README_CN.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/README_DE.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/README_ES.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/README_FR.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/README_JP.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/README_KR.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/README_PT_BR.md",
+          "kind": "doc"
+        },
+        {
+          "ref": "references/Scrapling/docs/README_RU.md",
+          "kind": "doc"
+        }
+      ],
+      "coverage_status": "excluded",
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "Translated README files are support material for upstream docs and are not runtime parity requirements."
+      ]
+    },
+    {
+      "id": "23-docs-assets",
+      "title": "Docs Assets And Branding Images",
+      "upstream": [
+        {
+          "ref": "references/Scrapling/docs/assets/cover_dark.png",
+          "kind": "asset"
+        },
+        {
+          "ref": "references/Scrapling/docs/assets/cover_dark.svg",
+          "kind": "asset"
+        },
+        {
+          "ref": "references/Scrapling/docs/assets/cover_light.png",
+          "kind": "asset"
+        },
+        {
+          "ref": "references/Scrapling/docs/assets/cover_light.svg",
+          "kind": "asset"
+        },
+        {
+          "ref": "references/Scrapling/docs/assets/favicon.ico",
+          "kind": "asset"
+        },
+        {
+          "ref": "references/Scrapling/docs/assets/logo.png",
+          "kind": "asset"
+        },
+        {
+          "ref": "references/Scrapling/docs/assets/main_cover.png",
+          "kind": "asset"
+        },
+        {
+          "ref": "references/Scrapling/docs/assets/scrapling_shell_curl.png",
+          "kind": "asset"
+        },
+        {
+          "ref": "references/Scrapling/docs/assets/spider_architecture.png",
+          "kind": "asset"
+        }
+      ],
+      "coverage_status": "excluded",
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "Docs images and icons are visual support material, not Go parity behavior."
+      ]
+    }
+  ]
+}
