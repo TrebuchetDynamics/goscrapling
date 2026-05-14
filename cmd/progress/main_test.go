@@ -2,10 +2,14 @@ package main
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestRunValidate(t *testing.T) {
@@ -109,6 +113,105 @@ func TestRunMapWriteRegeneratesMarkdown(t *testing.T) {
 	}
 	if !strings.Contains(string(body), "# Upstream Scrapling App Map") {
 		t.Fatalf("generated app map markdown missing title: %s", body)
+	}
+}
+
+func TestProgressMapWriteEndToEnd(t *testing.T) {
+	root := t.TempDir()
+	writeMinimalAppMapFixture(t, root)
+	binary := buildProgressBinary(t)
+
+	result := runProgressBinary(t, binary, "--repo-root", root, "map-write")
+	if result.err != nil {
+		t.Fatalf("progress map-write failed: %v\nstdout: %s\nstderr: %s", result.err, result.stdout, result.stderr)
+	}
+	if !strings.Contains(result.stdout, "app-map: regenerated docs/content/building-goscrapling/architecture_plan/upstream-app-map.md") {
+		t.Fatalf("stdout missing map-write summary: %q", result.stdout)
+	}
+	if result.stderr != "" {
+		t.Fatalf("stderr = %q, want empty", result.stderr)
+	}
+
+	body, err := os.ReadFile(filepath.Join(root, "docs", "content", "building-goscrapling", "architecture_plan", "upstream-app-map.md"))
+	if err != nil {
+		t.Fatalf("read generated app map markdown: %v", err)
+	}
+	if got := string(body); !strings.Contains(got, "# Upstream Scrapling App Map") || !strings.Contains(got, "Parser core") {
+		t.Fatalf("generated app map markdown missing expected content: %s", got)
+	}
+}
+
+func TestProgressMapValidateErrorsExitOneEndToEnd(t *testing.T) {
+	root := t.TempDir()
+	writeMinimalAppMapFixture(t, root)
+	appMapPath := filepath.Join(root, "docs", "content", "building-goscrapling", "architecture_plan", "upstream-app-map.json")
+	body, err := os.ReadFile(appMapPath)
+	if err != nil {
+		t.Fatalf("read app map fixture: %v", err)
+	}
+	body = []byte(strings.Replace(string(body),
+		`"translation_suitability": "manual_rewrite"`,
+		`"translation_suitability": "manual_rewrite",
+      "static_reference_paths": ["../outside.txt"]`,
+		1,
+	))
+	if err := os.WriteFile(appMapPath, body, 0o644); err != nil {
+		t.Fatalf("write app map fixture: %v", err)
+	}
+
+	binary := buildProgressBinary(t)
+	result := runProgressBinary(t, binary, "--repo-root", root, "map-validate")
+	if result.err == nil {
+		t.Fatal("expected progress map-validate failure")
+	}
+	var exitErr *exec.ExitError
+	if !errors.As(result.err, &exitErr) {
+		t.Fatalf("error = %T %v, want *exec.ExitError", result.err, result.err)
+	}
+	if got := exitErr.ExitCode(); got != 1 {
+		t.Fatalf("exit code = %d, want 1\nstdout: %s\nstderr: %s", got, result.stdout, result.stderr)
+	}
+	if !strings.Contains(result.stderr, "static reference path escapes repo root ../outside.txt") {
+		t.Fatalf("stderr missing validation message: %q", result.stderr)
+	}
+}
+
+type commandResult struct {
+	stdout string
+	stderr string
+	err    error
+}
+
+func buildProgressBinary(t *testing.T) string {
+	t.Helper()
+	binary := filepath.Join(t.TempDir(), "progress")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	t.Cleanup(cancel)
+
+	cmd := exec.CommandContext(ctx, "go", "build", "-o", binary, ".")
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("build progress binary: %v\nstdout: %s\nstderr: %s", err, stdout.String(), stderr.String())
+	}
+	return binary
+}
+
+func runProgressBinary(t *testing.T, binary string, args ...string) commandResult {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	t.Cleanup(cancel)
+
+	cmd := exec.CommandContext(ctx, binary, args...)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	return commandResult{
+		stdout: stdout.String(),
+		stderr: stderr.String(),
+		err:    err,
 	}
 }
 

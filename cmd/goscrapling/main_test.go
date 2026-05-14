@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -53,6 +54,47 @@ func TestGoscraplingExtractGetEndToEnd(t *testing.T) {
 	}
 	if result.stderr != "" {
 		t.Fatalf("stderr = %q, want empty", result.stderr)
+	}
+}
+
+func TestGoscraplingExtractPostJSONEndToEnd(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Fatalf("method = %s, want POST", r.Method)
+		}
+		if got := r.URL.Query().Get("page"); got != "2" {
+			t.Fatalf("query page = %q, want 2", got)
+		}
+		if got := r.Header.Get("Content-Type"); got != "application/json" {
+			t.Fatalf("content-type = %q, want application/json", got)
+		}
+		requestBody, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("read request body: %v", err)
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write([]byte(`<html><body><pre id="payload">` + string(requestBody) + `</pre></body></html>`))
+	}))
+	t.Cleanup(server.Close)
+
+	binary := buildGoscraplingBinary(t)
+	outputPath := filepath.Join(t.TempDir(), "payload.txt")
+	result := runGoscraplingBinary(t, binary,
+		"extract", "post", server.URL+"/submit", outputPath,
+		"--json", `{"name":"camp-mug"}`,
+		"--params", "page=2",
+		"--css-selector", "#payload",
+	)
+	if result.err != nil {
+		t.Fatalf("goscrapling extract post failed: %v\nstdout: %s\nstderr: %s", result.err, result.stdout, result.stderr)
+	}
+
+	body, err := os.ReadFile(outputPath)
+	if err != nil {
+		t.Fatalf("read output: %v", err)
+	}
+	if got := string(body); got != `{"name":"camp-mug"}` {
+		t.Fatalf("output text = %q", got)
 	}
 }
 
