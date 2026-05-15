@@ -4,22 +4,7 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Adaptive selector fallback and auto-save modes
-
-- Phase: `phase-0-parser-adaptive / adaptive-storage`
-- Priority: `P0`
-- Owner: `parser`
-- Size: `medium`
-- Contract status: `draft`
-- Contract: Port Scrapling adaptive selector ergonomics: auto_save on CSS/XPath queries, adaptive lookup by identifier, retrieve helper, percentage threshold, and adaptive_domain override.
-- Ready when: Save and relocate adaptive rows are validated.
-- Write scope: `document.go`, `adaptive_stub.go`, `adaptive_selector_test.go`
-- Test commands: `go test ./... -run TestAdaptiveSelectorModes -count=1`
-- Acceptance: Fixtures prove auto-save, adaptive fallback, manual retrieve, threshold control, and domain override behavior.
-- Done signal: Adaptive selector mode tests pass.
-- Source refs: `references/Scrapling/scrapling/parser.py`, `references/Scrapling/docs/parsing/adaptive.md`
-
-## 2. Selector pseudo-elements, extraction helpers, and custom types
+## 1. Selector pseudo-elements, extraction helpers, and custom types
 
 - Phase: `phase-0-parser-adaptive / static-document`
 - Priority: `P0`
@@ -34,7 +19,7 @@ non-umbrella, and builder-ready.
 - Done signal: Selector extraction helper tests pass.
 - Source refs: `references/Scrapling/scrapling/parser.py`, `references/Scrapling/scrapling/core/custom_types.py`, `references/Scrapling/docs/parsing/selection.md`, `references/Scrapling/docs/api-reference/custom-types.md`
 
-## 3. Adaptive fingerprint parity review and diagnostics
+## 2. Adaptive fingerprint parity review and diagnostics
 
 - Phase: `phase-0-parser-adaptive / adaptive-storage`
 - Priority: `P1`
@@ -49,7 +34,7 @@ non-umbrella, and builder-ready.
 - Done signal: Adaptive diagnostics tests pass.
 - Source refs: `references/Scrapling/scrapling/parser.py`, `references/Scrapling/scrapling/core/utils/_utils.py`, `references/Scrapling/docs/development/adaptive_storage_system.md`
 
-## 4. Response cookies, history, meta, and captured XHR fields
+## 3. Response cookies, history, meta, and captured XHR fields
 
 - Phase: `phase-1-response-fetcher / response`
 - Priority: `P1`
@@ -64,7 +49,7 @@ non-umbrella, and builder-ready.
 - Done signal: Response extended metadata tests pass.
 - Source refs: `references/Scrapling/scrapling/engines/toolbelt/custom.py`, `references/Scrapling/scrapling/engines/toolbelt/convertor.py`, `references/Scrapling/docs/api-reference/response.md`
 
-## 5. Static proxy support and proxy error classification
+## 4. Static proxy support and proxy error classification
 
 - Phase: `phase-1-response-fetcher / static-fetcher`
 - Priority: `P1`
@@ -79,7 +64,7 @@ non-umbrella, and builder-ready.
 - Done signal: Static proxy support tests pass.
 - Source refs: `references/Scrapling/scrapling/engines/static.py`, `references/Scrapling/scrapling/engines/toolbelt/navigation.py`, `references/Scrapling/docs/fetching/static.md`
 
-## 6. SQLite adaptive store parity
+## 5. SQLite adaptive store parity
 
 - Phase: `phase-2-storage / persistent-store`
 - Priority: `P1`
@@ -94,7 +79,7 @@ non-umbrella, and builder-ready.
 - Done signal: SQLite store tests pass with temp databases.
 - Source refs: `references/Scrapling/scrapling/core/storage.py`, `references/Scrapling/docs/development/adaptive_storage_system.md`
 
-## 7. Real browser adapter with JavaScript fixture
+## 6. Real browser adapter with JavaScript fixture
 
 - Phase: `phase-3-browser / browser-fetcher`
 - Priority: `P1`
@@ -109,7 +94,7 @@ non-umbrella, and builder-ready.
 - Done signal: Real browser adapter tests pass or are skipped only with documented local dependency gating.
 - Source refs: `references/Scrapling/scrapling/fetchers/chrome.py`, `references/Scrapling/scrapling/engines/_browsers/_controllers.py`, `references/Scrapling/docs/fetching/dynamic.md`
 
-## 8. Allowed domains and offsite filtering
+## 7. Allowed domains and offsite filtering
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -124,7 +109,7 @@ non-umbrella, and builder-ready.
 - Done signal: Allowed-domain tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/engine.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 9. Crawler engine concurrency, domain limits, and download delay
+## 8. Crawler engine concurrency, domain limits, and download delay
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -139,7 +124,7 @@ non-umbrella, and builder-ready.
 - Done signal: Spider engine concurrency tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/engine.py`, `references/Scrapling/docs/spiders/architecture.md`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 10. Development response cache
+## 9. Development response cache
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -154,7 +139,7 @@ non-umbrella, and builder-ready.
 - Done signal: Spider response cache tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/cache.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 11. Gormes web-search tool adapter
+## 10. Gormes web-search tool adapter
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P2`
@@ -170,7 +155,7 @@ non-umbrella, and builder-ready.
 - Done signal: Integration tests pass without reaching the network, The Gormes boundary docs link back to the goscrapling strategy page.
 - Source refs: `README.md`, `docs/research/go-scraping-oss-survey.md`, `docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md`
 
-## 12. CLI interactive shell command surface
+## 11. CLI interactive shell command surface
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
@@ -186,7 +171,7 @@ non-umbrella, and builder-ready.
 - Done signal: Shell command tests pass from local fixtures.
 - Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/interactive-shell.md`, `references/Scrapling/scrapling/core/shell.py`, `references/Scrapling/scrapling/core/_shell_signatures.py`
 
-## 13. Public docs, examples, and API reference parity
+## 12. Public docs, examples, and API reference parity
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`

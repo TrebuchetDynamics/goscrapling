@@ -272,11 +272,11 @@
               ]
             },
             {
-              "name": "Adaptive selector fallback and auto-save modes",
-              "status": "planned",
+              "name": "CSS adaptive selector fallback and auto-save modes",
+              "status": "complete",
               "priority": "P0",
-              "contract": "Port Scrapling adaptive selector ergonomics: auto_save on CSS/XPath queries, adaptive lookup by identifier, retrieve helper, percentage threshold, and adaptive_domain override.",
-              "contract_status": "draft",
+              "contract": "Port the CSS half of Scrapling adaptive selector ergonomics: auto_save on CSS queries, selector-as-default adaptive keys, adaptive lookup by identifier, retrieve helper, percentage threshold, combined-selector key splitting, and adaptive_domain override.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "parser",
               "source_refs": [
@@ -295,10 +295,10 @@
                 "go test ./... -run TestAdaptiveSelectorModes -count=1"
               ],
               "acceptance": [
-                "Fixtures prove auto-save, adaptive fallback, manual retrieve, threshold control, and domain override behavior."
+                "Fixtures prove Document.SelectCSS auto-save, selector-as-default keys, explicit identifiers, combined-selector key splitting, adaptive fallback, manual retrieve, threshold control, and domain override behavior."
               ],
               "done_signal": [
-                "Adaptive selector mode tests pass."
+                "CSS adaptive selector mode tests pass."
               ]
             },
             {

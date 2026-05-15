@@ -2,16 +2,28 @@ package goscrapling
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"net"
+	"net/url"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/andybalholm/cascadia"
 	"golang.org/x/net/html"
 )
 
 type ParseOptions struct {
 	URL   string
 	Store Store
+}
+
+type SelectorOptions struct {
+	Identifier string
+	Adaptive   bool
+	AutoSave   bool
+	Percentage float64
+	Domain     string
 }
 
 type Document struct {
@@ -52,6 +64,214 @@ func (d *Document) CSS(selector string) Selection {
 	return Selection{elements: elements}
 }
 
+func (d *Document) SelectCSS(ctx context.Context, selector string, opts SelectorOptions) (Selection, error) {
+	if d == nil || d.query == nil {
+		return Selection{}, nil
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	selector = strings.TrimSpace(selector)
+	minScore, err := minScoreFromPercentage(opts.Percentage)
+	if err != nil {
+		return Selection{}, err
+	}
+
+	branches := selectorBranches(selector, opts.Identifier)
+	elements := make([]*Element, 0)
+	for _, branch := range branches {
+		selection, err := d.selectCSSBranch(ctx, branch, opts, minScore)
+		if err != nil {
+			return Selection{}, err
+		}
+		elements = append(elements, selection.elements...)
+	}
+
+	return Selection{elements: elements}, nil
+}
+
+func (d *Document) selectCSSBranch(ctx context.Context, selector string, opts SelectorOptions, minScore float64) (Selection, error) {
+	matcher, err := cascadia.Compile(selector)
+	if err != nil {
+		return Selection{}, fmt.Errorf("%w %q: %v", ErrInvalidSelector, selector, err)
+	}
+
+	key := d.selectorKey(selector, opts)
+	selection := d.cssWithMatcher(matcher)
+	if selection.Len() > 0 {
+		if opts.AutoSave {
+			if d.store == nil {
+				return Selection{}, ErrMissingStore
+			}
+			first, _ := selection.First()
+			if err := d.store.Save(ctx, key, fingerprintNode(first.node)); err != nil {
+				return Selection{}, err
+			}
+		}
+		return selection, nil
+	}
+
+	if !opts.Adaptive {
+		if opts.AutoSave && d.store == nil {
+			return Selection{}, ErrMissingStore
+		}
+		return Selection{}, nil
+	}
+	if d.store == nil {
+		return Selection{}, ErrMissingStore
+	}
+
+	match, ok, err := d.relocateWithKey(ctx, key, minScore)
+	if err != nil || !ok {
+		return Selection{}, err
+	}
+
+	if opts.AutoSave {
+		if err := d.store.Save(ctx, key, fingerprintNode(match.Element.node)); err != nil {
+			return Selection{}, err
+		}
+	}
+	return Selection{elements: []*Element{match.Element}}, nil
+}
+
+func (d *Document) cssWithMatcher(matcher cascadia.Selector) Selection {
+	var elements []*Element
+	d.query.FindMatcher(matcher).Each(func(_ int, selection *goquery.Selection) {
+		for _, node := range selection.Nodes {
+			elements = append(elements, &Element{doc: d, node: node})
+		}
+	})
+	return Selection{elements: elements}
+}
+
+func selectorBranches(selector string, identifier string) []string {
+	identifier = strings.TrimSpace(identifier)
+	if identifier != "" {
+		return []string{selector}
+	}
+
+	parts := splitTopLevelCommas(selector)
+	branches := make([]string, 0, len(parts))
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			branches = append(branches, part)
+		}
+	}
+	if len(branches) == 0 {
+		return []string{selector}
+	}
+	return branches
+}
+
+func splitTopLevelCommas(selector string) []string {
+	var parts []string
+	var builder strings.Builder
+	var quote rune
+	parenDepth := 0
+	bracketDepth := 0
+	escaped := false
+
+	for _, r := range selector {
+		if escaped {
+			builder.WriteRune(r)
+			escaped = false
+			continue
+		}
+		if r == '\\' {
+			builder.WriteRune(r)
+			escaped = true
+			continue
+		}
+		if quote != 0 {
+			builder.WriteRune(r)
+			if r == quote {
+				quote = 0
+			}
+			continue
+		}
+
+		switch r {
+		case '\'', '"':
+			quote = r
+			builder.WriteRune(r)
+		case '(':
+			parenDepth++
+			builder.WriteRune(r)
+		case ')':
+			if parenDepth > 0 {
+				parenDepth--
+			}
+			builder.WriteRune(r)
+		case '[':
+			bracketDepth++
+			builder.WriteRune(r)
+		case ']':
+			if bracketDepth > 0 {
+				bracketDepth--
+			}
+			builder.WriteRune(r)
+		case ',':
+			if parenDepth == 0 && bracketDepth == 0 {
+				parts = append(parts, builder.String())
+				builder.Reset()
+				continue
+			}
+			builder.WriteRune(r)
+		default:
+			builder.WriteRune(r)
+		}
+	}
+
+	parts = append(parts, builder.String())
+	return parts
+}
+
+func minScoreFromPercentage(percentage float64) (float64, error) {
+	if percentage == 0 {
+		return defaultMinScore, nil
+	}
+	if percentage < 0 || percentage > 100 {
+		return 0, fmt.Errorf("%w: %v", ErrInvalidPercentage, percentage)
+	}
+	return percentage / 100, nil
+}
+
+func (d *Document) selectorKey(selector string, opts SelectorOptions) Key {
+	identifier := strings.TrimSpace(opts.Identifier)
+	if identifier == "" {
+		identifier = selector
+	}
+	return Key{
+		Domain:     selectorDomain(d.domain, opts.Domain),
+		Identifier: identifier,
+	}
+}
+
+func selectorDomain(defaultValue string, override string) string {
+	override = strings.TrimSpace(override)
+	if override == "" {
+		return defaultValue
+	}
+
+	if parsed, err := url.Parse(override); err == nil && parsed.Host != "" {
+		host := strings.TrimSpace(strings.ToLower(parsed.Hostname()))
+		if host != "" {
+			return host
+		}
+	}
+
+	if host, _, err := net.SplitHostPort(override); err == nil {
+		override = host
+	}
+	override = strings.TrimSpace(strings.ToLower(override))
+	if override == "" {
+		return defaultDomain
+	}
+	return override
+}
+
 func (d *Document) Save(ctx context.Context, element *Element, identifier string) error {
 	if d == nil || d.store == nil {
 		return ErrMissingStore
@@ -68,6 +288,14 @@ func (d *Document) Save(ctx context.Context, element *Element, identifier string
 	return d.store.Save(ctx, Key{Domain: d.domain, Identifier: identifier}, fingerprintNode(element.node))
 }
 
+func (d *Document) Retrieve(ctx context.Context, identifier string) (*Element, bool, error) {
+	match, ok, err := d.Relocate(ctx, identifier)
+	if err != nil || !ok {
+		return nil, ok, err
+	}
+	return match.Element, true, nil
+}
+
 func (d *Document) Relocate(ctx context.Context, identifier string) (Match, bool, error) {
 	if d == nil || d.store == nil {
 		return Match{}, false, ErrMissingStore
@@ -78,18 +306,41 @@ func (d *Document) Relocate(ctx context.Context, identifier string) (Match, bool
 		return Match{}, false, ErrEmptyIdentifier
 	}
 
-	target, ok, err := d.store.Load(ctx, Key{Domain: d.domain, Identifier: identifier})
+	return d.relocateWithKey(ctx, Key{Domain: d.domain, Identifier: identifier}, defaultMinScore)
+}
+
+func (d *Document) relocateWithKey(ctx context.Context, key Key, minScore float64) (Match, bool, error) {
+	if d == nil || d.store == nil {
+		return Match{}, false, ErrMissingStore
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	key.Identifier = strings.TrimSpace(key.Identifier)
+	if key.Identifier == "" {
+		return Match{}, false, ErrEmptyIdentifier
+	}
+	key.Domain = strings.TrimSpace(key.Domain)
+	if key.Domain == "" {
+		key.Domain = defaultDomain
+	}
+
+	target, ok, err := d.store.Load(ctx, key)
 	if err != nil || !ok {
 		return Match{}, false, err
 	}
 
 	var best Match
 	found := false
+	if d.query == nil {
+		return Match{}, false, nil
+	}
 	d.query.Find("*").Each(func(_ int, selection *goquery.Selection) {
 		for _, node := range selection.Nodes {
 			candidate := &Element{doc: d, node: node}
 			score := scoreFingerprint(fingerprintNode(node), target)
-			if score < defaultMinScore {
+			if score < minScore {
 				continue
 			}
 			if !found || score > best.Score {
