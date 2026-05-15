@@ -3,6 +3,7 @@ package spider
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/TrebuchetDynamics/goscrapling"
 )
@@ -25,6 +26,7 @@ type SessionOptions struct {
 }
 
 type SessionManager struct {
+	mu        sync.Mutex
 	sessions  map[string]Session
 	lazy      map[string]bool
 	started   map[string]bool
@@ -40,6 +42,9 @@ func NewSessionManager() *SessionManager {
 }
 
 func (m *SessionManager) Add(id string, session Session, opts SessionOptions) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	if id == "" {
 		return fmt.Errorf("session id is required")
 	}
@@ -59,11 +64,14 @@ func (m *SessionManager) Add(id string, session Session, opts SessionOptions) er
 }
 
 func (m *SessionManager) Start(ctx context.Context) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	for id, session := range m.sessions {
 		if m.lazy[id] {
 			continue
 		}
-		if err := m.startSession(ctx, id, session); err != nil {
+		if err := m.startSessionLocked(ctx, id, session); err != nil {
 			return err
 		}
 	}
@@ -71,6 +79,9 @@ func (m *SessionManager) Start(ctx context.Context) error {
 }
 
 func (m *SessionManager) Close(ctx context.Context) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	var firstErr error
 	for id, session := range m.sessions {
 		if !m.started[id] {
@@ -87,6 +98,7 @@ func (m *SessionManager) Close(ctx context.Context) error {
 }
 
 func (m *SessionManager) Fetch(ctx context.Context, request Request) (Response, error) {
+	m.mu.Lock()
 	id := request.SID
 	if id == "" {
 		id = m.defaultID
@@ -94,11 +106,14 @@ func (m *SessionManager) Fetch(ctx context.Context, request Request) (Response, 
 	}
 	session, ok := m.sessions[id]
 	if !ok {
+		m.mu.Unlock()
 		return Response{}, fmt.Errorf("session %q not found", id)
 	}
-	if err := m.startSession(ctx, id, session); err != nil {
+	if err := m.startSessionLocked(ctx, id, session); err != nil {
+		m.mu.Unlock()
 		return Response{}, err
 	}
+	m.mu.Unlock()
 
 	rawResponse, err := session.Fetch(ctx, request.clone())
 	if err != nil {
@@ -111,7 +126,7 @@ func (m *SessionManager) Fetch(ctx context.Context, request Request) (Response, 
 	}, nil
 }
 
-func (m *SessionManager) startSession(ctx context.Context, id string, session Session) error {
+func (m *SessionManager) startSessionLocked(ctx context.Context, id string, session Session) error {
 	if m.started[id] {
 		return nil
 	}

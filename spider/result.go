@@ -1,5 +1,7 @@
 package spider
 
+import "time"
+
 type Output struct {
 	Item    map[string]any
 	Request *Request
@@ -21,10 +23,13 @@ type Result struct {
 }
 
 type Stats struct {
-	Requests        int
-	Items           int
-	Skipped         int
-	Failed          int
-	OffsiteRequests int
-	Sessions        map[string]int
+	Requests                    int
+	Items                       int
+	Skipped                     int
+	Failed                      int
+	OffsiteRequests             int
+	ConcurrentRequests          int
+	ConcurrentRequestsPerDomain int
+	DownloadDelay               time.Duration
+	Sessions                    map[string]int
 }

@@ -361,7 +361,7 @@
         "Model spider request/result/session/scheduler contracts and crawler engine execution semantics",
         "Preserve concurrency, domain limits, download delays, lifecycle hooks, streaming, item hooks, stats, and session adapter boundaries"
       ],
-      "go_target": "spider package request/result/session/scheduler types and crawler engine",
+      "go_target": "spider package request/result/session/scheduler types, allowed-domain filtering, and concurrent crawler engine controls",
       "progress_rows": [
         "Spider request, result, scheduler, and session contracts",
         "Crawler engine concurrency, domain limits, and download delay",

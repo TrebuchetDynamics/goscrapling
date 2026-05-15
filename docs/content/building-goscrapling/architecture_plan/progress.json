@@ -1105,16 +1105,20 @@
             },
             {
               "name": "Crawler engine concurrency, domain limits, and download delay",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Add the crawler engine loop controls for global concurrency, per-domain concurrency, backpressure, context cancellation, and download delays.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "spider",
               "source_refs": [
                 "references/Scrapling/scrapling/spiders/engine.py",
                 "references/Scrapling/docs/spiders/architecture.md",
-                "references/Scrapling/docs/spiders/advanced.md"
+                "references/Scrapling/docs/spiders/advanced.md",
+                "spider/crawler.go",
+                "spider/session.go",
+                "spider/result.go",
+                "spider/engine_concurrency_test.go"
               ],
               "ready_when": [
                 "Spider core request/result/session/scheduler contracts are validated."
@@ -1127,10 +1131,10 @@
                 "go test ./... -run TestSpiderEngineConcurrency -count=1"
               ],
               "acceptance": [
-                "Fake sessions prove bounded concurrency, per-domain limits, cancellation, and deterministic delay behavior."
+                "Fake sessions prove bounded global active fetches, per-domain active fetch limits, scheduler backpressure, deterministic download delay calls, and context cancellation before fetch."
               ],
               "done_signal": [
-                "Spider engine concurrency tests pass."
+                "TestSpiderEngineConcurrency passes with fake sessions and no live network access."
               ]
             },
             {

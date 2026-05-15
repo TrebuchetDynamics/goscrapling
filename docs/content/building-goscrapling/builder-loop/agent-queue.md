@@ -4,22 +4,7 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Crawler engine concurrency, domain limits, and download delay
-
-- Phase: `phase-4-spider / spider-core`
-- Priority: `P1`
-- Owner: `spider`
-- Size: `medium`
-- Contract status: `draft`
-- Contract: Add the crawler engine loop controls for global concurrency, per-domain concurrency, backpressure, context cancellation, and download delays.
-- Ready when: Spider core request/result/session/scheduler contracts are validated.
-- Write scope: `spider/`, `testdata/spider/`
-- Test commands: `go test ./... -run TestSpiderEngineConcurrency -count=1`
-- Acceptance: Fake sessions prove bounded concurrency, per-domain limits, cancellation, and deterministic delay behavior.
-- Done signal: Spider engine concurrency tests pass.
-- Source refs: `references/Scrapling/scrapling/spiders/engine.py`, `references/Scrapling/docs/spiders/architecture.md`, `references/Scrapling/docs/spiders/advanced.md`
-
-## 2. Development response cache
+## 1. Development response cache
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -34,7 +19,7 @@ non-umbrella, and builder-ready.
 - Done signal: Spider response cache tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/cache.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 3. Gormes web-search tool adapter
+## 2. Gormes web-search tool adapter
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P2`
@@ -50,7 +35,7 @@ non-umbrella, and builder-ready.
 - Done signal: Integration tests pass without reaching the network, The Gormes boundary docs link back to the goscrapling strategy page.
 - Source refs: `README.md`, `docs/research/go-scraping-oss-survey.md`, `docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md`
 
-## 4. CLI interactive shell command surface
+## 3. CLI interactive shell command surface
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
@@ -66,7 +51,7 @@ non-umbrella, and builder-ready.
 - Done signal: Shell command tests pass from local fixtures.
 - Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/interactive-shell.md`, `references/Scrapling/scrapling/core/shell.py`, `references/Scrapling/scrapling/core/_shell_signatures.py`
 
-## 5. Public docs, examples, and API reference parity
+## 4. Public docs, examples, and API reference parity
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`

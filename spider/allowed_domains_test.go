@@ -3,6 +3,7 @@ package spider_test
 import (
 	"context"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/TrebuchetDynamics/goscrapling/spider"
@@ -80,6 +81,8 @@ func TestSpiderAllowedDomains(t *testing.T) {
 		"https://example.com/detail",
 		"https://blog.example.com/detail",
 	}
+	sort.Strings(gotFetchedURLs)
+	sort.Strings(wantFetchedURLs)
 	if !reflect.DeepEqual(gotFetchedURLs, wantFetchedURLs) {
 		t.Fatalf("fetched URLs mismatch:\ngot  %#v\nwant %#v", gotFetchedURLs, wantFetchedURLs)
 	}
@@ -93,13 +96,17 @@ func TestSpiderAllowedDomains(t *testing.T) {
 		t.Fatalf("skipped = %d, want 0 duplicate skips", result.Stats.Skipped)
 	}
 
-	gotItems := make([]map[string]any, len(result.Items))
-	copy(gotItems, result.Items)
-	wantItems := []map[string]any{
-		{"url": "https://example.com/detail"},
-		{"url": "https://blog.example.com/detail"},
+	gotItemURLs := make([]string, 0, len(result.Items))
+	for _, item := range result.Items {
+		gotItemURLs = append(gotItemURLs, item["url"].(string))
 	}
-	if !reflect.DeepEqual(gotItems, wantItems) {
-		t.Fatalf("items mismatch:\ngot  %#v\nwant %#v", gotItems, wantItems)
+	wantItemURLs := []string{
+		"https://example.com/detail",
+		"https://blog.example.com/detail",
+	}
+	sort.Strings(gotItemURLs)
+	sort.Strings(wantItemURLs)
+	if !reflect.DeepEqual(gotItemURLs, wantItemURLs) {
+		t.Fatalf("item URLs mismatch:\ngot  %#v\nwant %#v", gotItemURLs, wantItemURLs)
 	}
 }

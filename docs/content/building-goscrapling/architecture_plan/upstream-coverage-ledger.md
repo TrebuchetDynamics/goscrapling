@@ -62,7 +62,7 @@ core source-class names below when the local upstream checkout exists.
 | `scrapling/fetchers/requests.py` | Static fetcher | `Fetcher`, `FetcherSession` | Phase 1 | partial |
 | `scrapling/fetchers/chrome.py` | Browser fetching | `BrowserFetcher`, `ChromedpBrowserEngine` | Phase 3 | partial |
 | `scrapling/fetchers/stealth_chrome.py` | Browser fetching, stealth controls | `browser` package plus explicit stealth options | Phase 3 future split | planned |
-| `scrapling/spiders/**` | Spider runtime | `spider` package request/result/session/scheduler contracts and allowed-domain filtering | Phase 4 | partial |
+| `scrapling/spiders/**` | Spider runtime | `spider` package request/result/session/scheduler contracts, allowed-domain filtering, and crawler concurrency controls | Phase 4 | partial |
 | `scrapling/cli.py` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | partial |
 | `Dockerfile`, `pyproject.toml`, `server.json` | Install, Docker, packaging, examples, and benchmarks | `cmd/goscrapling`, docs, integration metadata | Phase 5 | planned |
 | `scrapling/py.typed` | Packaging/type marker | none | Coverage ledger | excluded |
@@ -76,7 +76,7 @@ core source-class names below when the local upstream checkout exists.
 | `docs/api-reference/response.md` | Response object | `Response` | Phase 1 | partial |
 | `docs/api-reference/fetchers.md`, `docs/fetching/**` | Fetchers and browser fetching | `Fetcher`, `FetcherSession`, `browser` | Phase 1, Phase 3 | partial |
 | `docs/api-reference/proxy-rotation.md` | Proxy rotation | `ProxyRotator`, fetcher/browser/spider proxy options | Phase 1, Phase 4 | planned |
-| `docs/spiders/**` | Spider runtime | `spider` package with fixture-backed core and allowed-domain filtering | Phase 4 | partial |
+| `docs/spiders/**` | Spider runtime | `spider` package with fixture-backed core, allowed-domain filtering, and concurrency/domain-delay controls | Phase 4 | partial |
 | `docs/cli/**` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | partial |
 | `docs/ai/mcp-server.md`, `docs/api-reference/mcp-server.md` | MCP and AI integration | `integrations/mcp` | Phase 5 | planned |
 | `docs/benchmarks.md`, `docs/tutorials/**`, `docs/overview.md` | Install, Docker, packaging, examples, and benchmarks | docs, examples, benchmarks | Phase 5 | planned |

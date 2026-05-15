@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/TrebuchetDynamics/goscrapling"
@@ -164,6 +165,7 @@ func TestSpider(t *testing.T) {
 }
 
 type fakeSession struct {
+	mu        sync.Mutex
 	responses map[string]string
 	requests  []spider.Request
 	starts    int
@@ -171,17 +173,24 @@ type fakeSession struct {
 }
 
 func (s *fakeSession) Start(context.Context) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.starts++
 	return nil
 }
 
 func (s *fakeSession) Close(context.Context) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.closes++
 	return nil
 }
 
 func (s *fakeSession) Fetch(_ context.Context, request spider.Request) (*goscrapling.Response, error) {
+	s.mu.Lock()
 	s.requests = append(s.requests, request)
+	s.mu.Unlock()
+
 	body := s.responses[request.URL]
 	return goscrapling.NewResponse(strings.NewReader(body), goscrapling.ResponseOptions{
 		URL:        request.URL,
