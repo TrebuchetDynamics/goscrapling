@@ -58,6 +58,7 @@ func cloneFingerprint(fp Fingerprint) Fingerprint {
 		ParentText:       fp.ParentText,
 		ParentAttributes: cloneStringMap(fp.ParentAttributes),
 		SiblingTags:      append([]string(nil), fp.SiblingTags...),
+		ChildrenTags:     append([]string(nil), fp.ChildrenTags...),
 		PathTags:         append([]string(nil), fp.PathTags...),
 	}
 }

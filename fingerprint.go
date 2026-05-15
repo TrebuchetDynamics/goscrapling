@@ -14,6 +14,7 @@ type Fingerprint struct {
 	ParentText       string
 	ParentAttributes map[string]string
 	SiblingTags      []string
+	ChildrenTags     []string
 	PathTags         []string
 }
 
@@ -28,6 +29,7 @@ func fingerprintNode(node *html.Node) Fingerprint {
 		Attributes:       nodeAttributes(node),
 		ParentAttributes: map[string]string{},
 		SiblingTags:      siblingTags(node),
+		ChildrenTags:     childrenTags(node),
 		PathTags:         pathTags(node),
 	}
 
@@ -86,6 +88,21 @@ func siblingTags(node *html.Node) []string {
 		tags = append(tags, tagName(sibling))
 	}
 
+	return tags
+}
+
+func childrenTags(node *html.Node) []string {
+	if node == nil {
+		return nil
+	}
+
+	var tags []string
+	for child := node.FirstChild; child != nil; child = child.NextSibling {
+		if child.Type != html.ElementNode {
+			continue
+		}
+		tags = append(tags, tagName(child))
+	}
 	return tags
 }
 

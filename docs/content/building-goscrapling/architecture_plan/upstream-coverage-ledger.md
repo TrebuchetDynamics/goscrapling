@@ -52,7 +52,7 @@ core source-class names below when the local upstream checkout exists.
 | `scrapling/core/custom_types.py`, `scrapling/core/_types.py` | Parser and selector objects | root package `TextHandler`, `TextHandlers`, and `AttributesHandler` behavior | Phase 0 | partial |
 | `scrapling/core/translator.py` | Parser and selector objects | XPath/CSS translator helpers | Phase 0 | planned |
 | `scrapling/core/shell.py`, `scrapling/core/_shell_signatures.py`, `scrapling/core/utils/_shell.py` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | planned |
-| `scrapling/core/utils/_utils.py` | Parser and adaptive storage | parser/adaptive helper behavior | Phase 0 | planned |
+| `scrapling/core/utils/_utils.py` | Parser and adaptive storage | adaptive fingerprint field mapping and relocation diagnostics | Phase 0 | partial |
 | `scrapling/core/ai.py` | MCP and AI docs | `integrations/mcp` | Phase 5 | planned |
 | `scrapling/engines/static.py` | Response object, static fetcher | `Response`, `Fetcher`, `FetcherSession` | Phase 1 | partial |
 | `scrapling/engines/_browsers/**` | Browser fetching | `BrowserFetcher`, future browser engine adapters and sessions | Phase 3 | partial |

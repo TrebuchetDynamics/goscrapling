@@ -303,10 +303,10 @@
             },
             {
               "name": "Adaptive fingerprint parity review and diagnostics",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Compare Go fingerprints/scoring with upstream adaptive behavior and expose diagnostics for missed or low-confidence relocations.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "parser",
               "source_refs": [
@@ -327,10 +327,10 @@
                 "go test ./... -run TestAdaptiveDiagnostics -count=1"
               ],
               "acceptance": [
-                "Fixtures cover score explanations, threshold failures, and fingerprint fields documented against upstream behavior."
+                "Fixtures cover score explanations, threshold failures, upstream fingerprint fields including children, and diagnostic failure reasons."
               ],
               "done_signal": [
-                "Adaptive diagnostics tests pass."
+                "TestAdaptiveDiagnostics passes."
               ]
             }
           ]

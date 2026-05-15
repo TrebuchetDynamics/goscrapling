@@ -7,24 +7,53 @@ import (
 
 const defaultMinScore = 0.65
 
+type ScoreComponent struct {
+	Name         string
+	Weight       float64
+	Score        float64
+	Contribution float64
+}
+
 func scoreFingerprint(candidate Fingerprint, target Fingerprint) float64 {
+	components := scoreFingerprintComponents(candidate, target)
+	var score float64
+	for _, component := range components {
+		score += component.Contribution
+	}
+	return score
+}
+
+func scoreFingerprintComponents(candidate Fingerprint, target Fingerprint) []ScoreComponent {
 	const (
-		tagWeight       = 0.24
-		textWeight      = 0.24
-		attrNameWeight  = 0.12
-		attrValueWeight = 0.16
+		tagWeight       = 0.22
+		textWeight      = 0.22
+		attrNameWeight  = 0.11
+		attrValueWeight = 0.14
 		parentWeight    = 0.12
 		siblingWeight   = 0.05
 		pathWeight      = 0.07
+		childrenWeight  = 0.07
 	)
 
-	return exactScore(candidate.Tag, target.Tag)*tagWeight +
-		stringSimilarity(candidate.Text, target.Text)*textWeight +
-		mapKeySimilarity(candidate.Attributes, target.Attributes)*attrNameWeight +
-		attrValueSimilarity(candidate.Attributes, target.Attributes)*attrValueWeight +
-		parentSimilarity(candidate, target)*parentWeight +
-		sequenceSimilarity(candidate.SiblingTags, target.SiblingTags)*siblingWeight +
-		sequenceSimilarity(candidate.PathTags, target.PathTags)*pathWeight
+	return []ScoreComponent{
+		newScoreComponent("tag", tagWeight, exactScore(candidate.Tag, target.Tag)),
+		newScoreComponent("text", textWeight, stringSimilarity(candidate.Text, target.Text)),
+		newScoreComponent("attributes.keys", attrNameWeight, mapKeySimilarity(candidate.Attributes, target.Attributes)),
+		newScoreComponent("attributes.values", attrValueWeight, attrValueSimilarity(candidate.Attributes, target.Attributes)),
+		newScoreComponent("parent", parentWeight, parentSimilarity(candidate, target)),
+		newScoreComponent("siblings", siblingWeight, sequenceSimilarity(candidate.SiblingTags, target.SiblingTags)),
+		newScoreComponent("path", pathWeight, sequenceSimilarity(candidate.PathTags, target.PathTags)),
+		newScoreComponent("children", childrenWeight, sequenceSimilarity(candidate.ChildrenTags, target.ChildrenTags)),
+	}
+}
+
+func newScoreComponent(name string, weight float64, score float64) ScoreComponent {
+	return ScoreComponent{
+		Name:         name,
+		Weight:       weight,
+		Score:        score,
+		Contribution: weight * score,
+	}
 }
 
 func parentSimilarity(candidate Fingerprint, target Fingerprint) float64 {
