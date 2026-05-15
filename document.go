@@ -54,14 +54,11 @@ func (d *Document) CSS(selector string) Selection {
 		return Selection{}
 	}
 
-	var elements []*Element
-	d.query.Find(selector).Each(func(_ int, selection *goquery.Selection) {
-		for _, node := range selection.Nodes {
-			elements = append(elements, &Element{doc: d, node: node})
-		}
-	})
-
-	return Selection{elements: elements}
+	selection, err := d.css(selector)
+	if err != nil {
+		return Selection{}
+	}
+	return selection
 }
 
 func (d *Document) SelectCSS(ctx context.Context, selector string, opts SelectorOptions) (Selection, error) {
@@ -92,13 +89,18 @@ func (d *Document) SelectCSS(ctx context.Context, selector string, opts Selector
 }
 
 func (d *Document) selectCSSBranch(ctx context.Context, selector string, opts SelectorOptions, minScore float64) (Selection, error) {
-	matcher, err := cascadia.Compile(selector)
+	baseSelector, extraction, err := parseCSSExtraction(selector)
+	if err != nil {
+		return Selection{}, err
+	}
+
+	matcher, err := cascadia.Compile(baseSelector)
 	if err != nil {
 		return Selection{}, fmt.Errorf("%w %q: %v", ErrInvalidSelector, selector, err)
 	}
 
 	key := d.selectorKey(selector, opts)
-	selection := d.cssWithMatcher(matcher)
+	selection := d.cssWithMatcher(matcher).applyExtraction(extraction)
 	if selection.Len() > 0 {
 		if opts.AutoSave {
 			if d.store == nil {
@@ -132,7 +134,36 @@ func (d *Document) selectCSSBranch(ctx context.Context, selector string, opts Se
 			return Selection{}, err
 		}
 	}
-	return Selection{elements: []*Element{match.Element}}, nil
+	return Selection{elements: []*Element{match.Element}}.applyExtraction(extraction), nil
+}
+
+func (d *Document) css(selector string) (Selection, error) {
+	branches := selectorBranches(selector, "")
+	var combined Selection
+
+	for _, branch := range branches {
+		selection, err := d.cssBranch(branch)
+		if err != nil {
+			return Selection{}, err
+		}
+		combined = combineSelections(combined, selection)
+	}
+
+	return combined, nil
+}
+
+func (d *Document) cssBranch(selector string) (Selection, error) {
+	baseSelector, extraction, err := parseCSSExtraction(selector)
+	if err != nil {
+		return Selection{}, err
+	}
+
+	matcher, err := cascadia.Compile(baseSelector)
+	if err != nil {
+		return Selection{}, fmt.Errorf("%w %q: %v", ErrInvalidSelector, selector, err)
+	}
+
+	return d.cssWithMatcher(matcher).applyExtraction(extraction), nil
 }
 
 func (d *Document) cssWithMatcher(matcher cascadia.Selector) Selection {
@@ -143,6 +174,108 @@ func (d *Document) cssWithMatcher(matcher cascadia.Selector) Selection {
 		}
 	})
 	return Selection{elements: elements}
+}
+
+type cssExtractionKind int
+
+const (
+	cssExtractionElement cssExtractionKind = iota
+	cssExtractionText
+	cssExtractionAttr
+)
+
+type cssExtraction struct {
+	kind cssExtractionKind
+	attr string
+}
+
+func (s Selection) applyExtraction(extraction cssExtraction) Selection {
+	switch extraction.kind {
+	case cssExtractionText:
+		return s.withTextValues()
+	case cssExtractionAttr:
+		return s.withAttrValues(extraction.attr)
+	default:
+		return s
+	}
+}
+
+func parseCSSExtraction(selector string) (string, cssExtraction, error) {
+	selector = strings.TrimSpace(selector)
+	pseudoIndex := topLevelPseudoElementIndex(selector)
+	if pseudoIndex == -1 {
+		return selector, cssExtraction{kind: cssExtractionElement}, nil
+	}
+
+	baseSelector := strings.TrimSpace(selector[:pseudoIndex])
+	if baseSelector == "" {
+		baseSelector = "*"
+	}
+	pseudo := strings.TrimSpace(selector[pseudoIndex:])
+	if pseudo == "::text" {
+		return baseSelector, cssExtraction{kind: cssExtractionText}, nil
+	}
+
+	if strings.HasPrefix(pseudo, "::attr(") && strings.HasSuffix(pseudo, ")") {
+		name := strings.TrimSpace(pseudo[len("::attr(") : len(pseudo)-1])
+		name = strings.Trim(name, `"'`)
+		name = strings.TrimSpace(name)
+		if name == "" || strings.ContainsAny(name, " \t\r\n") {
+			return "", cssExtraction{}, fmt.Errorf("%w %q: invalid ::attr() argument", ErrInvalidSelector, selector)
+		}
+		return baseSelector, cssExtraction{kind: cssExtractionAttr, attr: name}, nil
+	}
+
+	return "", cssExtraction{}, fmt.Errorf("%w %q: unknown pseudo-element", ErrInvalidSelector, selector)
+}
+
+func topLevelPseudoElementIndex(selector string) int {
+	quote := byte(0)
+	parenDepth := 0
+	bracketDepth := 0
+	escaped := false
+	pseudoIndex := -1
+
+	for i := 0; i < len(selector)-1; i++ {
+		ch := selector[i]
+		if escaped {
+			escaped = false
+			continue
+		}
+		if ch == '\\' {
+			escaped = true
+			continue
+		}
+		if quote != 0 {
+			if ch == quote {
+				quote = 0
+			}
+			continue
+		}
+
+		switch ch {
+		case '\'', '"':
+			quote = ch
+		case '(':
+			parenDepth++
+		case ')':
+			if parenDepth > 0 {
+				parenDepth--
+			}
+		case '[':
+			bracketDepth++
+		case ']':
+			if bracketDepth > 0 {
+				bracketDepth--
+			}
+		case ':':
+			if selector[i+1] == ':' && parenDepth == 0 && bracketDepth == 0 {
+				pseudoIndex = i
+			}
+		}
+	}
+
+	return pseudoIndex
 }
 
 func selectorBranches(selector string, identifier string) []string {

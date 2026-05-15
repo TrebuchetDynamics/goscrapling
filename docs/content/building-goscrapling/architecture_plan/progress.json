@@ -66,10 +66,10 @@
             },
             {
               "name": "Selector pseudo-elements, extraction helpers, and custom types",
-              "status": "planned",
+              "status": "complete",
               "priority": "P0",
               "contract": "Port Scrapling selector extraction ergonomics: ::text, ::attr(name), get/getall, regex extraction, JSON parsing, TextHandler/TextHandlers, and AttributesHandler behavior.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "parser",
               "source_refs": [
@@ -91,10 +91,10 @@
                 "go test ./... -run TestSelectorExtractionHelpers -count=1"
               ],
               "acceptance": [
-                "String fixtures prove ::text, ::attr, get/getall, regex extraction, JSON parsing, and typed handler behavior."
+                "String fixtures prove ::text, ::attr, get/getall, regex extraction, JSON parsing, TextHandler/TextHandlers helpers, AttributesHandler behavior, and invalid pseudo-element errors."
               ],
               "done_signal": [
-                "Selector extraction helper tests pass."
+                "TestSelectorExtractionHelpers passes."
               ]
             },
             {
