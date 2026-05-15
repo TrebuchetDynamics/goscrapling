@@ -1135,15 +1135,18 @@
             },
             {
               "name": "Allowed domains and offsite filtering",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Add allowed_domains-style filtering and offsite request statistics before live crawling controls are layered on top.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "spider",
               "source_refs": [
                 "references/Scrapling/scrapling/spiders/engine.py",
-                "references/Scrapling/docs/spiders/advanced.md"
+                "references/Scrapling/docs/spiders/advanced.md",
+                "spider/crawler.go",
+                "spider/result.go",
+                "spider/allowed_domains_test.go"
               ],
               "ready_when": [
                 "Spider core scheduler and stats are stable."
@@ -1156,10 +1159,10 @@
                 "go test ./... -run TestSpiderAllowedDomains -count=1"
               ],
               "acceptance": [
-                "Fake requests prove offsite drops, allowed host matching, and stats increments."
+                "Fake requests prove exact-domain and subdomain follow requests are fetched, offsite and suffix-trap requests are dropped, and offsite statistics increment separately from duplicate skips."
               ],
               "done_signal": [
-                "Allowed-domain tests pass."
+                "TestSpiderAllowedDomains passes with fake sessions and no live network access."
               ]
             },
             {

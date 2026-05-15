@@ -21,9 +21,10 @@ type Result struct {
 }
 
 type Stats struct {
-	Requests int
-	Items    int
-	Skipped  int
-	Failed   int
-	Sessions map[string]int
+	Requests        int
+	Items           int
+	Skipped         int
+	Failed          int
+	OffsiteRequests int
+	Sessions        map[string]int
 }

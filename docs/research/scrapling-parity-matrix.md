@@ -91,18 +91,18 @@ Hard rules:
 
 | Scrapling Area | Upstream Reference | goscrapling Status | Notes |
 | --- | --- | --- | --- |
-| Spider base type | `spiders/spider.py` | partial | Go-native `Crawler` and callback funcs exist; start URL helpers, lifecycle hooks, streaming, and concurrency controls remain planned. |
+| Spider base type | `spiders/spider.py` | partial | Go-native `Crawler` and callback funcs exist with allowed-domain filtering; start URL helpers, lifecycle hooks, streaming, and concurrency controls remain planned. |
 | Request type | `spiders/request.py` | partial | URL, method/body, callback, priority, session ID, metadata, and dedupe flag are covered; retry/blocking metadata remains planned. |
 | Response follow helpers | `engines/toolbelt/custom.py` | partial | Relative URL resolution, meta merge, callback/session override, priority, and referer flow are fixture-backed. Broader response ergonomics remain future work. |
 | Scheduler | `spiders/scheduler.py` | done | Priority queue and duplicate filtering by deterministic request fingerprint are covered. Checkpoint snapshot/restore belongs to the checkpoint row. |
 | Request fingerprinting | `spiders/request.py` | partial | URL/method/body/session fingerprints are deterministic with header and fragment options; kwargs/retry-related dimensions remain future work. |
 | Session manager | `spiders/session.py` | partial | Named session routing plus eager/lazy startup is covered with fake sessions; static/dynamic/stealth session adapters remain planned. |
 | Engine concurrency | `spiders/engine.py` | planned | Go implementation should use context, worker pools, and backpressure. |
-| Allowed domains | engine tests | planned | Required for crawler safety. |
+| Allowed domains | `spiders/engine.py` | done | Callback-yielded requests are filtered by exact host/subdomain match and offsite drops increment crawl stats. |
 | Robots.txt | `spiders/robotstxt.py` | planned | Required for production-friendly crawling. |
 | Development response cache | `spiders/cache.py` | planned | Useful for test/debug cycles. |
 | Checkpoint pause/resume | `spiders/checkpoint.py` | planned | Required parity for long crawls. |
-| Crawl result and stats | `spiders/result.py` | partial | Items, errors, skipped duplicates, request counts, and per-session counts are covered; richer timing/status/cache/export stats remain planned. |
+| Crawl result and stats | `spiders/result.py` | partial | Items, errors, skipped duplicates, offsite drops, request counts, and per-session counts are covered; richer timing/status/cache/export stats remain planned. |
 | Generic templates | `spiders/templates/` | planned | Later convenience layer. |
 
 ## CLI, Shell, AI, And Tooling Parity
