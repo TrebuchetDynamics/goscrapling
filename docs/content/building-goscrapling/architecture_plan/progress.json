@@ -413,10 +413,10 @@
             },
             {
               "name": "Response cookies, history, meta, and captured XHR fields",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Extend Response parity with response cookies, redirect history, metadata, request/response header detail, encoding, and captured XHR attachment points.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "fetcher",
               "source_refs": [
@@ -439,7 +439,7 @@
                 "httptest and constructed fixtures prove cookies, history, meta merging, encoding, and captured XHR storage without live browser dependencies."
               ],
               "done_signal": [
-                "Response extended metadata tests pass."
+                "TestResponseExtendedMetadata passes."
               ]
             }
           ]

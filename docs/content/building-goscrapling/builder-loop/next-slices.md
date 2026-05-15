@@ -6,7 +6,6 @@ leverage rows to execute next.
 <!-- PROGRESS:START kind=next-slices -->
 | Phase | Slice | Owner | Size | Contract status | Why now |
 |---|---|---|---|---|---|
-| phase-1-response-fetcher / response | Response cookies, history, meta, and captured XHR fields | `fetcher` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |
 | phase-1-response-fetcher / static-fetcher | Static proxy support and proxy error classification | `fetcher` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |
 | phase-2-storage / persistent-store | SQLite adaptive store parity | `storage` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |
 | phase-3-browser / browser-fetcher | Real browser adapter with JavaScript fixture | `browser` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |

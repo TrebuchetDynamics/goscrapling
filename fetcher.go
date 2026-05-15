@@ -101,7 +101,13 @@ func (f Fetcher) doAttempt(method, rawURL string, body []byte, opts RequestOptio
 	if client == nil {
 		client = http.DefaultClient
 	}
-	client = clientWithRedirectPolicy(client, opts)
+	var history []*Response
+	client = clientWithRedirectPolicy(client, opts, func(response *http.Response) {
+		redirect, err := newResponseFromHTTPResponse(response, nil, opts.Store)
+		if err == nil {
+			history = append(history, redirect)
+		}
+	})
 
 	httpResponse, err := client.Do(request)
 	if err != nil {
@@ -132,7 +138,9 @@ func (f Fetcher) doAttempt(method, rawURL string, body []byte, opts RequestOptio
 			URL:     rawURL,
 			Headers: request.Header,
 		},
-		Store: opts.Store,
+		Cookies: httpResponse.Cookies(),
+		History: history,
+		Store:   opts.Store,
 	})
 }
 
@@ -150,9 +158,13 @@ func retryAttempts(retries int) int {
 	return defaultRetryAttempts
 }
 
-func clientWithRedirectPolicy(client *http.Client, opts RequestOptions) *http.Client {
+func clientWithRedirectPolicy(client *http.Client, opts RequestOptions, onRedirect func(*http.Response)) *http.Client {
 	cloned := *client
 	cloned.CheckRedirect = func(request *http.Request, via []*http.Request) error {
+		if onRedirect != nil && request != nil && request.Response != nil {
+			onRedirect(request.Response)
+		}
+
 		if opts.FollowRedirects == RedirectPolicyNone {
 			return http.ErrUseLastResponse
 		}
@@ -174,6 +186,33 @@ func clientWithRedirectPolicy(client *http.Client, opts RequestOptions) *http.Cl
 		return nil
 	}
 	return &cloned
+}
+
+func newResponseFromHTTPResponse(httpResponse *http.Response, body []byte, store Store) (*Response, error) {
+	if httpResponse == nil {
+		return nil, nil
+	}
+
+	responseURL := ""
+	request := RequestMetadata{}
+	if httpResponse.Request != nil {
+		request.Method = httpResponse.Request.Method
+		request.Headers = httpResponse.Request.Header
+		if httpResponse.Request.URL != nil {
+			responseURL = httpResponse.Request.URL.String()
+			request.URL = responseURL
+		}
+	}
+
+	return NewResponse(bytes.NewReader(body), ResponseOptions{
+		URL:        responseURL,
+		StatusCode: httpResponse.StatusCode,
+		Reason:     http.StatusText(httpResponse.StatusCode),
+		Headers:    httpResponse.Header,
+		Request:    request,
+		Cookies:    httpResponse.Cookies(),
+		Store:      store,
+	})
 }
 
 func isPrivateAddressRedirect(request *http.Request, via []*http.Request) bool {

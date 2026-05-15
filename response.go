@@ -4,16 +4,23 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"mime"
 	"net/http"
+	"strings"
 )
 
 type ResponseOptions struct {
-	URL        string
-	StatusCode int
-	Reason     string
-	Headers    http.Header
-	Request    RequestMetadata
-	Store      Store
+	URL         string
+	StatusCode  int
+	Reason      string
+	Headers     http.Header
+	Request     RequestMetadata
+	Encoding    string
+	Cookies     []*http.Cookie
+	History     []*Response
+	Meta        map[string]any
+	CapturedXHR []*Response
+	Store       Store
 }
 
 type RequestMetadata struct {
@@ -23,13 +30,18 @@ type RequestMetadata struct {
 }
 
 type Response struct {
-	document   *Document
-	url        string
-	statusCode int
-	reason     string
-	headers    http.Header
-	request    RequestMetadata
-	body       []byte
+	document    *Document
+	url         string
+	statusCode  int
+	reason      string
+	headers     http.Header
+	request     RequestMetadata
+	body        []byte
+	encoding    string
+	cookies     []*http.Cookie
+	history     []*Response
+	meta        map[string]any
+	capturedXHR []*Response
 }
 
 func NewResponse(body io.Reader, opts ResponseOptions) (*Response, error) {
@@ -60,14 +72,25 @@ func NewResponse(body io.Reader, opts ResponseOptions) (*Response, error) {
 		request.URL = opts.URL
 	}
 
+	headers := opts.Headers.Clone()
+	cookies := cloneCookies(opts.Cookies)
+	if len(cookies) == 0 {
+		cookies = cookiesFromHeaders(headers)
+	}
+
 	return &Response{
-		document:   document,
-		url:        opts.URL,
-		statusCode: opts.StatusCode,
-		reason:     reason,
-		headers:    opts.Headers.Clone(),
-		request:    request,
-		body:       append([]byte(nil), rawBody...),
+		document:    document,
+		url:         opts.URL,
+		statusCode:  opts.StatusCode,
+		reason:      reason,
+		headers:     headers,
+		request:     request,
+		body:        append([]byte(nil), rawBody...),
+		encoding:    responseEncoding(opts.Encoding, headers),
+		cookies:     cookies,
+		history:     cloneResponses(opts.History),
+		meta:        cloneAnyMap(opts.Meta),
+		capturedXHR: cloneResponses(opts.CapturedXHR),
 	}, nil
 }
 
@@ -97,6 +120,52 @@ func (r *Response) Headers() http.Header {
 		return nil
 	}
 	return r.headers.Clone()
+}
+
+func (r *Response) Encoding() string {
+	if r == nil {
+		return ""
+	}
+	return r.encoding
+}
+
+func (r *Response) Cookies() []*http.Cookie {
+	if r == nil {
+		return nil
+	}
+	return cloneCookies(r.cookies)
+}
+
+func (r *Response) History() []*Response {
+	if r == nil {
+		return nil
+	}
+	return cloneResponses(r.history)
+}
+
+func (r *Response) Meta() map[string]any {
+	if r == nil {
+		return nil
+	}
+	return cloneAnyMap(r.meta)
+}
+
+func (r *Response) MergeMeta(extra map[string]any) map[string]any {
+	merged := r.Meta()
+	if merged == nil {
+		merged = make(map[string]any, len(extra))
+	}
+	for key, value := range extra {
+		merged[key] = value
+	}
+	return merged
+}
+
+func (r *Response) CapturedXHR() []*Response {
+	if r == nil {
+		return nil
+	}
+	return cloneResponses(r.capturedXHR)
 }
 
 func (r *Response) Request() RequestMetadata {
@@ -137,4 +206,60 @@ func (r *Response) DecodeJSON(target any) error {
 func cloneRequestMetadata(request RequestMetadata) RequestMetadata {
 	request.Headers = request.Headers.Clone()
 	return request
+}
+
+func responseEncoding(override string, headers http.Header) string {
+	override = strings.TrimSpace(override)
+	if override != "" {
+		return override
+	}
+
+	contentType := headers.Get("Content-Type")
+	if contentType != "" {
+		_, params, err := mime.ParseMediaType(contentType)
+		if err == nil {
+			if charset := strings.TrimSpace(params["charset"]); charset != "" {
+				return strings.ToLower(charset)
+			}
+		}
+	}
+	return "utf-8"
+}
+
+func cookiesFromHeaders(headers http.Header) []*http.Cookie {
+	response := http.Response{Header: headers.Clone()}
+	return cloneCookies(response.Cookies())
+}
+
+func cloneCookies(cookies []*http.Cookie) []*http.Cookie {
+	if len(cookies) == 0 {
+		return nil
+	}
+	cloned := make([]*http.Cookie, 0, len(cookies))
+	for _, cookie := range cookies {
+		if cookie == nil {
+			continue
+		}
+		copied := *cookie
+		cloned = append(cloned, &copied)
+	}
+	return cloned
+}
+
+func cloneResponses(responses []*Response) []*Response {
+	if len(responses) == 0 {
+		return nil
+	}
+	return append([]*Response(nil), responses...)
+}
+
+func cloneAnyMap(input map[string]any) map[string]any {
+	if len(input) == 0 {
+		return nil
+	}
+	output := make(map[string]any, len(input))
+	for key, value := range input {
+		output[key] = value
+	}
+	return output
 }

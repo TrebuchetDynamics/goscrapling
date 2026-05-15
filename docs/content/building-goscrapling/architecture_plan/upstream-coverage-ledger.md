@@ -54,7 +54,7 @@ core source-class names below when the local upstream checkout exists.
 | `scrapling/core/shell.py`, `scrapling/core/_shell_signatures.py`, `scrapling/core/utils/_shell.py` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | planned |
 | `scrapling/core/utils/_utils.py` | Parser and adaptive storage | adaptive fingerprint field mapping and relocation diagnostics | Phase 0 | partial |
 | `scrapling/core/ai.py` | MCP and AI docs | `integrations/mcp` | Phase 5 | planned |
-| `scrapling/engines/static.py` | Response object, static fetcher | `Response`, `Fetcher`, `FetcherSession` | Phase 1 | partial |
+| `scrapling/engines/static.py`, `scrapling/engines/toolbelt/custom.py`, `scrapling/engines/toolbelt/convertor.py` | Response object, static fetcher | `Response`, `Fetcher`, `FetcherSession` | Phase 1 | partial |
 | `scrapling/engines/_browsers/**` | Browser fetching | `BrowserFetcher`, future browser engine adapters and sessions | Phase 3 | partial |
 | `scrapling/engines/toolbelt/proxy_rotation.py` | Proxy rotation | `ProxyRotator`, fetcher/spider proxy options | Phase 1, Phase 4 | planned |
 | `scrapling/engines/toolbelt/fingerprints.py` | Static fetcher, Browser fetching | explicit identity and stealth option boundaries | Phase 1, Phase 3 | planned |

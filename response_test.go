@@ -2,6 +2,7 @@ package goscrapling
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -128,4 +129,155 @@ func TestResponseBodyHelpers(t *testing.T) {
 	if err := invalid.DecodeJSON(&broken); err == nil {
 		t.Fatal("expected invalid JSON to return an error")
 	}
+}
+
+func TestResponseExtendedMetadata(t *testing.T) {
+	t.Run("constructed response carries cookies meta encoding history and xhr", func(t *testing.T) {
+		redirect, err := NewResponse(strings.NewReader(""), ResponseOptions{
+			URL:        "https://example.com/old",
+			StatusCode: http.StatusFound,
+			Headers: http.Header{
+				"Location":     []string{"/new"},
+				"Content-Type": []string{"text/html; charset=iso-8859-1"},
+			},
+			Request: RequestMetadata{
+				Method: http.MethodGet,
+				URL:    "https://example.com/old",
+				Headers: http.Header{
+					"Referer": []string{"https://example.com/start"},
+				},
+			},
+		})
+		if err != nil {
+			t.Fatalf("NewResponse redirect: %v", err)
+		}
+
+		xhr, err := NewResponse(strings.NewReader(`{"ok":true}`), ResponseOptions{
+			URL:        "https://example.com/api/products",
+			StatusCode: http.StatusOK,
+			Headers: http.Header{
+				"Content-Type": []string{"application/json; charset=utf-8"},
+			},
+		})
+		if err != nil {
+			t.Fatalf("NewResponse xhr: %v", err)
+		}
+
+		response, err := NewResponse(strings.NewReader(`<html><body>ok</body></html>`), ResponseOptions{
+			URL:        "https://example.com/new",
+			StatusCode: http.StatusOK,
+			Headers: http.Header{
+				"Content-Type": []string{"text/html; charset=windows-1252"},
+				"Set-Cookie":   []string{"sid=abc123; Path=/; HttpOnly"},
+				"X-Trace":      []string{"trace-1", "trace-2"},
+			},
+			Request: RequestMetadata{
+				Method: http.MethodPost,
+				URL:    "https://example.com/new",
+				Headers: http.Header{
+					"Accept":       []string{"text/html"},
+					"X-Request-Id": []string{"req-1"},
+				},
+			},
+			Meta: map[string]any{
+				"proxy": "local",
+				"depth": 1,
+			},
+			History:     []*Response{redirect},
+			CapturedXHR: []*Response{xhr},
+		})
+		if err != nil {
+			t.Fatalf("NewResponse: %v", err)
+		}
+
+		if got := response.Encoding(); got != "windows-1252" {
+			t.Fatalf("expected parsed encoding windows-1252, got %q", got)
+		}
+		cookies := response.Cookies()
+		if len(cookies) != 1 || cookies[0].Name != "sid" || cookies[0].Value != "abc123" {
+			t.Fatalf("expected sid cookie from Set-Cookie header, got %#v", cookies)
+		}
+		history := response.History()
+		if len(history) != 1 || history[0].URL() != "https://example.com/old" || history[0].StatusCode() != http.StatusFound {
+			t.Fatalf("unexpected history: %#v", history)
+		}
+		if got := history[0].Encoding(); got != "iso-8859-1" {
+			t.Fatalf("expected redirect encoding iso-8859-1, got %q", got)
+		}
+		meta := response.Meta()
+		if meta["proxy"] != "local" || meta["depth"] != 1 {
+			t.Fatalf("unexpected meta: %#v", meta)
+		}
+		merged := response.MergeMeta(map[string]any{"depth": 2, "source": "follow"})
+		if merged["proxy"] != "local" || merged["depth"] != 2 || merged["source"] != "follow" {
+			t.Fatalf("unexpected merged meta: %#v", merged)
+		}
+		captured := response.CapturedXHR()
+		if len(captured) != 1 || captured[0].URL() != "https://example.com/api/products" {
+			t.Fatalf("unexpected captured xhr: %#v", captured)
+		}
+		if got := response.Headers().Values("X-Trace"); len(got) != 2 || got[0] != "trace-1" || got[1] != "trace-2" {
+			t.Fatalf("expected multi-value response header detail, got %#v", got)
+		}
+		if got := response.Request().Headers.Get("X-Request-Id"); got != "req-1" {
+			t.Fatalf("expected request header detail, got %q", got)
+		}
+
+		response.Meta()["proxy"] = "changed"
+		response.Cookies()[0].Value = "changed"
+		if response.Meta()["proxy"] != "local" {
+			t.Fatalf("expected Meta to return a copy, got %#v", response.Meta())
+		}
+		if response.Cookies()[0].Value != "abc123" {
+			t.Fatalf("expected Cookies to return copies, got %#v", response.Cookies())
+		}
+	})
+
+	t.Run("fetcher records redirect history and response cookies", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			switch r.URL.Path {
+			case "/start":
+				w.Header().Set("Content-Type", "text/html; charset=iso-8859-1")
+				http.SetCookie(w, &http.Cookie{Name: "hop", Value: "one"})
+				http.Redirect(w, r, "/final", http.StatusFound)
+			case "/final":
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				http.SetCookie(w, &http.Cookie{Name: "sid", Value: "final"})
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`<html><body><article class="final">done</article></body></html>`))
+			default:
+				w.WriteHeader(http.StatusNotFound)
+			}
+		}))
+		t.Cleanup(server.Close)
+
+		response, err := (Fetcher{}).Get(server.URL+"/start", RequestOptions{})
+		if err != nil {
+			t.Fatalf("Fetcher.Get: %v", err)
+		}
+
+		if response.URL() != server.URL+"/final" {
+			t.Fatalf("expected final URL, got %q", response.URL())
+		}
+		if got := response.Encoding(); got != "utf-8" {
+			t.Fatalf("expected final encoding utf-8, got %q", got)
+		}
+		cookies := response.Cookies()
+		if len(cookies) != 1 || cookies[0].Name != "sid" || cookies[0].Value != "final" {
+			t.Fatalf("expected final response cookie, got %#v", cookies)
+		}
+		history := response.History()
+		if len(history) != 1 {
+			t.Fatalf("expected one redirect history response, got %d", len(history))
+		}
+		if history[0].URL() != server.URL+"/start" || history[0].StatusCode() != http.StatusFound {
+			t.Fatalf("unexpected redirect history response: url=%q status=%d", history[0].URL(), history[0].StatusCode())
+		}
+		if got := history[0].Headers().Get("Location"); got != "/final" {
+			t.Fatalf("expected redirect Location /final, got %q", got)
+		}
+		if got := history[0].Encoding(); got != "iso-8859-1" {
+			t.Fatalf("expected redirect encoding iso-8859-1, got %q", got)
+		}
+	})
 }

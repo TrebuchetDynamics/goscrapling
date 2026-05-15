@@ -4,22 +4,7 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Response cookies, history, meta, and captured XHR fields
-
-- Phase: `phase-1-response-fetcher / response`
-- Priority: `P1`
-- Owner: `fetcher`
-- Size: `medium`
-- Contract status: `draft`
-- Contract: Extend Response parity with response cookies, redirect history, metadata, request/response header detail, encoding, and captured XHR attachment points.
-- Ready when: Response metadata/body rows and redirect taxonomy are complete.
-- Write scope: `response.go`, `response_test.go`, `fetcher.go`
-- Test commands: `go test ./... -run TestResponseExtendedMetadata -count=1`
-- Acceptance: httptest and constructed fixtures prove cookies, history, meta merging, encoding, and captured XHR storage without live browser dependencies.
-- Done signal: Response extended metadata tests pass.
-- Source refs: `references/Scrapling/scrapling/engines/toolbelt/custom.py`, `references/Scrapling/scrapling/engines/toolbelt/convertor.py`, `references/Scrapling/docs/api-reference/response.md`
-
-## 2. Static proxy support and proxy error classification
+## 1. Static proxy support and proxy error classification
 
 - Phase: `phase-1-response-fetcher / static-fetcher`
 - Priority: `P1`
@@ -34,7 +19,7 @@ non-umbrella, and builder-ready.
 - Done signal: Static proxy support tests pass.
 - Source refs: `references/Scrapling/scrapling/engines/static.py`, `references/Scrapling/scrapling/engines/toolbelt/navigation.py`, `references/Scrapling/docs/fetching/static.md`
 
-## 3. SQLite adaptive store parity
+## 2. SQLite adaptive store parity
 
 - Phase: `phase-2-storage / persistent-store`
 - Priority: `P1`
@@ -49,7 +34,7 @@ non-umbrella, and builder-ready.
 - Done signal: SQLite store tests pass with temp databases.
 - Source refs: `references/Scrapling/scrapling/core/storage.py`, `references/Scrapling/docs/development/adaptive_storage_system.md`
 
-## 4. Real browser adapter with JavaScript fixture
+## 3. Real browser adapter with JavaScript fixture
 
 - Phase: `phase-3-browser / browser-fetcher`
 - Priority: `P1`
@@ -64,7 +49,7 @@ non-umbrella, and builder-ready.
 - Done signal: Real browser adapter tests pass or are skipped only with documented local dependency gating.
 - Source refs: `references/Scrapling/scrapling/fetchers/chrome.py`, `references/Scrapling/scrapling/engines/_browsers/_controllers.py`, `references/Scrapling/docs/fetching/dynamic.md`
 
-## 5. Allowed domains and offsite filtering
+## 4. Allowed domains and offsite filtering
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -79,7 +64,7 @@ non-umbrella, and builder-ready.
 - Done signal: Allowed-domain tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/engine.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 6. Crawler engine concurrency, domain limits, and download delay
+## 5. Crawler engine concurrency, domain limits, and download delay
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -94,7 +79,7 @@ non-umbrella, and builder-ready.
 - Done signal: Spider engine concurrency tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/engine.py`, `references/Scrapling/docs/spiders/architecture.md`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 7. Development response cache
+## 6. Development response cache
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -109,7 +94,7 @@ non-umbrella, and builder-ready.
 - Done signal: Spider response cache tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/cache.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 8. Gormes web-search tool adapter
+## 7. Gormes web-search tool adapter
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P2`
@@ -125,7 +110,7 @@ non-umbrella, and builder-ready.
 - Done signal: Integration tests pass without reaching the network, The Gormes boundary docs link back to the goscrapling strategy page.
 - Source refs: `README.md`, `docs/research/go-scraping-oss-survey.md`, `docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md`
 
-## 9. CLI interactive shell command surface
+## 8. CLI interactive shell command surface
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
@@ -141,7 +126,7 @@ non-umbrella, and builder-ready.
 - Done signal: Shell command tests pass from local fixtures.
 - Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/interactive-shell.md`, `references/Scrapling/scrapling/core/shell.py`, `references/Scrapling/scrapling/core/_shell_signatures.py`
 
-## 10. Public docs, examples, and API reference parity
+## 9. Public docs, examples, and API reference parity
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
