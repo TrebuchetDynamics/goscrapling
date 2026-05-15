@@ -850,16 +850,19 @@
             },
             {
               "name": "Real browser adapter with JavaScript fixture",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Bind BrowserFetcher to one real Go browser engine and prove dynamic content extraction against a local JavaScript fixture.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "browser",
               "source_refs": [
                 "references/Scrapling/scrapling/fetchers/chrome.py",
                 "references/Scrapling/scrapling/engines/_browsers/_controllers.py",
-                "references/Scrapling/docs/fetching/dynamic.md"
+                "references/Scrapling/docs/fetching/dynamic.md",
+                "browser_adapter.go",
+                "browser_integration_test.go",
+                "testdata/browser/dynamic.html"
               ],
               "ready_when": [
                 "BrowserFetcher interface row is validated."
@@ -868,16 +871,18 @@
                 "browser.go",
                 "browser_adapter.go",
                 "browser_integration_test.go",
-                "testdata/browser/"
+                "testdata/browser/",
+                "go.mod",
+                "go.sum"
               ],
               "test_commands": [
                 "go test ./... -run TestBrowserAdapter -count=1"
               ],
               "acceptance": [
-                "Local fixture proves navigation, JavaScript-rendered content, timeout, and Response conversion."
+                "Local chromedp fixture proves navigation, JavaScript-rendered content, request header forwarding, timeout on missing selector, and Response conversion without live web access."
               ],
               "done_signal": [
-                "Real browser adapter tests pass or are skipped only with documented local dependency gating."
+                "TestBrowserAdapter passes locally with Chrome/Chromium or skips only when no browser executable is available."
               ]
             },
             {

@@ -79,7 +79,7 @@ Hard rules:
 
 | Scrapling Area | Upstream Reference | goscrapling Status | Notes |
 | --- | --- | --- | --- |
-| Dynamic browser fetcher | `fetchers/chrome.py`, docs `fetching/dynamic.md` | partial | Engine-neutral `BrowserFetcher` contract is fake-engine tested; real Playwright/chromedp/Rod adapter remains planned. |
+| Dynamic browser fetcher | `fetchers/chrome.py`, docs `fetching/dynamic.md` | partial | Engine-neutral `BrowserFetcher` contract is fake-engine tested; real chromedp adapter is fixture-backed. Session pools, deeper wait/action behavior, XHR capture, and stealth remain planned. |
 | Stealth browser fetcher | `fetchers/stealth_chrome.py`, docs `fetching/stealthy.md` | planned | Hard parity area; avoid unsupported anti-bot claims until proven. |
 | Browser sessions | `engines/_browsers/` | planned | Required for reuse and spider sessions. |
 | Wait selector/network idle | browser docs/tests | partial | Contract fields are covered through a fake engine; real browser fixture remains planned. |
@@ -120,7 +120,7 @@ Hard rules:
 1. Parser parity foundation: selection helpers, text/attr extraction, traversal, retrieve, adaptive selector options.
 2. Response plus static fetcher: `Fetcher`, session, HTTP metadata, request option merging, local HTTP tests.
 3. Durable adaptive storage: SQLite adapter and storage tests.
-4. Browser fetcher spike: choose `rod` or `chromedp`, implement dynamic fetch with local fixture tests.
+4. Browser fetcher depth: add sessions, deeper wait/action behavior, XHR capture, and context/resource controls on top of the chromedp adapter.
 5. Spider core: request, scheduler, fingerprints, engine, stats, callbacks.
 6. Robots/cache/checkpoint/session manager.
 7. CLI fetch/extract.

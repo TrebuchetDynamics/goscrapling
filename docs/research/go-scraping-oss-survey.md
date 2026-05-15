@@ -32,7 +32,7 @@ Purpose: identify useful open-source Go projects before designing `goscrapling`.
 - URL: `https://github.com/go-rod/rod`
 - Role: browser automation and scraping through CDP.
 - Useful lessons: high-level page operations, browser lifecycle, scraping examples.
-- Risk: needs a focused spike against `chromedp` before locking the browser backend.
+- Risk: browser sessions, context/resource controls, and XHR capture still need focused slices on top of the selected `chromedp` backend.
 
 ### MontFerret/ferret
 
@@ -94,7 +94,7 @@ For the adaptive parser MVP:
 
 For later phases:
 
-- Compare `rod` and `chromedp` with a small browser-fetch spike.
+- Deepen the selected `chromedp` browser backend with sessions, context/resource controls, and XHR capture.
 - Compare `colly`, `geziyor`, and `katana` before building spider scheduling.
 - Evaluate `surf` only when static fetch stealth becomes a concrete requirement.
 
@@ -108,4 +108,3 @@ Each dependency must be judged by:
 - Testability without live network access.
 - Ability to expose low-level DOM or response metadata.
 - Fit with Go-native interfaces and `context.Context`.
-

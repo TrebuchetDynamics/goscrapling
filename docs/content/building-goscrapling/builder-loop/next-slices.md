@@ -6,7 +6,6 @@ leverage rows to execute next.
 <!-- PROGRESS:START kind=next-slices -->
 | Phase | Slice | Owner | Size | Contract status | Why now |
 |---|---|---|---|---|---|
-| phase-3-browser / browser-fetcher | Real browser adapter with JavaScript fixture | `browser` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |
 | phase-4-spider / spider-core | Allowed domains and offsite filtering | `spider` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |
 | phase-4-spider / spider-core | Crawler engine concurrency, domain limits, and download delay | `spider` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |
 | phase-4-spider / spider-core | Development response cache | `spider` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |

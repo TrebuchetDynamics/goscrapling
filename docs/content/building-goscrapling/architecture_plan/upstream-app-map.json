@@ -306,7 +306,7 @@
         "Map browser fetcher lifecycle, page operations, waits, downloads, screenshots, XHR capture, context options, resource blocking, and stealth options to explicit Go adapters",
         "Keep stealth and challenge handling operator-visible and test-backed"
       ],
-      "go_target": "BrowserFetcher, future browser package adapters, browser sessions, page pools, context options, and stealth option structs",
+      "go_target": "BrowserFetcher, ChromedpBrowserEngine, future browser sessions, page pools, context options, and stealth option structs",
       "progress_rows": [
         "BrowserFetcher interface and chromedp/playwright adapter decision",
         "Real browser adapter with JavaScript fixture",
