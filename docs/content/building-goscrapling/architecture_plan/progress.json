@@ -860,29 +860,30 @@
                 "references/Scrapling/scrapling/fetchers/chrome.py",
                 "references/Scrapling/scrapling/engines/_browsers/_controllers.py",
                 "references/Scrapling/docs/fetching/dynamic.md",
-                "browser_adapter.go",
-                "browser_integration_test.go",
+                "engines/browser/browser_adapter.go",
+                "engines/browser/browser_integration_test.go",
                 "testdata/browser/dynamic.html"
               ],
               "ready_when": [
                 "BrowserFetcher interface row is validated."
               ],
               "write_scope": [
-                "browser.go",
-                "browser_adapter.go",
-                "browser_integration_test.go",
+                "engines/browser/browser.go",
+                "engines/browser/browser_adapter.go",
+                "engines/browser/browser_integration_test.go",
                 "testdata/browser/",
                 "go.mod",
                 "go.sum"
               ],
               "test_commands": [
-                "go test ./... -run TestBrowserAdapter -count=1"
+                "GOSCRAPLING_CHROME=/path/to/chrome go test ./... -run TestBrowserAdapter -count=1"
               ],
               "acceptance": [
                 "Local chromedp fixture proves navigation, JavaScript-rendered content, request header forwarding, timeout on missing selector, and Response conversion without live web access."
               ],
               "done_signal": [
-                "TestBrowserAdapter passes locally with Chrome/Chromium or skips only when no browser executable is available."
+                "TestBrowserAdapter passes when GOSCRAPLING_CHROME points to a working Chrome/Chromium executable.",
+                "The test skips in normal hermetic CI unless GOSCRAPLING_CHROME or GOSCRAPLING_CHROME_AUTO=1 is set."
               ]
             },
             {

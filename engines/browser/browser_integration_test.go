@@ -17,7 +17,7 @@ import (
 func TestBrowserAdapter(t *testing.T) {
 	chromePath, ok := testChromeExecutable()
 	if !ok {
-		t.Skip("real browser adapter test requires Chrome or Chromium; set GOSCRAPLING_CHROME to run it")
+		t.Skip("real browser adapter test requires Chrome or Chromium; set GOSCRAPLING_CHROME or GOSCRAPLING_CHROME_AUTO=1 to run it")
 	}
 
 	fixture, err := os.ReadFile(filepath.Join("..", "..", "testdata", "browser", "dynamic.html"))
@@ -103,6 +103,9 @@ func TestBrowserAdapter(t *testing.T) {
 func testChromeExecutable() (string, bool) {
 	if path := os.Getenv("GOSCRAPLING_CHROME"); path != "" {
 		return path, true
+	}
+	if os.Getenv("GOSCRAPLING_CHROME_AUTO") != "1" {
+		return "", false
 	}
 	for _, name := range []string{"google-chrome", "chromium", "chromium-browser", "chrome"} {
 		if path, err := exec.LookPath(name); err == nil {
