@@ -47,7 +47,7 @@ core source-class names below when the local upstream checkout exists.
 | Upstream source class | Feature-map anchor | Go target | Progress anchor | Coverage |
 |---|---|---|---|---|
 | `scrapling/parser.py` | Parser and selector objects | `Document`, `Element`, `Selection` | Phase 0 | partial |
-| `scrapling/core/storage.py` | Adaptive storage | `AdaptiveStore`, `MemoryStore`, `FileStore`, future `SQLiteStore` | Phase 0, Phase 2 | partial |
+| `scrapling/core/storage.py` | Adaptive storage | `AdaptiveStore`, `MemoryStore`, `FileStore`, `SQLiteStore` | Phase 0, Phase 2 | partial |
 | `scrapling/core/mixins.py` | Parser and selector objects | selector generation helpers | Phase 0 | planned |
 | `scrapling/core/custom_types.py`, `scrapling/core/_types.py` | Parser and selector objects | root package `TextHandler`, `TextHandlers`, and `AttributesHandler` behavior | Phase 0 | partial |
 | `scrapling/core/translator.py` | Parser and selector objects | XPath/CSS translator helpers | Phase 0 | partial |

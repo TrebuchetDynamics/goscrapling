@@ -154,7 +154,7 @@
         "Store adaptive fingerprints by domain and identifier",
         "Relocate elements through deterministic fingerprint scoring and expose adaptive selector fallback modes"
       ],
-      "go_target": "AdaptiveStore, MemoryStore, FileStore, relocation scoring, future SQLiteStore",
+      "go_target": "AdaptiveStore, MemoryStore, FileStore, SQLiteStore, and relocation scoring",
       "progress_rows": [
         "Save adaptive fingerprints by domain and identifier",
         "Relocate adaptive elements with deterministic scoring",

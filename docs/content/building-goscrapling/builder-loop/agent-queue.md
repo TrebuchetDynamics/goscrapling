@@ -4,22 +4,7 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. SQLite adaptive store parity
-
-- Phase: `phase-2-storage / persistent-store`
-- Priority: `P1`
-- Owner: `storage`
-- Size: `medium`
-- Contract status: `draft`
-- Contract: Add a SQLite-backed adaptive store matching Scrapling default durable storage behavior while preserving the Go Store interface.
-- Ready when: FileStore compatibility row is complete and Store interface remains stable.
-- Write scope: `store_sqlite.go`, `store_sqlite_test.go`, `testdata/adaptive_store/`
-- Test commands: `go test ./... -run TestSQLiteStore -count=1`
-- Acceptance: Temp-database fixtures prove save/load, domain isolation, close behavior, and schema compatibility errors.
-- Done signal: SQLite store tests pass with temp databases.
-- Source refs: `references/Scrapling/scrapling/core/storage.py`, `references/Scrapling/docs/development/adaptive_storage_system.md`
-
-## 2. Real browser adapter with JavaScript fixture
+## 1. Real browser adapter with JavaScript fixture
 
 - Phase: `phase-3-browser / browser-fetcher`
 - Priority: `P1`
@@ -34,7 +19,7 @@ non-umbrella, and builder-ready.
 - Done signal: Real browser adapter tests pass or are skipped only with documented local dependency gating.
 - Source refs: `references/Scrapling/scrapling/fetchers/chrome.py`, `references/Scrapling/scrapling/engines/_browsers/_controllers.py`, `references/Scrapling/docs/fetching/dynamic.md`
 
-## 3. Allowed domains and offsite filtering
+## 2. Allowed domains and offsite filtering
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -49,7 +34,7 @@ non-umbrella, and builder-ready.
 - Done signal: Allowed-domain tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/engine.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 4. Crawler engine concurrency, domain limits, and download delay
+## 3. Crawler engine concurrency, domain limits, and download delay
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -64,7 +49,7 @@ non-umbrella, and builder-ready.
 - Done signal: Spider engine concurrency tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/engine.py`, `references/Scrapling/docs/spiders/architecture.md`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 5. Development response cache
+## 4. Development response cache
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -79,7 +64,7 @@ non-umbrella, and builder-ready.
 - Done signal: Spider response cache tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/cache.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 6. Gormes web-search tool adapter
+## 5. Gormes web-search tool adapter
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P2`
@@ -95,7 +80,7 @@ non-umbrella, and builder-ready.
 - Done signal: Integration tests pass without reaching the network, The Gormes boundary docs link back to the goscrapling strategy page.
 - Source refs: `README.md`, `docs/research/go-scraping-oss-survey.md`, `docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md`
 
-## 7. CLI interactive shell command surface
+## 6. CLI interactive shell command surface
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
@@ -111,7 +96,7 @@ non-umbrella, and builder-ready.
 - Done signal: Shell command tests pass from local fixtures.
 - Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/interactive-shell.md`, `references/Scrapling/scrapling/core/shell.py`, `references/Scrapling/scrapling/core/_shell_signatures.py`
 
-## 8. Public docs, examples, and API reference parity
+## 7. Public docs, examples, and API reference parity
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`

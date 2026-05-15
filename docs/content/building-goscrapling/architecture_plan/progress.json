@@ -770,15 +770,17 @@
             },
             {
               "name": "SQLite adaptive store parity",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Add a SQLite-backed adaptive store matching Scrapling default durable storage behavior while preserving the Go Store interface.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "storage",
               "source_refs": [
                 "references/Scrapling/scrapling/core/storage.py",
-                "references/Scrapling/docs/development/adaptive_storage_system.md"
+                "references/Scrapling/docs/development/adaptive_storage_system.md",
+                "store_sqlite.go",
+                "store_sqlite_test.go"
               ],
               "ready_when": [
                 "FileStore compatibility row is complete and Store interface remains stable."
@@ -786,16 +788,18 @@
               "write_scope": [
                 "store_sqlite.go",
                 "store_sqlite_test.go",
-                "testdata/adaptive_store/"
+                "testdata/adaptive_store/",
+                "go.mod",
+                "go.sum"
               ],
               "test_commands": [
                 "go test ./... -run TestSQLiteStore -count=1"
               ],
               "acceptance": [
-                "Temp-database fixtures prove save/load, domain isolation, close behavior, and schema compatibility errors."
+                "Temp-database fixtures prove save/load, domain isolation, reopened persistence, copied loaded fingerprints, close behavior, schema compatibility errors, and use of Scrapling-style storage table fields."
               ],
               "done_signal": [
-                "SQLite store tests pass with temp databases."
+                "TestSQLiteStore passes with temp databases."
               ]
             }
           ]
