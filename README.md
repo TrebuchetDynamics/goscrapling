@@ -1,107 +1,188 @@
 # goscrapling
 
-Go-native Scrapling-style web scraping.
+Go-native Scrapling-style web extraction for agent runtimes and
+single-binary Go deployments.
 
-`goscrapling` is a long-term Go-native feature port of D4Vinci/Scrapling. The goal is Scrapling-style parity across parser APIs, adaptive element relocation, fetchers, browser-backed fetching, spiders, CLI workflows, and agent/tool integration.
+`goscrapling` is an independent Go feature port inspired by
+[D4Vinci/Scrapling](https://github.com/D4Vinci/Scrapling). It is useful today
+as a tested parser, selector, static fetcher, response, browser-fetching seam,
+and spider foundation. It is not a complete Scrapling port yet.
 
-This project is not affiliated with D4Vinci/Scrapling. It is an independent Go implementation that uses Scrapling as public reference material.
+This project is not affiliated with D4Vinci/Scrapling. Scrapling is used as
+public reference material and as the parity oracle for planning.
 
-## Why This Project Exists
+## Who This Is For
 
-goscrapling is useful if it stays honest about scope: a Go-native extraction
-engine moving toward Scrapling-style behavior with tests and progress rows, not
-a claimed complete clone.
+- Go developers who want Scrapling-style HTML extraction without a Python
+  sidecar.
+- Agent-runtime builders who need deterministic parser, fetcher, and future
+  browser/crawler primitives inside a single binary.
+- Maintainers and reviewers who want to see a large port broken into visible,
+  tested, builder-sized slices.
 
-The portfolio value is the engineering method: upstream study, parity ledgers,
-small tested slices, and a realistic downstream integration target. The Gormes
-value is a single-binary-friendly extraction core that can eventually power
-agent web tools without a Python sidecar.
+If you need a mature, production-ready Scrapling replacement today, use
+Scrapling. If you want a Go-native extraction core that is moving toward
+Scrapling-visible behavior with tests and progress ledgers, this repository is
+the workbench.
 
-Recommended positioning:
+## What Works Today
+
+| Area | Current surface | Status |
+|---|---|---|
+| Parser | Parse HTML into `Document`, `Element`, and `Selection` values | Partial |
+| Selectors | CSS, XPath, `::text`, `::attr(name)`, extraction helpers, regex, JSON helpers | Partial |
+| Adaptive relocation | Save fingerprints and relocate logical elements after markup changes | Phase 0 foundation |
+| Storage | In-memory, file-backed, and SQLite-backed adaptive stores | Partial |
+| Response | HTTP metadata, headers, cookies, redirect history, body, text, JSON, CSS, XPath | Partial |
+| Static fetcher | GET, POST, PUT, DELETE, sessions, headers, cookies, params, data, JSON, auth, verify, redirects, timeout, retry, explicit proxy options | Partial |
+| Browser fetcher | Engine-neutral contract plus chromedp-backed JavaScript rendering | Partial |
+| Spider | Fixture-backed scheduler, sessions, duplicate skipping, callbacks, follow requests, allowed domains, basic concurrency controls | Partial |
+| CLI | `goscrapling extract get/post/put/delete` for static extraction | Partial |
+
+Major planned surfaces still include deeper browser behavior, proxy rotation,
+production crawler controls, advanced CLI output, shell workflows, MCP, and
+Gormes/OpenClaw tool integration.
+
+## Quick Start
+
+Requires Go 1.26 or newer.
+
+Use the module from a Go project:
+
+```sh
+go get github.com/TrebuchetDynamics/goscrapling
+```
+
+Or work from this checkout:
+
+```sh
+go test ./... -count=1
+go run ./cmd/goscrapling help
+```
+
+### Parse And Select
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/TrebuchetDynamics/goscrapling"
+)
+
+func main() {
+	doc, err := goscrapling.Parse(strings.NewReader(`
+		<main>
+			<article class="product" data-sku="A-42">Trail pack</article>
+		</main>
+	`), goscrapling.ParseOptions{URL: "https://example.com/products"})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(doc.CSS(".product::text").Get())
+	fmt.Println(doc.CSS(".product::attr(data-sku)").Get())
+}
+```
+
+### Relocate A Changed Element
+
+```go
+ctx := context.Background()
+store := goscrapling.NewMemoryStore()
+
+before, _ := goscrapling.Parse(strings.NewReader(
+	`<article class="product" id="p1">Product 1</article>`,
+), goscrapling.ParseOptions{
+	URL:   "https://example.com/products",
+	Store: store,
+})
+element, _ := before.CSS("#p1").First()
+_ = before.Save(ctx, element, "featured-product")
+
+after, _ := goscrapling.Parse(strings.NewReader(
+	`<article class="product" data-id="p1"><span>Product 1</span></article>`,
+), goscrapling.ParseOptions{
+	URL:   "https://example.com/products",
+	Store: store,
+})
+match, ok, _ := after.Relocate(ctx, "featured-product")
+fmt.Println(ok, match.Element.Text())
+```
+
+### Fetch And Extract
+
+```go
+fetcher := goscrapling.Fetcher{}
+response, err := fetcher.Get("https://example.com/products", goscrapling.RequestOptions{
+	Headers: http.Header{"User-Agent": []string{"goscrapling-example"}},
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(response.StatusCode())
+fmt.Println(response.CSS("title::text").Get())
+```
+
+### Use The CLI
+
+```sh
+go run ./cmd/goscrapling extract get https://example.com page.txt \
+  --css-selector "body"
+
+go run ./cmd/goscrapling extract post https://example.com/search result.html \
+  --json '{"q":"scraping"}' \
+  -H "Accept: text/html"
+```
+
+The CLI writes text for `.txt`, `.md`, or extensionless outputs, and HTML for
+`.html` or `.htm` outputs.
+
+## Project Boundary
+
+Recommended public positioning:
 
 > goscrapling is a Go-native web extraction engine inspired by Scrapling, built
 > for agent runtimes and single-binary deployments.
 
-See [Portfolio and Gormes Fit](docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md)
-for the product boundary and integration rationale.
+Avoid treating it as any of these until the progress ledger and tests prove the
+claim:
 
-## Current Status
+- a complete Scrapling clone;
+- a drop-in Scrapling replacement;
+- a production stealth scraper;
+- a Cloudflare bypass or anti-bot system.
 
-Very early and far from Scrapling parity.
+Browser, proxy, crawler, and tool-integration work must stay explicit,
+operator-visible, and fixture-tested before it is documented as available
+behavior.
 
-Implemented now:
+## How Development Is Tracked
 
-- Parse static HTML into queryable selectors.
-- Select elements with CSS-like APIs.
-- Save an element fingerprint under a domain plus identifier.
-- Relocate the same logical element after markup changes.
-- Persist adaptive fingerprints with a schema-versioned `FileStore`.
-- Build a `Response` from fetched or fixture content with HTTP metadata,
-  selector behavior, body bytes, text, and JSON decoding.
-- Fetch local/static pages through a basic `Fetcher` with GET, POST, PUT, and
-  DELETE over `net/http`.
-- Reuse a `FetcherSession` with default headers, per-request header overrides,
-  cookie persistence, and connection reuse.
-- Apply static fetcher redirect controls, request timeouts, retry attempts, and
-  deterministic fetcher errors.
-- Use an engine-neutral `BrowserFetcher` contract for dynamic page fetches,
-  waits, page actions, and resource blocking.
-- Run a fixture-backed spider core with request fingerprints, priority
-  scheduling, duplicate skipping, callback output, follow requests, and named
-  session routing.
-- Use `goscrapling extract get/post/put/delete` for local/static page
-  extraction with headers, timeout parsing, query params, request bodies,
-  JSON bodies, CSS-selected text output, and full HTML output.
-- Run a deterministic full binary E2E smoke suite for the static CLI surface.
-- Drive all behavior with test-first fixtures.
+This repo uses Scrapling as the parity oracle and keeps implementation work
+tied to visible planning artifacts:
 
-Missing major Scrapling subsystems:
-
-- Advanced fetcher options such as form helpers, query params, response cookie
-  access, redirect history, and browser-style header generation.
-- Browser-backed fetching.
-- Proxy rotation.
-- Production crawler controls such as allowed domains, robots, cache,
-  checkpoints, richer stats, and polite concurrency.
-- Advanced CLI output modes, shell, MCP, or Gormes/OpenClaw tool integration.
-
-The current adaptive parser is phase 0. It is not enough for the project to be considered a real Scrapling-style port.
-
-## Port Target
-
-The parity target is documented in:
-
-- [Scrapling Parity Matrix](docs/research/scrapling-parity-matrix.md)
-- [True Port Design](docs/superpowers/specs/2026-05-13-goscrapling-true-port-design.md)
 - [Scrapling Feature Map](docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md)
 - [Upstream Coverage Ledger](docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md)
 - [Progress Ledger](docs/content/building-goscrapling/architecture_plan/progress.json)
 - [Agent Queue](docs/content/building-goscrapling/builder-loop/agent-queue.md)
-- [Portfolio and Gormes Fit](docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md)
 
-Next required milestone:
+Before adding behavior, update or pick a builder-sized row in `progress.json`
+with source refs, write scope, tests, acceptance, and a done signal. Do not
+create a parallel backlog.
 
-1. Work the generated P0 rows for adaptive selector modes, selector extraction
-   helpers, XPath/translator parity, and static fetcher options.
-2. Keep using the generated agent queue; the upstream feature inventory is now
-   split into builder-sized rows in `progress.json`.
-3. Continue updating the parity matrix as each Scrapling subsystem moves from
-   planned to partial or done.
-
-Progress control:
+Regenerate queue surfaces after progress-ledger edits:
 
 ```sh
-go run ./cmd/progress validate
 go run ./cmd/progress write
 ```
 
-`validate` checks the canonical progress ledger. `write` regenerates the
-builder-loop handoff, agent queue, next slices, blocked slices, and umbrella
-cleanup pages from `progress.json`.
+## Validation
 
-## Testing
-
-Run the full hermetic validation suite:
+Run the full hermetic validation suite before claiming a slice is complete:
 
 ```sh
 go test ./... -count=1
@@ -110,61 +191,35 @@ jq empty docs/content/building-goscrapling/architecture_plan/progress.json
 git diff --check
 ```
 
-Run the deterministic full local E2E smoke suite:
+Run the deterministic full local CLI smoke suite:
 
 ```sh
 go test ./cmd/goscrapling -run TestGoscraplingFullLocalEndToEnd -count=1
 ```
 
-Run the optional live practice-site E2E suite only when live network access and
+Run the optional live practice-site suite only when live network access and
 robots.txt preflight are acceptable:
 
 ```sh
 GOSCRAPLING_LIVE_E2E=1 go test ./cmd/goscrapling -run TestLivePracticeSitesEndToEnd -count=1 -timeout 10m
 ```
 
-That live suite fails unless enough robots-allowed real scrapes complete,
-including CSS selector extraction, raw document output, and custom header echo
-coverage.
-
-## Example
-
-```go
-ctx := context.Background()
-store := goscrapling.NewMemoryStore()
-
-before, _ := goscrapling.Parse(strings.NewReader(`<article class="product" id="p1">Product 1</article>`), goscrapling.ParseOptions{
-    URL:   "https://example.com/products",
-    Store: store,
-})
-element, _ := before.CSS("#p1").First()
-_ = before.Save(ctx, element, "featured-product")
-
-after, _ := goscrapling.Parse(strings.NewReader(`<article class="product" data-id="p1"><span>Product 1</span></article>`), goscrapling.ParseOptions{
-    URL:   "https://example.com/products",
-    Store: store,
-})
-match, ok, _ := after.Relocate(ctx, "featured-product")
-fmt.Println(ok, match.Element.Text())
-```
-
 ## Reference Material
 
 The upstream Scrapling repository is cloned locally for study at:
 
-`references/Scrapling`
+```text
+references/Scrapling
+```
 
-The local clone is ignored by git. Public documentation records only the observed architecture and decisions, not copied source.
+The checkout is ignored by git. Public documentation records observed
+architecture and decisions, not copied source.
 
 ## Documentation
 
+- [Portfolio and Gormes Fit](docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md)
 - [Scrapling Architecture Map](docs/research/scrapling-architecture-map.md)
 - [Scrapling Parity Matrix](docs/research/scrapling-parity-matrix.md)
-- [Scrapling Feature Map](docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md)
-- [Upstream Coverage Ledger](docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md)
-- [Portfolio and Gormes Fit](docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md)
 - [Progress Schema](docs/content/building-goscrapling/builder-loop/progress-schema.md)
-- [Agent Queue](docs/content/building-goscrapling/builder-loop/agent-queue.md)
-- [Go Scraping OSS Survey](docs/research/go-scraping-oss-survey.md)
 - [Adaptive Parser MVP Design](docs/superpowers/specs/2026-05-13-goscrapling-adaptive-parser-design.md)
 - [True Port Design](docs/superpowers/specs/2026-05-13-goscrapling-true-port-design.md)
