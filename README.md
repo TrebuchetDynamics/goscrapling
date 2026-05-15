@@ -52,6 +52,7 @@ Implemented now:
 - Use `goscrapling extract get/post/put/delete` for local/static page
   extraction with headers, timeout parsing, query params, request bodies,
   JSON bodies, CSS-selected text output, and full HTML output.
+- Run a deterministic full binary E2E smoke suite for the static CLI surface.
 - Drive all behavior with test-first fixtures.
 
 Missing major Scrapling subsystems:
@@ -97,6 +98,34 @@ go run ./cmd/progress write
 `validate` checks the canonical progress ledger. `write` regenerates the
 builder-loop handoff, agent queue, next slices, blocked slices, and umbrella
 cleanup pages from `progress.json`.
+
+## Testing
+
+Run the full hermetic validation suite:
+
+```sh
+go test ./... -count=1
+go run ./cmd/progress validate
+jq empty docs/content/building-goscrapling/architecture_plan/progress.json
+git diff --check
+```
+
+Run the deterministic full local E2E smoke suite:
+
+```sh
+go test ./cmd/goscrapling -run TestGoscraplingFullLocalEndToEnd -count=1
+```
+
+Run the optional live practice-site E2E suite only when live network access and
+robots.txt preflight are acceptable:
+
+```sh
+GOSCRAPLING_LIVE_E2E=1 go test ./cmd/goscrapling -run TestLivePracticeSitesEndToEnd -count=1 -timeout 10m
+```
+
+That live suite fails unless enough robots-allowed real scrapes complete,
+including CSS selector extraction, raw document output, and custom header echo
+coverage.
 
 ## Example
 

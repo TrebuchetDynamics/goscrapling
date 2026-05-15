@@ -1447,6 +1447,44 @@
               ]
             },
             {
+              "name": "Full CLI E2E validation harness",
+              "status": "complete",
+              "priority": "P2",
+              "contract": "Provide a deterministic full binary E2E smoke suite for the static CLI surface and document the optional robots-gated live practice-site suite.",
+              "contract_status": "validated",
+              "slice_size": "small",
+              "execution_owner": "cli",
+              "source_refs": [
+                "cmd/goscrapling/main_test.go",
+                "cmd/goscrapling/full_e2e_test.go",
+                "cmd/goscrapling/live_e2e_test.go",
+                "cmd/goscrapling/live_e2e_robots_helper_test.go",
+                "README.md"
+              ],
+              "ready_when": [
+                "Static extract GET and static extract method expansion are complete."
+              ],
+              "write_scope": [
+                "cmd/goscrapling/",
+                "README.md",
+                "docs/content/building-goscrapling/architecture_plan/progress.json"
+              ],
+              "test_commands": [
+                "go test ./cmd/goscrapling -run TestGoscraplingFullLocalEndToEnd -count=1",
+                "GOSCRAPLING_LIVE_E2E=1 go test ./cmd/goscrapling -run TestLivePracticeSitesEndToEnd -count=1 -timeout 10m"
+              ],
+              "acceptance": [
+                "Local binary E2E covers GET, POST, PUT, DELETE, selected text output, selected HTML output, headers, query params, JSON body, form body, followed redirects, and held redirects without live network access.",
+                "README documents the optional live practice-site command and its robots.txt gating.",
+                "Live practice-site E2E fails unless at least five robots-allowed real scrapes complete, including CSS selector extraction, raw document output, and custom header echo coverage."
+              ],
+              "done_signal": [
+                "TestGoscraplingFullLocalEndToEnd passes.",
+                "The live E2E suite is runnable only with GOSCRAPLING_LIVE_E2E=1 and robots preflight.",
+                "TestLivePracticeSitesEndToEnd reports real completed scrape counts for the live feature lanes."
+              ]
+            },
+            {
               "name": "CLI extract markdown, AI-targeted, and browser modes",
               "status": "planned",
               "priority": "P3",
