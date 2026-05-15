@@ -3,7 +3,9 @@ package goscrapling
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -50,11 +52,13 @@ func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, erro
 	opts.Headers = headers
 
 	attempts := retryAttempts(opts.Retries)
+	var lastErr error
 	for attempt := 1; attempt <= attempts; attempt++ {
 		response, err := f.doAttempt(method, requestURL, body, opts)
 		if err == nil {
 			return response, nil
 		}
+		lastErr = err
 		if !isRetriableFetcherError(err) {
 			return nil, err
 		}
@@ -64,6 +68,15 @@ func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, erro
 		}
 	}
 
+	if errors.Is(lastErr, ErrProxyRequest) {
+		return nil, &FetcherError{
+			Kind:     FetcherErrorProxy,
+			Method:   method,
+			URL:      requestURL,
+			Attempts: attempts,
+			Err:      lastErr,
+		}
+	}
 	return nil, &FetcherError{
 		Kind:     FetcherErrorRetryExhausted,
 		Method:   method,
@@ -96,12 +109,13 @@ func (f Fetcher) doAttempt(method, rawURL string, body []byte, opts RequestOptio
 		client = http.DefaultClient
 	}
 	var history []*Response
+	proxy := &proxyTracker{}
 	client, err = clientWithRedirectPolicy(client, opts, func(response *http.Response) {
 		redirect, err := newResponseFromHTTPResponse(response, nil, opts.Store)
 		if err == nil {
 			history = append(history, redirect)
 		}
-	})
+	}, proxy)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +125,7 @@ func (f Fetcher) doAttempt(method, rawURL string, body []byte, opts RequestOptio
 		if httpResponse != nil && httpResponse.Body != nil {
 			httpResponse.Body.Close()
 		}
-		return nil, classifyRequestError(method, rawURL, err)
+		return nil, classifyRequestError(method, rawURL, err, proxy.Selected() != "")
 	}
 	defer httpResponse.Body.Close()
 
@@ -123,6 +137,11 @@ func (f Fetcher) doAttempt(method, rawURL string, body []byte, opts RequestOptio
 	responseURL := rawURL
 	if httpResponse.Request != nil && httpResponse.Request.URL != nil {
 		responseURL = httpResponse.Request.URL.String()
+	}
+
+	meta := map[string]any(nil)
+	if selectedProxy := proxy.Selected(); selectedProxy != "" {
+		meta = map[string]any{"proxy": selectedProxy}
 	}
 
 	return NewResponse(bytes.NewReader(responseBody), ResponseOptions{
@@ -137,6 +156,7 @@ func (f Fetcher) doAttempt(method, rawURL string, body []byte, opts RequestOptio
 		},
 		Cookies: httpResponse.Cookies(),
 		History: history,
+		Meta:    meta,
 		Store:   opts.Store,
 	})
 }
@@ -155,10 +175,10 @@ func retryAttempts(retries int) int {
 	return defaultRetryAttempts
 }
 
-func clientWithRedirectPolicy(client *http.Client, opts RequestOptions, onRedirect func(*http.Response)) (*http.Client, error) {
+func clientWithRedirectPolicy(client *http.Client, opts RequestOptions, onRedirect func(*http.Response), proxy *proxyTracker) (*http.Client, error) {
 	cloned := *client
-	if opts.Verify != nil && !*opts.Verify {
-		transport, err := transportWithTLSVerifyDisabled(cloned.Transport)
+	if (opts.Verify != nil && !*opts.Verify) || opts.Proxy.hasValues() {
+		transport, err := transportWithRequestOptions(cloned.Transport, opts, proxy)
 		if err != nil {
 			return nil, err
 		}
@@ -190,6 +210,34 @@ func clientWithRedirectPolicy(client *http.Client, opts RequestOptions, onRedire
 		return nil
 	}
 	return &cloned, nil
+}
+
+func transportWithRequestOptions(roundTripper http.RoundTripper, opts RequestOptions, tracker *proxyTracker) (http.RoundTripper, error) {
+	if roundTripper == nil {
+		roundTripper = http.DefaultTransport
+	}
+	transport, ok := roundTripper.(*http.Transport)
+	if !ok {
+		return nil, fmt.Errorf("%w: request transport options require an *http.Transport", ErrRequestOptions)
+	}
+
+	cloned := transport.Clone()
+	if opts.Verify != nil && !*opts.Verify {
+		if cloned.TLSClientConfig == nil {
+			cloned.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		} else {
+			cloned.TLSClientConfig = cloned.TLSClientConfig.Clone()
+			cloned.TLSClientConfig.InsecureSkipVerify = true
+		}
+	}
+	if opts.Proxy.hasValues() {
+		proxyConfig, _, err := newProxyConfig(opts.Proxy)
+		if err != nil {
+			return nil, err
+		}
+		cloned.Proxy = proxyConfig.proxyFunc(tracker)
+	}
+	return cloned, nil
 }
 
 func newResponseFromHTTPResponse(httpResponse *http.Response, body []byte, store Store) (*Response, error) {
@@ -240,8 +288,15 @@ func isPrivateIP(ip net.IP) bool {
 	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified()
 }
 
-func classifyRequestError(method, rawURL string, err error) error {
+func classifyRequestError(method, rawURL string, err error, proxyActive bool) error {
 	switch {
+	case proxyActive:
+		return &FetcherError{
+			Kind:   FetcherErrorProxy,
+			Method: method,
+			URL:    rawURL,
+			Err:    fmt.Errorf("%w: %w", ErrProxyRequest, err),
+		}
 	case errors.Is(err, ErrPrivateAddressRedirect):
 		return &FetcherError{
 			Kind:   FetcherErrorPrivateRedirect,
@@ -271,6 +326,7 @@ func classifyRequestError(method, rawURL string, err error) error {
 func isRetriableFetcherError(err error) bool {
 	if errors.Is(err, ErrPrivateAddressRedirect) ||
 		errors.Is(err, ErrRedirectNotAllowed) ||
+		errors.Is(err, ErrRequestOptions) ||
 		errors.Is(err, ErrRequestTimeout) {
 		return false
 	}

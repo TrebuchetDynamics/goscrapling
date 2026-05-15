@@ -1,7 +1,6 @@
 package goscrapling
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,6 +26,7 @@ type RequestOptions struct {
 	JSON         any
 	Auth         *BasicAuth
 	Verify       *bool
+	Proxy        ProxyOptions
 	CookieValues map[string]string
 	Cookies      []*http.Cookie
 
@@ -150,23 +150,4 @@ func applyRequestCookies(request *http.Request, opts RequestOptions) {
 		}
 		request.AddCookie(cookie)
 	}
-}
-
-func transportWithTLSVerifyDisabled(roundTripper http.RoundTripper) (http.RoundTripper, error) {
-	if roundTripper == nil {
-		roundTripper = http.DefaultTransport
-	}
-	transport, ok := roundTripper.(*http.Transport)
-	if !ok {
-		return nil, fmt.Errorf("%w: verify=false requires an *http.Transport", ErrRequestOptions)
-	}
-
-	cloned := transport.Clone()
-	if cloned.TLSClientConfig == nil {
-		cloned.TLSClientConfig = &tls.Config{}
-	} else {
-		cloned.TLSClientConfig = cloned.TLSClientConfig.Clone()
-	}
-	cloned.TLSClientConfig.InsecureSkipVerify = true
-	return cloned, nil
 }

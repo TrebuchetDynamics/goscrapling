@@ -587,22 +587,32 @@
             },
             {
               "name": "Static proxy support and proxy error classification",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Add explicit per-request and per-session proxy configuration with visible proxy error classification before rotation is introduced.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "fetcher",
               "source_refs": [
                 "references/Scrapling/scrapling/engines/static.py",
+                "references/Scrapling/scrapling/engines/toolbelt/proxy_rotation.py",
                 "references/Scrapling/scrapling/engines/toolbelt/navigation.py",
-                "references/Scrapling/docs/fetching/static.md"
+                "references/Scrapling/docs/fetching/static.md",
+                "fetcher.go",
+                "fetcher_options.go",
+                "fetcher_session.go",
+                "fetcher_errors.go",
+                "fetcher_proxy.go",
+                "fetcher_proxy_test.go"
               ],
               "ready_when": [
                 "Fetcher error taxonomy is validated."
               ],
               "write_scope": [
                 "fetcher.go",
+                "fetcher_options.go",
+                "fetcher_session.go",
+                "fetcher_errors.go",
                 "fetcher_proxy.go",
                 "fetcher_proxy_test.go"
               ],
@@ -610,10 +620,10 @@
                 "go test ./... -run TestStaticFetcherProxySupport -count=1"
               ],
               "acceptance": [
-                "Local proxy fixtures prove proxy routing, proxy auth, bypass errors, and operator-visible error kinds."
+                "Local proxy fixtures prove per-request proxy routing, proxy auth, per-session proxy defaults, per-request proxy override, scheme-specific proxy maps, invalid proxy option errors, response proxy metadata, and operator-visible proxy error kinds."
               ],
               "done_signal": [
-                "Static proxy support tests pass."
+                "TestStaticFetcherProxySupport passes."
               ]
             },
             {

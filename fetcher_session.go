@@ -8,12 +8,14 @@ import (
 type FetcherSessionOptions struct {
 	Headers http.Header
 	Client  *http.Client
+	Proxy   ProxyOptions
 	Store   Store
 }
 
 type FetcherSession struct {
 	fetcher Fetcher
 	headers http.Header
+	proxy   ProxyOptions
 	store   Store
 }
 
@@ -26,6 +28,7 @@ func NewFetcherSession(opts FetcherSessionOptions) (*FetcherSession, error) {
 	return &FetcherSession{
 		fetcher: Fetcher{Client: client},
 		headers: opts.Headers.Clone(),
+		proxy:   cloneProxyOptions(opts.Proxy),
 		store:   opts.Store,
 	}, nil
 }
@@ -60,6 +63,9 @@ func (s *FetcherSession) mergeOptions(opts RequestOptions) RequestOptions {
 	}
 
 	opts.Headers = mergedHeaders
+	if !opts.Proxy.hasValues() {
+		opts.Proxy = cloneProxyOptions(s.proxy)
+	}
 	if opts.Store == nil {
 		opts.Store = s.store
 	}

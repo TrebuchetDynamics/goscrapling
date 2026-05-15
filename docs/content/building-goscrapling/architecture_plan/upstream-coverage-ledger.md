@@ -56,9 +56,9 @@ core source-class names below when the local upstream checkout exists.
 | `scrapling/core/ai.py` | MCP and AI docs | `integrations/mcp` | Phase 5 | planned |
 | `scrapling/engines/static.py`, `scrapling/engines/toolbelt/custom.py`, `scrapling/engines/toolbelt/convertor.py` | Response object, static fetcher | `Response`, `Fetcher`, `FetcherSession` | Phase 1 | partial |
 | `scrapling/engines/_browsers/**` | Browser fetching | `BrowserFetcher`, future browser engine adapters and sessions | Phase 3 | partial |
-| `scrapling/engines/toolbelt/proxy_rotation.py` | Proxy rotation | `ProxyRotator`, fetcher/spider proxy options | Phase 1, Phase 4 | planned |
+| `scrapling/engines/toolbelt/proxy_rotation.py` | Proxy rotation | `ProxyRotator`, fetcher/spider proxy options | Phase 1, Phase 4 | partial |
 | `scrapling/engines/toolbelt/fingerprints.py` | Static fetcher, Browser fetching | explicit identity and stealth option boundaries | Phase 1, Phase 3 | planned |
-| `scrapling/engines/toolbelt/navigation.py`, `scrapling/engines/toolbelt/ad_domains.py`, `scrapling/engines/constants.py` | Browser fetching, Proxy rotation | browser context/resource controls and proxy error helpers | Phase 1, Phase 3 | planned |
+| `scrapling/engines/toolbelt/navigation.py`, `scrapling/engines/toolbelt/ad_domains.py`, `scrapling/engines/constants.py` | Browser fetching, Proxy rotation | browser context/resource controls and proxy error helpers | Phase 1, Phase 3 | partial |
 | `scrapling/fetchers/requests.py` | Static fetcher | `Fetcher`, `FetcherSession` | Phase 1 | partial |
 | `scrapling/fetchers/chrome.py` | Browser fetching | `BrowserFetcher`, future browser engine adapters | Phase 3 | partial |
 | `scrapling/fetchers/stealth_chrome.py` | Browser fetching, stealth controls | `browser` package plus explicit stealth options | Phase 3 future split | planned |

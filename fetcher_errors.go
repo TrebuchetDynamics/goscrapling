@@ -9,6 +9,7 @@ var (
 	ErrPrivateAddressRedirect = errors.New("private address redirect blocked")
 	ErrRedirectNotAllowed     = errors.New("redirect not allowed")
 	ErrRequestTimeout         = errors.New("request timeout")
+	ErrProxyRequest           = errors.New("proxy request failed")
 	ErrRetryExhausted         = errors.New("retry attempts exhausted")
 )
 
@@ -18,6 +19,7 @@ const (
 	FetcherErrorPrivateRedirect FetcherErrorKind = "private_redirect"
 	FetcherErrorRedirect        FetcherErrorKind = "redirect"
 	FetcherErrorTimeout         FetcherErrorKind = "timeout"
+	FetcherErrorProxy           FetcherErrorKind = "proxy"
 	FetcherErrorRetryExhausted  FetcherErrorKind = "retry_exhausted"
 )
 
