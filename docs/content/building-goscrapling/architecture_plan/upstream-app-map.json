@@ -154,11 +154,11 @@
         "Store adaptive fingerprints by domain and identifier",
         "Relocate elements through deterministic fingerprint scoring and expose adaptive selector fallback modes"
       ],
-      "go_target": "AdaptiveStore, MemoryStore, FileStore, SQLiteStore, and relocation scoring",
+      "go_target": "core/storage Store, MemoryStore, FileStore, SQLiteStore, fingerprints, and relocation scoring",
       "progress_rows": [
         "Save adaptive fingerprints by domain and identifier",
         "Relocate adaptive elements with deterministic scoring",
-        "Adaptive selector fallback and auto-save modes",
+        "CSS adaptive selector fallback and auto-save modes",
         "Adaptive fingerprint parity review and diagnostics",
         "File-backed adaptive store with compatibility migration",
         "SQLite adaptive store parity"
@@ -361,7 +361,7 @@
         "Model spider request/result/session/scheduler contracts and crawler engine execution semantics",
         "Preserve concurrency, domain limits, download delays, lifecycle hooks, streaming, item hooks, stats, and session adapter boundaries"
       ],
-      "go_target": "spider package request/result/session/scheduler types, allowed-domain filtering, and concurrent crawler engine controls",
+      "go_target": "spiders package request/result/session/scheduler types, allowed-domain filtering, and concurrent crawler engine controls",
       "progress_rows": [
         "Spider request, result, scheduler, and session contracts",
         "Crawler engine concurrency, domain limits, and download delay",
@@ -394,7 +394,7 @@
       "behavior_atoms": [
         "Preserve robots.txt decisions, crawl-delay handling, development response cache behavior, and checkpoint pause/resume state"
       ],
-      "go_target": "spider package robots manager, response cache, checkpoint store, and crawler controls",
+      "go_target": "spiders package robots manager, response cache, checkpoint store, and crawler controls",
       "progress_rows": [
         "Robots.txt manager and delay directives",
         "Development response cache",
@@ -433,7 +433,7 @@
       "behavior_atoms": [
         "Extract and normalize links, then expose crawler and sitemap templates as higher-level spider building blocks"
       ],
-      "go_target": "spider package LinkExtractor plus crawler and sitemap templates",
+      "go_target": "spiders package LinkExtractor plus crawler and sitemap templates",
       "progress_rows": [
         "LinkExtractor and crawl templates"
       ],
@@ -742,7 +742,7 @@
         }
       ],
       "feature_anchor": "Spider runtime",
-      "go_target": "spider package fake-fetcher and scheduler fixtures",
+      "go_target": "spiders package fake-fetcher and scheduler fixtures",
       "progress_rows": [
         "Spider request, result, scheduler, and session contracts",
         "Crawler engine concurrency, domain limits, and download delay",
@@ -842,11 +842,11 @@
         }
       ],
       "feature_anchor": "Parser and selector objects",
-      "go_target": "root parser/adaptive docs, examples, and API reference",
+      "go_target": "parser, core/storage, core/customtypes, root facade docs, examples, and API reference",
       "progress_rows": [
         "Selector pseudo-elements, extraction helpers, and custom types",
         "XPath selection and CSS-to-XPath translator parity",
-        "Adaptive selector fallback and auto-save modes",
+        "CSS adaptive selector fallback and auto-save modes",
         "Public docs, examples, and API reference parity"
       ],
       "coverage_status": "planned",
@@ -936,7 +936,7 @@
         }
       ],
       "feature_anchor": "Spider runtime",
-      "go_target": "spider package docs, examples, and templates",
+      "go_target": "spiders package docs, examples, and templates",
       "progress_rows": [
         "Spider request, result, scheduler, and session contracts",
         "Crawler engine concurrency, domain limits, and download delay",

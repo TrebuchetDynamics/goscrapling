@@ -1089,9 +1089,9 @@
                 "The row includes robots, cache, checkpoint, sitemap templates, and live crawling in the same slice."
               ],
               "write_scope": [
-                "spider/",
+                "spiders/",
                 "spider_test.go",
-                "testdata/spider/"
+                "testdata/spiders/"
               ],
               "test_commands": [
                 "go test ./... -run TestSpider -count=1"
@@ -1115,17 +1115,17 @@
                 "references/Scrapling/scrapling/spiders/engine.py",
                 "references/Scrapling/docs/spiders/architecture.md",
                 "references/Scrapling/docs/spiders/advanced.md",
-                "spider/crawler.go",
-                "spider/session.go",
-                "spider/result.go",
-                "spider/engine_concurrency_test.go"
+                "spiders/crawler.go",
+                "spiders/session.go",
+                "spiders/result.go",
+                "spiders/engine_concurrency_test.go"
               ],
               "ready_when": [
                 "Spider core request/result/session/scheduler contracts are validated."
               ],
               "write_scope": [
-                "spider/",
-                "testdata/spider/"
+                "spiders/",
+                "testdata/spiders/"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderEngineConcurrency -count=1"
@@ -1148,16 +1148,16 @@
               "source_refs": [
                 "references/Scrapling/scrapling/spiders/engine.py",
                 "references/Scrapling/docs/spiders/advanced.md",
-                "spider/crawler.go",
-                "spider/result.go",
-                "spider/allowed_domains_test.go"
+                "spiders/crawler.go",
+                "spiders/result.go",
+                "spiders/allowed_domains_test.go"
               ],
               "ready_when": [
                 "Spider core scheduler and stats are stable."
               ],
               "write_scope": [
-                "spider/",
-                "testdata/spider/"
+                "spiders/",
+                "testdata/spiders/"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderAllowedDomains -count=1"
@@ -1185,9 +1185,9 @@
                 "Crawler engine filtering hooks are available."
               ],
               "write_scope": [
-                "spider/robots.go",
-                "spider/robots_test.go",
-                "testdata/spider/robots/"
+                "spiders/robots.go",
+                "spiders/robots_test.go",
+                "testdata/spiders/robots/"
               ],
               "test_commands": [
                 "go test ./... -run TestRobotsTxtManager -count=1"
@@ -1218,9 +1218,9 @@
                 "Request fingerprints and Response body helpers are validated."
               ],
               "write_scope": [
-                "spider/cache.go",
-                "spider/cache_test.go",
-                "testdata/spider/cache/"
+                "spiders/cache.go",
+                "spiders/cache_test.go",
+                "testdata/spiders/cache/"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderResponseCache -count=1"
@@ -1249,9 +1249,9 @@
                 "Scheduler fingerprints and crawler loop are stable."
               ],
               "write_scope": [
-                "spider/checkpoint.go",
-                "spider/checkpoint_test.go",
-                "testdata/spider/checkpoint/"
+                "spiders/checkpoint.go",
+                "spiders/checkpoint_test.go",
+                "testdata/spiders/checkpoint/"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderCheckpoint -count=1"
@@ -1283,8 +1283,8 @@
                 "Crawler engine loop and stats are stable."
               ],
               "write_scope": [
-                "spider/blocked.go",
-                "spider/blocked_test.go"
+                "spiders/blocked.go",
+                "spiders/blocked_test.go"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderBlockedRetry -count=1"
@@ -1316,7 +1316,7 @@
                 "Crawler engine loop and result struct are stable."
               ],
               "write_scope": [
-                "spider/",
+                "spiders/",
                 "spider_stats_test.go"
               ],
               "test_commands": [
@@ -1350,10 +1350,10 @@
                 "Response.follow and selector helpers are stable."
               ],
               "write_scope": [
-                "spider/links.go",
-                "spider/templates/",
+                "spiders/links.go",
+                "spiders/templates/",
                 "spider_links_test.go",
-                "testdata/spider/templates/"
+                "testdata/spiders/templates/"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderLinkExtractorAndTemplates -count=1"
@@ -1385,8 +1385,8 @@
                 "Fetcher, browser session, and proxy rows are complete."
               ],
               "write_scope": [
-                "spider/session_adapters.go",
-                "spider/session_adapters_test.go"
+                "spiders/session_adapters.go",
+                "spiders/session_adapters_test.go"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderSessionAdapters -count=1"
@@ -1726,10 +1726,10 @@
                 "Example tests and docs checks pass."
               ]
             },
-        {
-          "name": "Benchmarks and parity scorecard",
-          "status": "planned",
-          "priority": "P4",
+            {
+              "name": "Benchmarks and parity scorecard",
+              "status": "planned",
+              "priority": "P4",
               "contract": "Add benchmark coverage and a generated parity scorecard so claims such as coverage, speed, and feature completion remain evidence-backed.",
               "contract_status": "draft",
               "slice_size": "medium",
@@ -1756,58 +1756,58 @@
               "done_signal": [
                 "Parity scorecard tests pass."
               ],
-          "blocked_by": [
-            "Public docs, examples, and API reference parity"
-          ]
-        },
-        {
-          "name": "Full upstream app map and py2many static reference",
-          "status": "complete",
-          "priority": "P2",
-          "contract": "Inventory every validator-discovered upstream Scrapling source, test, doc, and docs asset into a generated app-map manifest, link relevant py2many static reference outputs as docs evidence, and avoid claiming generated Go parity when py2many is unavailable.",
-          "contract_status": "validated",
-          "slice_size": "medium",
-          "execution_owner": "docs",
-          "source_refs": [
-            "references/Scrapling/scrapling",
-            "references/Scrapling/tests",
-            "references/Scrapling/docs",
-            "docs/research/python-to-go-probes/py2many/summary.md",
-            "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json"
-          ],
-          "ready_when": [
-            "Task 1-3 app-map validator/renderer support and py2many static reference output paths exist."
-          ],
-          "write_scope": [
-            "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json",
-            "docs/content/building-goscrapling/architecture_plan/upstream-app-map.md",
-            "docs/content/building-goscrapling/architecture_plan/progress.json",
-            "docs/content/building-goscrapling/builder-loop/*.md"
-          ],
-          "test_commands": [
-            "go run ./cmd/progress map-validate",
-            "go run ./cmd/progress map-write",
-            "go run ./cmd/progress write",
-            "jq empty docs/content/building-goscrapling/architecture_plan/upstream-app-map.json",
-            "jq empty docs/content/building-goscrapling/architecture_plan/progress.json",
-            "git diff --check -- docs/content/building-goscrapling/architecture_plan/upstream-app-map.json docs/content/building-goscrapling/architecture_plan/upstream-app-map.md docs/content/building-goscrapling/architecture_plan/progress.json docs/content/building-goscrapling/builder-loop"
-          ],
-          "acceptance": [
-            "Every discovered upstream app-map ref is represented in upstream-app-map.json with coherent grouped entries.",
-            "Every non-excluded entry names a feature anchor, Go target, progress row, conservative coverage status, and translation suitability.",
-            "Relevant py2many reference output paths are linked as static evidence and described without claiming generated Go output.",
-            "upstream-app-map.md and builder-loop docs are regenerated from source ledgers."
-          ],
-          "done_signal": [
-            "App-map validation passes with no unmapped or stale upstream refs.",
-            "Generated upstream-app-map.md reflects upstream-app-map.json.",
-            "Generated builder-loop docs are regenerated from the updated progress ledger."
-          ]
-        },
-        {
-          "name": "Future upstream release delta and unclassified surfaces",
-          "status": "planned",
-          "priority": "P4",
+              "blocked_by": [
+                "Public docs, examples, and API reference parity"
+              ]
+            },
+            {
+              "name": "Full upstream app map and py2many static reference",
+              "status": "complete",
+              "priority": "P2",
+              "contract": "Inventory every validator-discovered upstream Scrapling source, test, doc, and docs asset into a generated app-map manifest, link relevant py2many static reference outputs as docs evidence, and avoid claiming generated Go parity when py2many is unavailable.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "docs",
+              "source_refs": [
+                "references/Scrapling/scrapling",
+                "references/Scrapling/tests",
+                "references/Scrapling/docs",
+                "docs/research/python-to-go-probes/py2many/summary.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json"
+              ],
+              "ready_when": [
+                "Task 1-3 app-map validator/renderer support and py2many static reference output paths exist."
+              ],
+              "write_scope": [
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.md",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/builder-loop/*.md"
+              ],
+              "test_commands": [
+                "go run ./cmd/progress map-validate",
+                "go run ./cmd/progress map-write",
+                "go run ./cmd/progress write",
+                "jq empty docs/content/building-goscrapling/architecture_plan/upstream-app-map.json",
+                "jq empty docs/content/building-goscrapling/architecture_plan/progress.json",
+                "git diff --check -- docs/content/building-goscrapling/architecture_plan/upstream-app-map.json docs/content/building-goscrapling/architecture_plan/upstream-app-map.md docs/content/building-goscrapling/architecture_plan/progress.json docs/content/building-goscrapling/builder-loop"
+              ],
+              "acceptance": [
+                "Every discovered upstream app-map ref is represented in upstream-app-map.json with coherent grouped entries.",
+                "Every non-excluded entry names a feature anchor, Go target, progress row, conservative coverage status, and translation suitability.",
+                "Relevant py2many reference output paths are linked as static evidence and described without claiming generated Go output.",
+                "upstream-app-map.md and builder-loop docs are regenerated from source ledgers."
+              ],
+              "done_signal": [
+                "App-map validation passes with no unmapped or stale upstream refs.",
+                "Generated upstream-app-map.md reflects upstream-app-map.json.",
+                "Generated builder-loop docs are regenerated from the updated progress ledger."
+              ]
+            },
+            {
+              "name": "Future upstream release delta and unclassified surfaces",
+              "status": "planned",
+              "priority": "P4",
               "contract": "Keep a non-builder umbrella for Scrapling features introduced after the observed upstream baseline or source surfaces that a future parity audit finds unclassified.",
               "contract_status": "draft",
               "slice_size": "umbrella",
@@ -1834,6 +1834,64 @@
               ],
               "done_signal": [
                 "No builder takes this umbrella directly."
+              ]
+            },
+            {
+              "name": "Scrapling-shaped Go package taxonomy",
+              "status": "complete",
+              "priority": "P2",
+              "contract": "Move goscrapling runtime code into Go packages that resemble Scrapling source taxonomy while preserving the root package as a compatibility facade for current callers.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "docs",
+              "source_refs": [
+                "references/Scrapling/scrapling/__init__.py",
+                "references/Scrapling/scrapling/parser.py",
+                "references/Scrapling/scrapling/core/custom_types.py",
+                "references/Scrapling/scrapling/core/storage.py",
+                "references/Scrapling/scrapling/core/translator.py",
+                "references/Scrapling/scrapling/engines/static.py",
+                "references/Scrapling/scrapling/engines/toolbelt/custom.py",
+                "references/Scrapling/scrapling/engines/_browsers",
+                "references/Scrapling/scrapling/fetchers",
+                "references/Scrapling/scrapling/spiders",
+                "docs/superpowers/specs/2026-05-15-goscrapling-scrapling-taxonomy-design.md"
+              ],
+              "ready_when": [
+                "Current parser, fetcher, response, browser, storage, and spider tests pass in the flat package layout.",
+                "The package map preserves current root API entrypoints through type aliases and constructor wrappers."
+              ],
+              "write_scope": [
+                "goscrapling.go",
+                "parser/",
+                "core/customtypes/",
+                "core/storage/",
+                "engines/toolbelt/",
+                "engines/browser/",
+                "fetchers/",
+                "spiders/",
+                "cmd/goscrapling/",
+                "internal/cli/",
+                "docs/content/building-goscrapling/architecture_plan/",
+                "docs/superpowers/specs/2026-05-15-goscrapling-scrapling-taxonomy-design.md",
+                "core/translator/"
+              ],
+              "test_commands": [
+                "go test ./... -count=1",
+                "go run ./cmd/progress validate",
+                "jq empty docs/content/building-goscrapling/architecture_plan/progress.json",
+                "git diff --check"
+              ],
+              "acceptance": [
+                "Runtime implementation files are grouped under Scrapling-recognizable Go packages instead of one crowded root package.",
+                "The root package re-exports the existing stable public types and constructors used by README, CLI, examples, and spider sessions.",
+                "spider runtime code moves to a plural `spiders` package matching upstream taxonomy.",
+                "Feature-map and boundary docs describe the package taxonomy and root facade rule."
+              ],
+              "done_signal": [
+                "go test ./... -count=1 passes after the package split.",
+                "progress validation and JSON validation pass.",
+                "git diff --check reports no whitespace errors."
               ]
             }
           ]

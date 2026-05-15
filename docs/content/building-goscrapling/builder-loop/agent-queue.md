@@ -13,7 +13,7 @@ non-umbrella, and builder-ready.
 - Contract status: `draft`
 - Contract: Add spider development cache behavior keyed by request fingerprint with encoded response bodies and cache hit/miss stats.
 - Ready when: Request fingerprints and Response body helpers are validated.
-- Write scope: `spider/cache.go`, `spider/cache_test.go`, `testdata/spider/cache/`
+- Write scope: `spiders/cache.go`, `spiders/cache_test.go`, `testdata/spiders/cache/`
 - Test commands: `go test ./... -run TestSpiderResponseCache -count=1`
 - Acceptance: Temp-dir fixtures prove cache put/get/clear, binary-safe bodies, method separation, and cache stats.
 - Done signal: Spider response cache tests pass.

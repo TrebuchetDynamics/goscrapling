@@ -27,21 +27,27 @@ and explicit compatibility shims. It is not the destination for durable runtime
 code.
 
 Long-term Go architecture should use package names that describe the product
-responsibility:
+responsibility while remaining recognizable against Scrapling's taxonomy:
 
-- `adaptive` for fingerprints, relocation, and storage adapters when the root
-  package becomes too crowded.
-- `fetcher` for static HTTP fetching, response construction, request options,
-  sessions, and fetcher errors.
-- `browser` for dynamic browser-backed fetching behind engine interfaces.
-- `spider` for crawling requests, scheduler, session routing, results, robots,
+- `parser` for `Document`, `Element`, `Selection`, CSS/XPath, traversal,
+  selector extraction, and adaptive relocation methods.
+- `core/customtypes` for `TextHandler`, `TextHandlers`, and
+  `AttributesHandler`.
+- `core/storage` for fingerprints, scoring, adaptive store interfaces, and
+  durable store adapters.
+- `engines/toolbelt` for response construction and response metadata helpers.
+- `engines/browser` for dynamic browser-backed fetching behind engine
+  interfaces and concrete browser adapters.
+- `fetchers` for static HTTP fetching, request options, sessions, proxy
+  options, and fetcher errors.
+- `spiders` for crawling requests, scheduler, session routing, results, robots,
   cache, and checkpoints.
-- `storage` for durable stores if adaptive storage outgrows the root package.
 - `cmd/goscrapling` for CLI surfaces.
 
-The root package may continue to host the current parser and adaptive API until
-there is enough implementation pressure to split it. Do not split packages just
-to mirror upstream Python files.
+The root package should act as a compatibility facade while the implementation
+moves into taxonomy packages. Keep root re-exports until a future progress row
+explicitly approves a breaking public API migration. Do not split packages just
+to mirror upstream Python private files.
 
 ## Upstream Source Boundary
 
