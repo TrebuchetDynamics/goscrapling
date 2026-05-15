@@ -99,38 +99,43 @@
             },
             {
               "name": "XPath selection and CSS-to-XPath translator parity",
-              "status": "planned",
+              "status": "complete",
               "priority": "P0",
               "contract": "Add XPath selection and the CSS-to-XPath translation behavior needed for Scrapling-compatible selector queries.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "parser",
               "source_refs": [
                 "references/Scrapling/scrapling/parser.py",
                 "references/Scrapling/scrapling/core/translator.py",
                 "references/Scrapling/docs/parsing/selection.md",
-                "references/Scrapling/docs/api-reference/selector.md"
+                "references/Scrapling/docs/api-reference/selector.md",
+                "document.go",
+                "response.go",
+                "xpath.go",
+                "translator.go",
+                "xpath_test.go"
               ],
               "ready_when": [
                 "Static document parsing and selector extraction helpers are stable."
               ],
               "write_scope": [
                 "document.go",
+                "response.go",
                 "xpath.go",
                 "translator.go",
-                "xpath_test.go"
+                "xpath_test.go",
+                "go.mod",
+                "go.sum"
               ],
               "test_commands": [
                 "go test ./... -run TestXPathAndTranslator -count=1"
               ],
               "acceptance": [
-                "Fixtures prove XPath queries, CSS translation, and text/attr pseudo-element translation without network access."
+                "Fixtures prove Document, Response, Element, and Selection XPath queries, relative XPath, text and attribute XPath extraction, scoped CSS translation, and CSS ::text/::attr pseudo-element translation without network access."
               ],
               "done_signal": [
-                "XPath and translator tests pass."
-              ],
-              "blocked_by": [
-                "Selector pseudo-elements, extraction helpers, and custom types"
+                "TestXPathAndTranslator passes."
               ]
             },
             {

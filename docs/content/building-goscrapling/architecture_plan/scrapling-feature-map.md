@@ -57,10 +57,10 @@ rows are done.
 
 | Scrapling feature | Upstream refs | goscrapling target | Implementation plan | Progress anchor | Status |
 |---|---|---|---|---|---|
-| Parser and selector objects | `scrapling/parser.py`, `scrapling/core/translator.py`, `scrapling/core/custom_types.py`, `docs/parsing/**`, `docs/api-reference/selector.md` | `Document`, `Element`, `Selection`, future custom handler types | Basic CSS selection, CSS pseudo-elements, extraction helpers, and Go-native custom handler types are covered. Planned rows now cover XPath/CSS translation, traversal, filtering, text/regex/similar search, and selector generation. | Phase 0 | partial |
+| Parser and selector objects | `scrapling/parser.py`, `scrapling/core/translator.py`, `scrapling/core/custom_types.py`, `docs/parsing/**`, `docs/api-reference/selector.md` | `Document`, `Response`, `Element`, `Selection`, future custom handler types | Basic CSS selection, XPath selection, scoped CSS-to-XPath translation, CSS pseudo-elements, extraction helpers, and Go-native custom handler types are covered. Planned rows still cover traversal, filtering, text/regex/similar search, and selector generation. | Phase 0 | partial |
 | Adaptive storage | `scrapling/core/storage.py`, `docs/development/adaptive_storage_system.md`, `docs/parsing/adaptive.md` | `AdaptiveStore`, `MemoryStore`, `FileStore`, future `SQLiteStore` | Domain isolation, identifier lookup, fingerprint shape, deterministic relocation, adaptive selector modes, and relocation diagnostics are covered. Planned rows still cover SQLite parity and deeper durable storage behavior. | Phase 0, Phase 2 | partial |
 | Response object | `docs/api-reference/response.md`, `scrapling/engines/toolbelt/custom.py`, `scrapling/engines/toolbelt/convertor.py` | `Response` | Metadata/body helpers, cookies, redirect history, meta, encoding, request/response header detail, and captured XHR attachment points are covered. Planned rows still cover later browser-produced XHR capture behavior. | Phase 1 | partial |
-| Static fetcher | `docs/fetching/static.md`, `docs/api-reference/fetchers.md`, `scrapling/fetchers/requests.py`, `scrapling/engines/static.py` | `Fetcher`, `FetcherSession`, future concurrent fetcher | GET/POST/PUT/DELETE, sessions, redirects, timeout, retry, and error taxonomy are covered. Planned rows cover params/forms/JSON/auth/verify/cookies, proxy support, impersonation boundaries, HTTP/3 if supportable, and Go-native concurrency. | Phase 1 | partial |
+| Static fetcher | `docs/fetching/static.md`, `docs/api-reference/fetchers.md`, `scrapling/fetchers/requests.py`, `scrapling/engines/static.py` | `Fetcher`, `FetcherSession`, future concurrent fetcher | GET/POST/PUT/DELETE, sessions, redirects, timeout, retry, error taxonomy, and Scrapling-style params/data/JSON/auth/verify/cookie request options are covered. Planned rows cover proxy support, impersonation boundaries, HTTP/3 if supportable, and Go-native concurrency. | Phase 1 | partial |
 | Proxy rotation | `docs/api-reference/proxy-rotation.md`, `scrapling/engines/toolbelt/proxy_rotation.py` | `ProxyRotator` plus fetcher/spider proxy options | Add explicit static proxy support first, then cyclic/custom rotation and spider integration. Avoid making proxy support implicit. | Phase 1, Phase 4 | planned |
 | Browser fetching | `docs/fetching/dynamic.md`, `docs/fetching/stealthy.md`, `scrapling/fetchers/chrome.py`, `scrapling/fetchers/stealth_chrome.py`, `scrapling/engines/_browsers/**`, `scrapling/engines/toolbelt/ad_domains.py` | root package `BrowserFetcher`, future browser/session adapters | Engine-neutral contract is covered. Planned rows cover a real browser adapter, session/page pool, wait/actions/downloads/screenshots/XHR, context options, resource/ad blocking, stealth controls, and Cloudflare-claim boundaries. | Phase 3 | partial |
 | Spider runtime | `docs/spiders/**`, `scrapling/spiders/**` | `spider` package | Request/result/session/scheduler contracts are fixture-backed. Planned rows cover engine concurrency, domain filters, robots, cache, checkpointing, blocked retries, lifecycle/streaming/stats/export, link extraction/templates, and session adapters. | Phase 4 | partial |
@@ -71,10 +71,10 @@ rows are done.
 
 ## Implementation Order
 
-1. Close P0 parser gaps: extraction helpers, XPath/translator behavior, and
-   adaptive selector modes.
-2. Close P0/P1 static fetcher gaps: response metadata, request options,
-   proxy support, and proxy rotation.
+1. Close parser selector gaps: traversal, filtering, text/regex/similar search,
+   and selector generation.
+2. Close remaining static fetcher gaps: proxy support, proxy rotation,
+   impersonation boundaries, HTTP/3 if supportable, and concurrency.
 3. Build real browser support in layers: adapter, sessions, waits/actions,
    context/resource controls, then stealth boundaries.
 4. Continue spider production controls in small rows: concurrency, domains,

@@ -182,6 +182,13 @@ func (r *Response) CSS(selector string) Selection {
 	return r.document.CSS(selector)
 }
 
+func (r *Response) XPath(expr string) Selection {
+	if r == nil || r.document == nil {
+		return Selection{}
+	}
+	return r.document.XPath(expr)
+}
+
 func (r *Response) Body() []byte {
 	if r == nil {
 		return nil

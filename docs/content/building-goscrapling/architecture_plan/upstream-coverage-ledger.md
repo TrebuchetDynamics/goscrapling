@@ -50,7 +50,7 @@ core source-class names below when the local upstream checkout exists.
 | `scrapling/core/storage.py` | Adaptive storage | `AdaptiveStore`, `MemoryStore`, `FileStore`, future `SQLiteStore` | Phase 0, Phase 2 | partial |
 | `scrapling/core/mixins.py` | Parser and selector objects | selector generation helpers | Phase 0 | planned |
 | `scrapling/core/custom_types.py`, `scrapling/core/_types.py` | Parser and selector objects | root package `TextHandler`, `TextHandlers`, and `AttributesHandler` behavior | Phase 0 | partial |
-| `scrapling/core/translator.py` | Parser and selector objects | XPath/CSS translator helpers | Phase 0 | planned |
+| `scrapling/core/translator.py` | Parser and selector objects | XPath/CSS translator helpers | Phase 0 | partial |
 | `scrapling/core/shell.py`, `scrapling/core/_shell_signatures.py`, `scrapling/core/utils/_shell.py` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | planned |
 | `scrapling/core/utils/_utils.py` | Parser and adaptive storage | adaptive fingerprint field mapping and relocation diagnostics | Phase 0 | partial |
 | `scrapling/core/ai.py` | MCP and AI docs | `integrations/mcp` | Phase 5 | planned |

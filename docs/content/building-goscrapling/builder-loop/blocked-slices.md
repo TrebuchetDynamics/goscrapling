@@ -6,7 +6,6 @@ This page is generated from canonical `progress.json` rows that declare
 <!-- PROGRESS:START kind=blocked-slices -->
 | Phase | Slice | Blocked by | Ready when | Unblocks |
 |---|---|---|---|---|
-| phase-0-parser-adaptive / static-document | XPath selection and CSS-to-XPath translator parity | Selector pseudo-elements, extraction helpers, and custom types | Static document parsing and selector extraction helpers are stable. | - |
 | phase-0-parser-adaptive / static-document | Traversal, filtering, and text search helpers | Selector pseudo-elements, extraction helpers, and custom types | Selector extraction helpers are stable enough to express expected results. | - |
 | phase-1-response-fetcher / static-fetcher | Proxy rotator strategies | Static proxy support and proxy error classification | Static proxy support is complete. | - |
 | phase-3-browser / browser-fetcher | Browser context options and resource blocking | Browser sessions and page pool lifecycle | Browser adapter and session rows are stable. | - |
