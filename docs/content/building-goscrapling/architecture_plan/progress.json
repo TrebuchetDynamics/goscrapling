@@ -140,10 +140,10 @@
             },
             {
               "name": "Traversal, filtering, and text search helpers",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Port selector navigation and search helpers including parent, children, siblings, next/previous, ancestors, search/filter, find_by_text, find_by_regex, and find_similar.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "parser",
               "source_refs": [
@@ -164,13 +164,10 @@
                 "go test ./... -run TestSelectorNavigationAndSearch -count=1"
               ],
               "acceptance": [
-                "Local DOM fixtures prove traversal, filtering, text/regex search, and similar element behavior."
+                "Local DOM fixtures prove parent, children, siblings, next/previous, ancestors, selection filter/search, direct-text lookup, regex lookup, scoped element lookup, and similar-element behavior."
               ],
               "done_signal": [
-                "Selector navigation and search tests pass."
-              ],
-              "blocked_by": [
-                "Selector pseudo-elements, extraction helpers, and custom types"
+                "TestSelectorNavigationAndSearch passes."
               ]
             },
             {
