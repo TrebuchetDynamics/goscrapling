@@ -26,17 +26,6 @@ type Fetcher struct {
 	Client *http.Client
 }
 
-type RequestOptions struct {
-	Headers         http.Header
-	Body            io.Reader
-	Store           Store
-	FollowRedirects RedirectPolicy
-	MaxRedirects    int
-	Timeout         time.Duration
-	Retries         int
-	RetryDelay      time.Duration
-}
-
 func (f Fetcher) Get(url string, opts RequestOptions) (*Response, error) {
 	return f.do(http.MethodGet, url, opts)
 }
@@ -54,14 +43,15 @@ func (f Fetcher) Delete(url string, opts RequestOptions) (*Response, error) {
 }
 
 func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, error) {
-	body, err := readRequestBody(opts.Body)
+	requestURL, body, headers, err := prepareRequest(rawURL, opts)
 	if err != nil {
 		return nil, err
 	}
+	opts.Headers = headers
 
 	attempts := retryAttempts(opts.Retries)
 	for attempt := 1; attempt <= attempts; attempt++ {
-		response, err := f.doAttempt(method, rawURL, body, opts)
+		response, err := f.doAttempt(method, requestURL, body, opts)
 		if err == nil {
 			return response, nil
 		}
@@ -77,7 +67,7 @@ func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, erro
 	return nil, &FetcherError{
 		Kind:     FetcherErrorRetryExhausted,
 		Method:   method,
-		URL:      rawURL,
+		URL:      requestURL,
 		Attempts: attempts,
 		Err:      ErrRetryExhausted,
 	}
@@ -96,18 +86,25 @@ func (f Fetcher) doAttempt(method, rawURL string, body []byte, opts RequestOptio
 		return nil, err
 	}
 	request.Header = opts.Headers.Clone()
+	applyRequestCookies(request, opts)
+	if opts.Auth != nil && request.Header.Get("Authorization") == "" {
+		request.SetBasicAuth(opts.Auth.Username, opts.Auth.Password)
+	}
 
 	client := f.Client
 	if client == nil {
 		client = http.DefaultClient
 	}
 	var history []*Response
-	client = clientWithRedirectPolicy(client, opts, func(response *http.Response) {
+	client, err = clientWithRedirectPolicy(client, opts, func(response *http.Response) {
 		redirect, err := newResponseFromHTTPResponse(response, nil, opts.Store)
 		if err == nil {
 			history = append(history, redirect)
 		}
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	httpResponse, err := client.Do(request)
 	if err != nil {
@@ -158,8 +155,15 @@ func retryAttempts(retries int) int {
 	return defaultRetryAttempts
 }
 
-func clientWithRedirectPolicy(client *http.Client, opts RequestOptions, onRedirect func(*http.Response)) *http.Client {
+func clientWithRedirectPolicy(client *http.Client, opts RequestOptions, onRedirect func(*http.Response)) (*http.Client, error) {
 	cloned := *client
+	if opts.Verify != nil && !*opts.Verify {
+		transport, err := transportWithTLSVerifyDisabled(cloned.Transport)
+		if err != nil {
+			return nil, err
+		}
+		cloned.Transport = transport
+	}
 	cloned.CheckRedirect = func(request *http.Request, via []*http.Request) error {
 		if onRedirect != nil && request != nil && request.Response != nil {
 			onRedirect(request.Response)
@@ -185,7 +189,7 @@ func clientWithRedirectPolicy(client *http.Client, opts RequestOptions, onRedire
 		}
 		return nil
 	}
-	return &cloned
+	return &cloned, nil
 }
 
 func newResponseFromHTTPResponse(httpResponse *http.Response, body []byte, store Store) (*Response, error) {

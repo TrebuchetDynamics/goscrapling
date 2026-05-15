@@ -1,6 +1,7 @@
 package goscrapling
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -136,6 +137,218 @@ func TestStaticFetcherMethods(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestStaticFetcherRequestOptions(t *testing.T) {
+	t.Run("sends params data auth cookies and exposes response cookies", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPost {
+				t.Fatalf("method = %s, want POST", r.Method)
+			}
+			query := r.URL.Query()
+			if got := query["existing"]; len(got) != 1 || got[0] != "1" {
+				t.Fatalf("existing query = %#v, want [1]", got)
+			}
+			if got := query["page"]; len(got) != 1 || got[0] != "2" {
+				t.Fatalf("page query = %#v, want [2]", got)
+			}
+			if got := query["tag"]; len(got) != 2 || got[0] != "go" || got[1] != "scrapling" {
+				t.Fatalf("tag query = %#v, want [go scrapling]", got)
+			}
+			username, password, ok := r.BasicAuth()
+			if !ok || username != "scrapling" || password != "secret" {
+				t.Fatalf("basic auth = %q %q ok=%v, want scrapling secret true", username, password, ok)
+			}
+			if got := r.Header.Get("Content-Type"); got != "application/x-www-form-urlencoded" {
+				t.Fatalf("content-type = %q, want form encoded", got)
+			}
+			sid, err := r.Cookie("sid")
+			if err != nil || sid.Value != "cookie-wins" {
+				t.Fatalf("sid cookie = %#v err=%v, want cookie-wins", sid, err)
+			}
+			mode, err := r.Cookie("mode")
+			if err != nil || mode.Value != "map-value" {
+				t.Fatalf("mode cookie = %#v err=%v, want map-value", mode, err)
+			}
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("read request body: %v", err)
+			}
+			if got := string(body); got != "key=value&multi=one&multi=two" {
+				t.Fatalf("body = %q, want encoded data", got)
+			}
+			http.SetCookie(w, &http.Cookie{Name: "seen", Value: "yes"})
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			fmt.Fprint(w, `<html><body><article class="ok">request options</article></body></html>`)
+		}))
+		t.Cleanup(server.Close)
+
+		response, err := (Fetcher{}).Post(server.URL+"/submit?existing=1", RequestOptions{
+			Params: url.Values{
+				"page": []string{"2"},
+				"tag":  []string{"go", "scrapling"},
+			},
+			Data: url.Values{
+				"key":   []string{"value"},
+				"multi": []string{"one", "two"},
+			},
+			Auth: &BasicAuth{Username: "scrapling", Password: "secret"},
+			CookieValues: map[string]string{
+				"sid":  "map-value",
+				"mode": "map-value",
+			},
+			Cookies: []*http.Cookie{
+				{Name: "sid", Value: "cookie-wins"},
+			},
+		})
+		if err != nil {
+			t.Fatalf("Fetcher.Post returned error: %v", err)
+		}
+		if got := response.Request().URL; !strings.Contains(got, "existing=1") || !strings.Contains(got, "page=2") {
+			t.Fatalf("request URL = %q, want merged query params", got)
+		}
+		cookies := response.Cookies()
+		if len(cookies) != 1 || cookies[0].Name != "seen" || cookies[0].Value != "yes" {
+			t.Fatalf("response cookies = %#v, want seen=yes", cookies)
+		}
+	})
+
+	t.Run("marshals JSON and respects explicit content type and authorization", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if got := r.Header.Get("Content-Type"); got != "application/vnd.scrapling+json" {
+				t.Fatalf("content-type = %q, want explicit vendor JSON", got)
+			}
+			if got := r.Header.Get("Authorization"); got != "Bearer explicit" {
+				t.Fatalf("authorization = %q, want explicit header", got)
+			}
+			var payload map[string]any
+			if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+				t.Fatalf("decode JSON body: %v", err)
+			}
+			if payload["key"] != "value" {
+				t.Fatalf("payload = %#v, want key=value", payload)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprint(w, `{"ok":true}`)
+		}))
+		t.Cleanup(server.Close)
+
+		response, err := (Fetcher{}).Put(server.URL+"/json", RequestOptions{
+			Headers: http.Header{
+				"Content-Type":  []string{"application/vnd.scrapling+json"},
+				"Authorization": []string{"Bearer explicit"},
+			},
+			JSON: map[string]string{"key": "value"},
+			Auth: &BasicAuth{Username: "ignored", Password: "ignored"},
+		})
+		if err != nil {
+			t.Fatalf("Fetcher.Put returned error: %v", err)
+		}
+		if got := response.Headers().Get("Content-Type"); got != "application/json" {
+			t.Fatalf("response content-type = %q, want application/json", got)
+		}
+	})
+
+	t.Run("marshals JSON with a default content type", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if got := r.Header.Get("Content-Type"); got != "application/json" {
+				t.Fatalf("content-type = %q, want application/json", got)
+			}
+			var payload map[string]any
+			if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+				t.Fatalf("decode JSON body: %v", err)
+			}
+			if payload["key"] != "value" {
+				t.Fatalf("payload = %#v, want key=value", payload)
+			}
+			w.WriteHeader(http.StatusNoContent)
+		}))
+		t.Cleanup(server.Close)
+
+		_, err := (Fetcher{}).Post(server.URL+"/json", RequestOptions{
+			JSON: map[string]string{"key": "value"},
+		})
+		if err != nil {
+			t.Fatalf("Fetcher.Post returned error: %v", err)
+		}
+	})
+
+	t.Run("rejects ambiguous body options before sending", func(t *testing.T) {
+		var requests atomic.Int64
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			w.WriteHeader(http.StatusNoContent)
+		}))
+		t.Cleanup(server.Close)
+
+		conflicts := []struct {
+			name string
+			opts RequestOptions
+		}{
+			{
+				name: "body and json",
+				opts: RequestOptions{
+					Body: strings.NewReader("raw"),
+					JSON: map[string]string{"key": "value"},
+				},
+			},
+			{
+				name: "body and data",
+				opts: RequestOptions{
+					Body: strings.NewReader("raw"),
+					Data: url.Values{"key": []string{"value"}},
+				},
+			},
+			{
+				name: "data and json",
+				opts: RequestOptions{
+					Data: url.Values{"key": []string{"value"}},
+					JSON: map[string]string{"key": "value"},
+				},
+			},
+		}
+		for _, tt := range conflicts {
+			_, err := (Fetcher{}).Post(server.URL, tt.opts)
+			if err == nil {
+				t.Fatalf("%s: expected body option conflict to return an error", tt.name)
+			}
+		}
+		if got := requests.Load(); got != 0 {
+			t.Fatalf("server saw %d requests, want 0", got)
+		}
+	})
+
+	t.Run("returns JSON marshal errors before sending", func(t *testing.T) {
+		var requests atomic.Int64
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			w.WriteHeader(http.StatusNoContent)
+		}))
+		t.Cleanup(server.Close)
+
+		_, err := (Fetcher{}).Post(server.URL, RequestOptions{
+			JSON: func() {},
+		})
+		if err == nil {
+			t.Fatal("expected invalid JSON payload to return an error")
+		}
+		if got := requests.Load(); got != 0 {
+			t.Fatalf("server saw %d requests, want 0", got)
+		}
+	})
+
+	t.Run("verify false allows explicit self-signed TLS fetches", func(t *testing.T) {
+		server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			fmt.Fprint(w, `<html><body><article class="tls">ok</article></body></html>`)
+		}))
+		t.Cleanup(server.Close)
+
+		_, err := (Fetcher{}).Get(server.URL, RequestOptions{Verify: Bool(false), Retries: 1})
+		if err != nil {
+			t.Fatalf("Fetcher.Get with verify=false returned error: %v", err)
+		}
+	})
 }
 
 func TestFetcherRedirectTimeoutRetryErrors(t *testing.T) {

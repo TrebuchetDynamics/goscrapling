@@ -550,17 +550,20 @@
             },
             {
               "name": "Static request options: params, forms, JSON, auth, verify, and cookies",
-              "status": "planned",
+              "status": "complete",
               "priority": "P0",
               "contract": "Complete static fetcher request option parity for query params, form data, JSON bodies, basic auth, certificate verification flag, request cookies, and response cookie access.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "fetcher",
               "source_refs": [
                 "references/Scrapling/scrapling/fetchers/requests.py",
                 "references/Scrapling/scrapling/engines/static.py",
                 "references/Scrapling/docs/fetching/static.md",
-                "references/Scrapling/docs/api-reference/fetchers.md"
+                "references/Scrapling/docs/api-reference/fetchers.md",
+                "fetcher.go",
+                "fetcher_options.go",
+                "fetcher_test.go"
               ],
               "ready_when": [
                 "Static Fetcher methods and Response extended metadata are stable."
@@ -574,13 +577,10 @@
                 "go test ./... -run TestStaticFetcherRequestOptions -count=1"
               ],
               "acceptance": [
-                "httptest fixtures prove every request option is sent correctly and response cookies are visible."
+                "httptest fixtures prove Params query merging, Data form encoding, JSON marshaling and default content type, BasicAuth, Verify=false TLS behavior, request cookies, explicit header precedence, body option conflicts, JSON marshal errors, and response cookie visibility."
               ],
               "done_signal": [
-                "Static fetcher request option tests pass."
-              ],
-              "blocked_by": [
-                "Response cookies, history, meta, and captured XHR fields"
+                "TestStaticFetcherRequestOptions passes."
               ]
             },
             {
