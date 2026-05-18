@@ -66,16 +66,19 @@ rendering, and unavailable-result behavior. goscrapling should own extraction
 behavior, response construction, selector APIs, browser fetcher contracts, and
 spider/crawl primitives.
 
-The core goscrapling package must not import Gormes runtime packages. A Gormes
-adapter belongs under `integrations/gormes` or a separate command/package
-surface after static fetcher and response behavior are stable.
+The core goscrapling package must not import Gormes runtime packages. The
+current Gormes integration keeps goscrapling behind the existing `web_extract`
+tool surface and returns structured `extraction` evidence for static selector
+calls. Any future standalone Gormes adapter package still belongs outside the
+core library.
 
 ## Recommended Milestones
 
 1. Close the P0 parser and static fetcher gaps already listed in
    `progress.json`.
-2. Build a fixture-backed `integrations/gormes` static extraction adapter that
-   can fetch a local page, apply CSS selection, and return structured evidence.
+2. Keep the fixture-backed Gormes `web_extract` integration current: local
+   static fetch, CSS selection, and structured `extraction` evidence should
+   remain proven without live web access.
 3. Add output-shaping tests that prove the adapter is useful to an agent tool
    caller without requiring live web access.
 4. Add browser-backed extraction only after the browser engine seam is stable

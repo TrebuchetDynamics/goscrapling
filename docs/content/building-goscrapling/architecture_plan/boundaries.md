@@ -91,12 +91,13 @@ Core tests must stay hermetic:
 ## Integration Boundary
 
 Gormes/OpenClaw integration must depend on goscrapling library APIs. The core
-library must not import Gormes runtime packages. A future tool adapter belongs
-under `integrations/gormes` or a separate command surface after fetcher and
-response behavior are stable.
+library must not import Gormes runtime packages. Gormes currently integrates
+goscrapling behind its existing `web_extract` tool for static extraction and
+selector evidence; any future standalone adapter package belongs outside the
+core library.
 
 Gormes owns tool registration, approval policy, truncation, channel rendering,
 and typed unavailable results. goscrapling owns extraction behavior, response
 construction, selector APIs, browser fetcher contracts, and spider primitives.
-The first integration slice should prove static fetch plus CSS extraction from
-local fixtures before browser or crawler behavior is exposed to Gormes.
+The first integration slice proves static fetch plus CSS extraction from local
+fixtures before browser or crawler behavior is exposed to Gormes.
