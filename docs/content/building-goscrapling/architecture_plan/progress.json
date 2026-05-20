@@ -1644,6 +1644,54 @@
               ]
             },
             {
+              "name": "Cross-layer local E2E validation harness",
+              "status": "complete",
+              "priority": "P1",
+              "contract": "Prove the implemented local layers compose end to end: static fetcher, response selectors, parser adaptive storage, spider flow, CLI binary extraction, and Gormes browser-tool adapter using only hermetic fixtures.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "integration",
+              "source_refs": [
+                "cmd/goscrapling/full_e2e_test.go",
+                "cmd/goscrapling/main_test.go",
+                "fetchers/fetcher_test.go",
+                "parser/adaptive_selector_test.go",
+                "spiders/spider_test.go",
+                "integrations/gormes/browser_tools_test.go",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md"
+              ],
+              "ready_when": [
+                "Existing layer-specific tests are present and the harness can use local fixtures only."
+              ],
+              "not_ready_when": [
+                "The proof requires live web access, credentials, a real browser, stealth behavior, proxy rotation, or unplanned production feature work."
+              ],
+              "write_scope": [
+                "cmd/goscrapling/cross_layer_e2e_test.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+              ],
+              "test_commands": [
+                "go test ./cmd/goscrapling -run TestGoscraplingCrossLayerLocalEndToEnd -count=1",
+                "go test ./... -count=1",
+                "go run ./cmd/progress validate",
+                "jq empty docs/content/building-goscrapling/architecture_plan/progress.json",
+                "git diff --check"
+              ],
+              "acceptance": [
+                "A local server fixture is fetched and parsed through public goscrapling APIs.",
+                "Adaptive selector save and relocate uses a temp persistent store.",
+                "A spider flow follows a local link and emits an item from the detail page.",
+                "The goscrapling CLI binary writes selected fixture output to disk.",
+                "The Gormes browser extraction adapter returns rendered markdown from a fake browser engine."
+              ],
+              "done_signal": [
+                "go test ./cmd/goscrapling -run TestGoscraplingCrossLayerLocalEndToEnd -count=1 passed with hermetic fixtures.",
+                "Full completion gate passed without live network dependencies."
+              ]
+            },
+            {
               "name": "CLI extract markdown, AI-targeted, and browser modes",
               "status": "planned",
               "priority": "P3",
