@@ -933,10 +933,10 @@
             },
             {
               "name": "Browser fetch markdown dump",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Add a browser-rendered markdown dump path that turns rendered HTML into compact AI-readable Markdown while preserving headings and links and stripping navigation, script, style, and UI noise by default.",
-              "contract_status": "fixture_ready",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "browser",
               "source_refs": [
@@ -966,11 +966,11 @@
               ],
               "acceptance": [
                 "A fake browser engine returns HTML containing headings, links, nav, script, style, and article content.",
-                "The markdown dump preserves headings and links in deterministic text output.",
-                "The markdown dump strips script/style content and default navigation or UI noise without live network access."
+                "FetchMarkdown preserves headings and links in deterministic Markdown output.",
+                "FetchMarkdown strips script/style content and default navigation noise without live network access."
               ],
               "done_signal": [
-                "TestBrowserFetchMarkdownDump passes and the row is marked complete with validated evidence."
+                "TestBrowserFetchMarkdownDump passes with fake browser-engine HTML fixtures."
               ]
             },
             {

@@ -6,7 +6,6 @@ leverage rows to execute next.
 <!-- PROGRESS:START kind=next-slices -->
 | Phase | Slice | Owner | Size | Contract status | Why now |
 |---|---|---|---|---|---|
-| phase-3-browser / browser-fetcher | Browser fetch markdown dump | `browser` | `medium` | `fixture_ready` | Fixture-ready row with complete handoff metadata. |
 | phase-3-browser / browser-fetcher | Browser semantic tree extraction | `browser` | `medium` | `fixture_ready` | Fixture-ready row with complete handoff metadata. |
 | phase-4-spider / spider-core | Development response cache | `spider` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |
 | phase-5-cli-tooling / tool-surfaces | Gormes web-search tool adapter | `integration` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |

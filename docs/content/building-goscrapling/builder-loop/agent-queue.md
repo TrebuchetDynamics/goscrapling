@@ -4,23 +4,7 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Browser fetch markdown dump
-
-- Phase: `phase-3-browser / browser-fetcher`
-- Priority: `P1`
-- Owner: `browser`
-- Size: `medium`
-- Contract status: `fixture_ready`
-- Contract: Add a browser-rendered markdown dump path that turns rendered HTML into compact AI-readable Markdown while preserving headings and links and stripping navigation, script, style, and UI noise by default.
-- Ready when: BrowserFetcher interface and fake browser engine contract are validated., A local fixture can exercise rendered HTML without launching a real browser.
-- Not ready when: The implementation requires live web access or a real browser process for the core test., The row expands into CLI flags, MCP tools, or full readability extraction beyond markdown dump behavior.
-- Write scope: `engines/browser/browser_markdown.go`, `engines/browser/browser_markdown_test.go`, `testdata/browser/`, `docs/content/building-goscrapling/architecture_plan/progress.json`
-- Test commands: `go test ./... -run TestBrowserFetchMarkdownDump -count=1`
-- Acceptance: A fake browser engine returns HTML containing headings, links, nav, script, style, and article content., The markdown dump preserves headings and links in deterministic text output., The markdown dump strips script/style content and default navigation or UI noise without live network access.
-- Done signal: TestBrowserFetchMarkdownDump passes and the row is marked complete with validated evidence.
-- Source refs: `references/Scrapling/docs/fetching/dynamic.md`, `references/Scrapling/scrapling/fetchers/chrome.py`, `external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:README.md --dump markdown`, `external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/browser/markdown.zig`, `engines/browser/browser.go`, `engines/browser/browser_test.go`
-
-## 2. Browser semantic tree extraction
+## 1. Browser semantic tree extraction
 
 - Phase: `phase-3-browser / browser-fetcher`
 - Priority: `P1`
@@ -36,7 +20,7 @@ non-umbrella, and builder-ready.
 - Done signal: TestBrowserSemanticTreeExtraction passes and documents the owned Go-native semantic tree contract.
 - Source refs: `references/Scrapling/docs/fetching/dynamic.md`, `references/Scrapling/scrapling/fetchers/chrome.py`, `external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/SemanticTree.zig`, `external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/mcp/tools.zig semantic_tree`, `engines/browser/browser.go`, `parser/`
 
-## 3. Development response cache
+## 2. Development response cache
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -51,7 +35,7 @@ non-umbrella, and builder-ready.
 - Done signal: Spider response cache tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/cache.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 4. Gormes web-search tool adapter
+## 3. Gormes web-search tool adapter
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P2`
@@ -67,7 +51,7 @@ non-umbrella, and builder-ready.
 - Done signal: Integration tests pass without reaching the network, The Gormes boundary docs link back to the goscrapling strategy page.
 - Source refs: `README.md`, `docs/research/go-scraping-oss-survey.md`, `docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md`
 
-## 5. CLI interactive shell command surface
+## 4. CLI interactive shell command surface
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
@@ -83,7 +67,7 @@ non-umbrella, and builder-ready.
 - Done signal: Shell command tests pass from local fixtures.
 - Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/interactive-shell.md`, `references/Scrapling/scrapling/core/shell.py`, `references/Scrapling/scrapling/core/_shell_signatures.py`
 
-## 6. Public docs, examples, and API reference parity
+## 5. Public docs, examples, and API reference parity
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
