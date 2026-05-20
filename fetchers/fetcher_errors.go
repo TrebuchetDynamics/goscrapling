@@ -11,6 +11,8 @@ var (
 	ErrRequestTimeout         = errors.New("request timeout")
 	ErrProxyRequest           = errors.New("proxy request failed")
 	ErrRetryExhausted         = errors.New("retry attempts exhausted")
+	ErrRobotsBlocked          = errors.New("robots.txt blocked request")
+	ErrPrivateAddressBlocked  = errors.New("private address blocked")
 )
 
 type FetcherErrorKind string
@@ -21,6 +23,8 @@ const (
 	FetcherErrorTimeout         FetcherErrorKind = "timeout"
 	FetcherErrorProxy           FetcherErrorKind = "proxy"
 	FetcherErrorRetryExhausted  FetcherErrorKind = "retry_exhausted"
+	FetcherErrorRobots          FetcherErrorKind = "robots"
+	FetcherErrorPrivateAddress  FetcherErrorKind = "private_address"
 )
 
 type FetcherError struct {

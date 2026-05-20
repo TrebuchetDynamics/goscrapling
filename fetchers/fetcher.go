@@ -51,6 +51,14 @@ func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, erro
 	}
 	opts.Headers = headers
 
+	client := f.Client
+	if client == nil {
+		client = http.DefaultClient
+	}
+	if err := enforceFetchSafety(method, requestURL, opts, client); err != nil {
+		return nil, err
+	}
+
 	attempts := retryAttempts(opts.Retries)
 	var lastErr error
 	for attempt := 1; attempt <= attempts; attempt++ {

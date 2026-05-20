@@ -80,6 +80,12 @@ explicit rows, tests, and operator-visible configuration. They should not be
 added as incidental helpers while implementing static fetching or response
 behavior.
 
+Static fetch safety controls are explicit request options. Robots enforcement
+and private-network/CIDR blocking are opt-in, return typed `FetcherError`
+values, and must be proven with `httptest` or pre-dispatch fixtures instead of
+live network probes. Browser integration for the same safety policies requires
+a separate browser-scoped row.
+
 Core tests must stay hermetic:
 
 - parser behavior uses string fixtures;

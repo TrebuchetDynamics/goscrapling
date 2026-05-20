@@ -696,10 +696,10 @@
             },
             {
               "name": "Fetch safety controls: robots and private network blocking",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Add explicit operator-visible fetch safety controls for robots.txt enforcement and private-network/CIDR blocking across static fetch paths, with browser fetch integration planned as a follow-up rather than an implicit side effect.",
-              "contract_status": "fixture_ready",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "fetcher",
               "source_refs": [
@@ -731,11 +731,12 @@
               ],
               "acceptance": [
                 "httptest fixtures prove robots.txt allow and disallow decisions without live network access.",
-                "Private IPv4, IPv6, localhost, and configured CIDR targets are rejected before request dispatch when blocking is enabled.",
-                "Safety decisions return typed/operator-visible errors and remain opt-in or explicitly configured."
+                "Pre-dispatch fixtures prove private IPv4, IPv6, localhost, and configured CIDR targets are rejected before request dispatch when blocking is enabled.",
+                "Safety decisions return typed/operator-visible FetcherError values and remain opt-in request options."
               ],
               "done_signal": [
-                "TestFetcherSafetyControls passes and boundaries.md documents the safety-control contract."
+                "TestFetcherSafetyControls, TestRobotsRuleSpecificity, and TestParseSafetyCIDRsRejectsInvalidCIDR pass.",
+                "boundaries.md documents opt-in robots/private-network safety controls and the separate browser integration boundary."
               ]
             },
             {
