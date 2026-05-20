@@ -69,8 +69,11 @@ spider/crawl primitives.
 The core goscrapling package must not import Gormes runtime packages. The
 current Gormes integration keeps goscrapling behind the existing `web_extract`
 tool surface and returns structured `extraction` evidence for static selector
-calls. Any future standalone Gormes adapter package still belongs outside the
-core library.
+calls. The browser extraction adapter is similarly standalone: it exposes
+rendered Markdown, links, semantic tree, structured data, and interactive
+element discovery from a fakeable browser engine without live LLM, live web, or
+Gormes runtime dependencies. Any future standalone Gormes adapter package still
+belongs outside the core library.
 
 ## Recommended Milestones
 
@@ -81,8 +84,9 @@ core library.
    remain proven without live web access.
 3. Add output-shaping tests that prove the adapter is useful to an agent tool
    caller without requiring live web access.
-4. Add browser-backed extraction only after the browser engine seam is stable
-   and local dependency gating is documented.
+4. Keep browser-backed extraction fixture-led: rendered Markdown, links,
+   semantic tree, structured data, and interactive elements should remain
+   deterministic behind fake browser engines before live browser smoke tests.
 5. Add crawler/cache/robots/checkpoint behavior after the spider rows move from
    planned to tested.
 

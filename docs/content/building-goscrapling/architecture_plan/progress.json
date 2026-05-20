@@ -1759,10 +1759,10 @@
             },
             {
               "name": "Gormes browser extraction tools",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Expose deterministic Gormes-facing browser extraction tool adapters for rendered markdown, links, semantic tree, structured data, and basic form/interactive-element discovery using fake browser engines and tool-call fixtures.",
-              "contract_status": "fixture_ready",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "integration",
               "source_refs": [
@@ -1796,7 +1796,8 @@
                 "The adapter names and schemas are documented as goscrapling-owned while inspired by Lightpanda MCP tool taxonomy."
               ],
               "done_signal": [
-                "TestGormesBrowserExtractionTools passes and the integration docs identify the fake-engine proof path."
+                "TestGormesBrowserExtractionTools passes with a fake browser engine.",
+                "portfolio-and-gormes-fit.md documents the fake-engine browser adapter boundary."
               ]
             },
             {

@@ -143,5 +143,14 @@ func attrValue(node *html.Node, name string) string {
 }
 
 func normalizeMarkdownSpace(value string) string {
-	return strings.Join(strings.Fields(value), " ")
+	value = strings.Join(strings.Fields(value), " ")
+	value = strings.NewReplacer(
+		" .", ".",
+		" ,", ",",
+		" !", "!",
+		" ?", "?",
+		" ;", ";",
+		" :", ":",
+	).Replace(value)
+	return value
 }
