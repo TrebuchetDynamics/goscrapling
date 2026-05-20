@@ -6,7 +6,6 @@ This page is generated from canonical `progress.json` rows that declare
 <!-- PROGRESS:START kind=blocked-slices -->
 | Phase | Slice | Blocked by | Ready when | Unblocks |
 |---|---|---|---|---|
-| phase-5-cli-tooling / tool-surfaces | Gormes browser extraction tools | Browser fetch markdown dump, Browser semantic tree extraction | Browser markdown and semantic tree rows are validated., A fake browser engine can return deterministic rendered HTML for adapter tests. | - |
 | phase-1-response-fetcher / static-fetcher | Proxy rotator strategies | Static proxy support and proxy error classification | Static proxy support is complete. | - |
 | phase-3-browser / browser-fetcher | Browser context options and resource blocking | Browser sessions and page pool lifecycle | Browser adapter and session rows are stable. | - |
 | phase-3-browser / browser-fetcher | Browser sessions and page pool lifecycle | Real browser adapter with JavaScript fixture | Real browser adapter or fake-backed engine seam is stable. | - |

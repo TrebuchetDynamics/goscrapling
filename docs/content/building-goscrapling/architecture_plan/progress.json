@@ -1765,10 +1765,6 @@
               "contract_status": "fixture_ready",
               "slice_size": "medium",
               "execution_owner": "integration",
-              "blocked_by": [
-                "Browser fetch markdown dump",
-                "Browser semantic tree extraction"
-              ],
               "source_refs": [
                 "references/Scrapling/scrapling/core/ai.py",
                 "references/Scrapling/docs/ai/mcp-server.md",
