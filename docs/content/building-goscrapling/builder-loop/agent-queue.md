@@ -4,23 +4,7 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Browser semantic tree extraction
-
-- Phase: `phase-3-browser / browser-fetcher`
-- Priority: `P1`
-- Owner: `browser`
-- Size: `medium`
-- Contract status: `fixture_ready`
-- Contract: Expose a browser-rendered semantic tree for AI agents that summarizes visible elements with stable node IDs, role, accessible name/text, tag name, XPath or selector path, value state, disabled state, and interactivity.
-- Ready when: Browser markdown or rendered HTML fixture path can provide deterministic HTML to the extractor., The row remains limited to semantic extraction and does not require browser actions.
-- Not ready when: The implementation attempts full accessibility tree parity or CDP backend node integration., The implementation requires live browser execution for the core test.
-- Write scope: `engines/browser/browser_semantic.go`, `engines/browser/browser_semantic_test.go`, `parser/`, `testdata/browser/`, `docs/content/building-goscrapling/architecture_plan/progress.json`
-- Test commands: `go test ./... -run TestBrowserSemanticTreeExtraction -count=1`
-- Acceptance: A local HTML fixture with buttons, links, inputs, labels, disabled controls, and nested content returns a deterministic semantic tree., Each relevant element includes role, name or text, tag, XPath or selector path, interactivity, and value/disabled state where applicable., Noise nodes such as script/style and whitespace-only text are omitted.
-- Done signal: TestBrowserSemanticTreeExtraction passes and documents the owned Go-native semantic tree contract.
-- Source refs: `references/Scrapling/docs/fetching/dynamic.md`, `references/Scrapling/scrapling/fetchers/chrome.py`, `external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/SemanticTree.zig`, `external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/mcp/tools.zig semantic_tree`, `engines/browser/browser.go`, `parser/`
-
-## 2. Development response cache
+## 1. Development response cache
 
 - Phase: `phase-4-spider / spider-core`
 - Priority: `P1`
@@ -35,7 +19,7 @@ non-umbrella, and builder-ready.
 - Done signal: Spider response cache tests pass.
 - Source refs: `references/Scrapling/scrapling/spiders/cache.py`, `references/Scrapling/docs/spiders/advanced.md`
 
-## 3. Gormes web-search tool adapter
+## 2. Gormes web-search tool adapter
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P2`
@@ -51,7 +35,7 @@ non-umbrella, and builder-ready.
 - Done signal: Integration tests pass without reaching the network, The Gormes boundary docs link back to the goscrapling strategy page.
 - Source refs: `README.md`, `docs/research/go-scraping-oss-survey.md`, `docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md`
 
-## 4. CLI interactive shell command surface
+## 3. CLI interactive shell command surface
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
@@ -67,7 +51,7 @@ non-umbrella, and builder-ready.
 - Done signal: Shell command tests pass from local fixtures.
 - Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/interactive-shell.md`, `references/Scrapling/scrapling/core/shell.py`, `references/Scrapling/scrapling/core/_shell_signatures.py`
 
-## 5. Public docs, examples, and API reference parity
+## 4. Public docs, examples, and API reference parity
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`

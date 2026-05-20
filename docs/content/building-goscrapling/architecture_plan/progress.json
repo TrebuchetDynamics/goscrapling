@@ -975,10 +975,10 @@
             },
             {
               "name": "Browser semantic tree extraction",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Expose a browser-rendered semantic tree for AI agents that summarizes visible elements with stable node IDs, role, accessible name/text, tag name, XPath or selector path, value state, disabled state, and interactivity.",
-              "contract_status": "fixture_ready",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "browser",
               "source_refs": [
@@ -1009,11 +1009,11 @@
               ],
               "acceptance": [
                 "A local HTML fixture with buttons, links, inputs, labels, disabled controls, and nested content returns a deterministic semantic tree.",
-                "Each relevant element includes role, name or text, tag, XPath or selector path, interactivity, and value/disabled state where applicable.",
+                "Each relevant element includes role, name or text, tag, XPath, interactivity, href, and value/disabled/checked state where applicable.",
                 "Noise nodes such as script/style and whitespace-only text are omitted."
               ],
               "done_signal": [
-                "TestBrowserSemanticTreeExtraction passes and documents the owned Go-native semantic tree contract."
+                "TestBrowserSemanticTreeExtraction passes with fake browser-engine HTML fixtures."
               ]
             },
             {
