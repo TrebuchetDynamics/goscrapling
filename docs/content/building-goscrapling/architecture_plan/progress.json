@@ -695,6 +695,50 @@
               ]
             },
             {
+              "name": "Fetch safety controls: robots and private network blocking",
+              "status": "planned",
+              "priority": "P1",
+              "contract": "Add explicit operator-visible fetch safety controls for robots.txt enforcement and private-network/CIDR blocking across static fetch paths, with browser fetch integration planned as a follow-up rather than an implicit side effect.",
+              "contract_status": "fixture_ready",
+              "slice_size": "medium",
+              "execution_owner": "fetcher",
+              "source_refs": [
+                "references/Scrapling/docs/fetching/static.md",
+                "references/Scrapling/docs/fetching/dynamic.md",
+                "external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/network/layer/RobotsLayer.zig",
+                "external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/network/Robots.zig",
+                "external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/network/IpFilter.zig",
+                "fetchers/"
+              ],
+              "ready_when": [
+                "Static fetcher request options and error taxonomy are validated.",
+                "Hermetic httptest fixtures can serve target pages and robots.txt responses."
+              ],
+              "not_ready_when": [
+                "The row attempts crawler politeness, rate limiting, or browser resource interception beyond robots and private network blocking.",
+                "The row requires live DNS, live web access, or privileged network configuration."
+              ],
+              "write_scope": [
+                "fetchers/fetcher_safety.go",
+                "fetchers/fetcher_safety_test.go",
+                "fetchers/fetcher_options.go",
+                "fetchers/fetcher_errors.go",
+                "docs/content/building-goscrapling/architecture_plan/boundaries.md",
+                "docs/content/building-goscrapling/architecture_plan/progress.json"
+              ],
+              "test_commands": [
+                "go test ./... -run TestFetcherSafetyControls -count=1"
+              ],
+              "acceptance": [
+                "httptest fixtures prove robots.txt allow and disallow decisions without live network access.",
+                "Private IPv4, IPv6, localhost, and configured CIDR targets are rejected before request dispatch when blocking is enabled.",
+                "Safety decisions return typed/operator-visible errors and remain opt-in or explicitly configured."
+              ],
+              "done_signal": [
+                "TestFetcherSafetyControls passes and boundaries.md documents the safety-control contract."
+              ]
+            },
+            {
               "name": "Async and concurrent static fetcher API",
               "status": "planned",
               "priority": "P2",
@@ -884,6 +928,91 @@
               "done_signal": [
                 "TestBrowserAdapter passes when GOSCRAPLING_CHROME points to a working Chrome/Chromium executable.",
                 "The test skips in normal hermetic CI unless GOSCRAPLING_CHROME or GOSCRAPLING_CHROME_AUTO=1 is set."
+              ]
+            },
+            {
+              "name": "Browser fetch markdown dump",
+              "status": "planned",
+              "priority": "P1",
+              "contract": "Add a browser-rendered markdown dump path that turns rendered HTML into compact AI-readable Markdown while preserving headings and links and stripping navigation, script, style, and UI noise by default.",
+              "contract_status": "fixture_ready",
+              "slice_size": "medium",
+              "execution_owner": "browser",
+              "source_refs": [
+                "references/Scrapling/docs/fetching/dynamic.md",
+                "references/Scrapling/scrapling/fetchers/chrome.py",
+                "external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:README.md --dump markdown",
+                "external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/browser/markdown.zig",
+                "engines/browser/browser.go",
+                "engines/browser/browser_test.go"
+              ],
+              "ready_when": [
+                "BrowserFetcher interface and fake browser engine contract are validated.",
+                "A local fixture can exercise rendered HTML without launching a real browser."
+              ],
+              "not_ready_when": [
+                "The implementation requires live web access or a real browser process for the core test.",
+                "The row expands into CLI flags, MCP tools, or full readability extraction beyond markdown dump behavior."
+              ],
+              "write_scope": [
+                "engines/browser/browser_markdown.go",
+                "engines/browser/browser_markdown_test.go",
+                "testdata/browser/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json"
+              ],
+              "test_commands": [
+                "go test ./... -run TestBrowserFetchMarkdownDump -count=1"
+              ],
+              "acceptance": [
+                "A fake browser engine returns HTML containing headings, links, nav, script, style, and article content.",
+                "The markdown dump preserves headings and links in deterministic text output.",
+                "The markdown dump strips script/style content and default navigation or UI noise without live network access."
+              ],
+              "done_signal": [
+                "TestBrowserFetchMarkdownDump passes and the row is marked complete with validated evidence."
+              ]
+            },
+            {
+              "name": "Browser semantic tree extraction",
+              "status": "planned",
+              "priority": "P1",
+              "contract": "Expose a browser-rendered semantic tree for AI agents that summarizes visible elements with stable node IDs, role, accessible name/text, tag name, XPath or selector path, value state, disabled state, and interactivity.",
+              "contract_status": "fixture_ready",
+              "slice_size": "medium",
+              "execution_owner": "browser",
+              "source_refs": [
+                "references/Scrapling/docs/fetching/dynamic.md",
+                "references/Scrapling/scrapling/fetchers/chrome.py",
+                "external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/SemanticTree.zig",
+                "external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/mcp/tools.zig semantic_tree",
+                "engines/browser/browser.go",
+                "parser/"
+              ],
+              "ready_when": [
+                "Browser markdown or rendered HTML fixture path can provide deterministic HTML to the extractor.",
+                "The row remains limited to semantic extraction and does not require browser actions."
+              ],
+              "not_ready_when": [
+                "The implementation attempts full accessibility tree parity or CDP backend node integration.",
+                "The implementation requires live browser execution for the core test."
+              ],
+              "write_scope": [
+                "engines/browser/browser_semantic.go",
+                "engines/browser/browser_semantic_test.go",
+                "parser/",
+                "testdata/browser/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json"
+              ],
+              "test_commands": [
+                "go test ./... -run TestBrowserSemanticTreeExtraction -count=1"
+              ],
+              "acceptance": [
+                "A local HTML fixture with buttons, links, inputs, labels, disabled controls, and nested content returns a deterministic semantic tree.",
+                "Each relevant element includes role, name or text, tag, XPath or selector path, interactivity, and value/disabled state where applicable.",
+                "Noise nodes such as script/style and whitespace-only text are omitted."
+              ],
+              "done_signal": [
+                "TestBrowserSemanticTreeExtraction passes and documents the owned Go-native semantic tree contract."
               ]
             },
             {
@@ -1625,6 +1754,52 @@
               "done_signal": [
                 "Integration tests pass without reaching the network",
                 "The Gormes boundary docs link back to the goscrapling strategy page."
+              ]
+            },
+            {
+              "name": "Gormes browser extraction tools",
+              "status": "planned",
+              "priority": "P1",
+              "contract": "Expose deterministic Gormes-facing browser extraction tool adapters for rendered markdown, links, semantic tree, structured data, and basic form/interactive-element discovery using fake browser engines and tool-call fixtures.",
+              "contract_status": "fixture_ready",
+              "slice_size": "medium",
+              "execution_owner": "integration",
+              "blocked_by": [
+                "Browser fetch markdown dump",
+                "Browser semantic tree extraction"
+              ],
+              "source_refs": [
+                "references/Scrapling/scrapling/core/ai.py",
+                "references/Scrapling/docs/ai/mcp-server.md",
+                "references/Scrapling/docs/api-reference/mcp-server.md",
+                "external/lightpanda-io/browser@5905319e78541110a0b4065b07ec7ce53f93a660:src/mcp/tools.zig",
+                "docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md"
+              ],
+              "ready_when": [
+                "Browser markdown and semantic tree rows are validated.",
+                "A fake browser engine can return deterministic rendered HTML for adapter tests."
+              ],
+              "not_ready_when": [
+                "The row requires live LLM calls, live web access, a real browser, or Gormes runtime changes outside the adapter boundary.",
+                "The row attempts a full MCP server implementation instead of Gormes-facing extraction adapters."
+              ],
+              "write_scope": [
+                "integrations/gormes/",
+                "integrations/gormes/testdata/",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md",
+                "docs/content/building-goscrapling/architecture_plan/progress.json"
+              ],
+              "test_commands": [
+                "go test ./... -run TestGormesBrowserExtractionTools -count=1"
+              ],
+              "acceptance": [
+                "Fake tool-call fixtures prove rendered markdown, links, semantic tree, structured data, and interactive/form discovery responses.",
+                "Tool outputs are deterministic, text-first, and do not require live LLM, live browser, or live network access.",
+                "The adapter names and schemas are documented as goscrapling-owned while inspired by Lightpanda MCP tool taxonomy."
+              ],
+              "done_signal": [
+                "TestGormesBrowserExtractionTools passes and the integration docs identify the fake-engine proof path."
               ]
             },
             {
