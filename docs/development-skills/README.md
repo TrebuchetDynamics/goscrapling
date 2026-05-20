@@ -1,13 +1,33 @@
 # goscrapling Development Skills
 
-These are repo-local workflow docs modeled after the Gormes port workflow.
-They are not installed global Codex skills. Agents working in this repository
-should read `AGENTS.md`, then route work through these files.
+These repo-local workflow skills keep goscrapling tied to tested
+Scrapling-style parity. They are source-controlled project instructions, not a
+parallel backlog and not global agent skills.
 
-Use them in this order:
+## Required Order
 
-1. `goscrapling-skill-manager`
-2. `goscrapling-scrapling-parity`
-3. `goscrapling-planner`
-4. `goscrapling-tdd-slice`
-5. `goscrapling-builder`
+1. `goscrapling-skill-manager` — route the request and scope the pass.
+2. `goscrapling-scrapling-parity` — map upstream behavior when parity is unclear.
+3. `goscrapling-planner` — create or refine one builder-ready row.
+4. `goscrapling-tdd-slice` — write the failing test for runtime behavior.
+5. `goscrapling-builder` — implement exactly one row and validate it.
+
+Docs-only skill maintenance may stay in `goscrapling-skill-manager`, but must
+still preserve `progress.json` as the only implementation backlog.
+
+## Skill File Standard
+
+Each `SKILL.md` should include YAML frontmatter with `name` and `description`,
+a short purpose, inputs, rules, validation, and done criteria. Descriptions
+should state when to use the skill, not summarize the whole workflow.
+
+## Validation
+
+For skill-doc-only changes, run:
+
+```sh
+git diff --check
+```
+
+For progress, feature-map, coverage-ledger, generated-doc, schema, or runtime
+changes, also run the relevant commands from `AGENTS.md` and the selected skill.
