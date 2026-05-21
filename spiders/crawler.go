@@ -2,7 +2,6 @@ package spiders
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -30,121 +29,7 @@ func (c Crawler) Run(ctx context.Context, start []Request) (Result, error) {
 	if c.Sessions == nil {
 		return Result{}, fmt.Errorf("sessions are required")
 	}
-	runCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	allowedDomains := normalizeAllowedDomains(c.AllowedDomains)
-	concurrentRequests := effectiveConcurrentRequests(c.ConcurrentRequests)
-	domainLimiters := newCrawlerDomainLimiters(c.ConcurrentRequestsPerDomain)
-	sleep := c.sleep
-	if sleep == nil {
-		sleep = defaultCrawlerSleep
-	}
-
-	scheduler := c.Scheduler
-	if scheduler == nil {
-		scheduler = NewScheduler(SchedulerOptions{})
-	}
-
-	result := Result{Stats: Stats{
-		ConcurrentRequests:          concurrentRequests,
-		ConcurrentRequestsPerDomain: c.ConcurrentRequestsPerDomain,
-		DownloadDelay:               c.DownloadDelay,
-		Sessions:                    make(map[string]int),
-	}}
-	if err := c.Sessions.Start(runCtx); err != nil {
-		return result, err
-	}
-	defer c.Sessions.Close(runCtx)
-
-	for _, request := range start {
-		queued, err := scheduler.Enqueue(request)
-		if err != nil {
-			return result, err
-		}
-		if !queued {
-			result.Stats.Skipped++
-		}
-	}
-
-	taskResults := make(chan crawlerTaskResult)
-	active := 0
-	var stopErr error
-
-	for {
-		for stopErr == nil && active < concurrentRequests && scheduler.Len() > 0 {
-			request, ok := scheduler.Dequeue()
-			if !ok {
-				break
-			}
-			active++
-			go func() {
-				taskResults <- c.processRequest(runCtx, request, domainLimiters, sleep)
-			}()
-		}
-
-		if active == 0 {
-			if stopErr != nil {
-				return result, stopErr
-			}
-			if scheduler.Len() == 0 {
-				return result, nil
-			}
-		}
-
-		done := runCtx.Done()
-		if stopErr != nil {
-			done = nil
-		}
-
-		select {
-		case task := <-taskResults:
-			active--
-			if task.err != nil {
-				if runCtx.Err() != nil && errors.Is(task.err, runCtx.Err()) {
-					if stopErr == nil {
-						stopErr = runCtx.Err()
-						cancel()
-					}
-					continue
-				}
-				result.Errors = append(result.Errors, task.err)
-				result.Stats.Failed++
-				continue
-			}
-
-			result.Stats.Requests++
-			result.Stats.Sessions[task.response.Request.SID]++
-			for _, output := range task.outputs {
-				if output.Item != nil {
-					result.Items = append(result.Items, cloneMeta(output.Item))
-					result.Stats.Items++
-				}
-				if output.Request != nil {
-					if !isDomainAllowed(output.Request.URL, allowedDomains) {
-						result.Stats.OffsiteRequests++
-						continue
-					}
-					queued, err := scheduler.Enqueue(*output.Request)
-					if err != nil {
-						if stopErr == nil {
-							stopErr = err
-							cancel()
-						}
-						continue
-					}
-					if !queued {
-						result.Stats.Skipped++
-					}
-				}
-			}
-		case <-done:
-			if stopErr == nil {
-				stopErr = runCtx.Err()
-				cancel()
-			}
-		}
-	}
+	return newCrawlRuntime(ctx, c).run(start)
 }
 
 func (c Crawler) processRequest(ctx context.Context, request Request, domainLimiters *crawlerDomainLimiters, sleep func(context.Context, time.Duration) error) crawlerTaskResult {
