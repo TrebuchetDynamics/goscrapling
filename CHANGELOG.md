@@ -6,6 +6,34 @@ goscrapling follows Go module tags for releases. The project is still a partial
 Go-native Scrapling-style feature port; release notes must not claim complete
 Scrapling parity until the progress ledger and tests prove it.
 
+## v0.1.1 - 2026-05-20
+
+Maintenance release after `v0.1.0`, focused on internal architecture deepening for future Scrapling-parity work. No new complete Scrapling surface is claimed in this release.
+
+### Changed
+
+- Deepened spider crawl orchestration behind a private crawl runtime while keeping the public `spiders.Crawler.Run` interface stable.
+- Centralized browser-rendered evidence extraction so markdown, semantic nodes, links, structured data, and interactive nodes share one parsed HTML evidence module.
+- Deepened the static CLI extract command around an internal extraction plan while preserving existing `goscrapling extract get/post/put/delete` behavior.
+
+### Validation for release candidate
+
+Release candidate validation should run from a clean checkout:
+
+```sh
+go test ./... -count=1
+go run ./cmd/progress validate
+jq empty docs/content/building-goscrapling/architecture_plan/progress.json
+git diff --check
+```
+
+Optional live E2E validation, only when live network access and robots.txt
+preflight are acceptable:
+
+```sh
+GOSCRAPLING_LIVE_E2E=1 go test ./cmd/goscrapling -run TestLivePracticeSitesEndToEnd -count=1 -timeout 10m
+```
+
 ## v0.1.0 - 2026-05-20
 
 Initial v0.1 release candidate for the tested goscrapling foundation.
