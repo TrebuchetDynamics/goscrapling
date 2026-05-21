@@ -1,7 +1,6 @@
 package browser
 
 import (
-	"bytes"
 	"context"
 	"strings"
 
@@ -47,15 +46,11 @@ func (f BrowserFetcher) FetchSemanticTree(ctx context.Context, rawURL string, op
 }
 
 func HTMLSemanticNodes(body []byte) ([]SemanticNode, error) {
-	root, err := html.Parse(bytes.NewReader(body))
+	evidence, err := NewRenderedEvidence(body)
 	if err != nil {
 		return nil, err
 	}
-	labels := map[string]string{}
-	collectLabels(root, labels)
-	builder := semanticBuilder{labels: labels}
-	builder.walk(root)
-	return builder.nodes, nil
+	return evidence.SemanticNodes(), nil
 }
 
 type semanticBuilder struct {

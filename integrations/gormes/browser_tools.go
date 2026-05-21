@@ -1,15 +1,11 @@
 package gormes
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/TrebuchetDynamics/goscrapling/engines/browser"
-	"golang.org/x/net/html"
 )
 
 const (
@@ -43,15 +39,9 @@ type ToolResult struct {
 	InteractiveElements []browser.SemanticNode
 }
 
-type Link struct {
-	Text string
-	Href string
-}
+type Link = browser.Link
 
-type StructuredData struct {
-	OpenGraph map[string]string
-	JSONLD    []map[string]any
-}
+type StructuredData = browser.StructuredData
 
 func (a BrowserExtractionAdapter) Call(ctx context.Context, call ToolCall) (ToolResult, error) {
 	fetcher := browser.BrowserFetcher{Engine: a.Engine}
@@ -86,104 +76,18 @@ func (a BrowserExtractionAdapter) Call(ctx context.Context, call ToolCall) (Tool
 		if err != nil {
 			return ToolResult{}, err
 		}
+		evidence, err := browser.NewRenderedEvidence(response.Body())
+		if err != nil {
+			return ToolResult{}, err
+		}
 		result := ToolResult{Tool: call.Tool, URL: response.URL(), StatusCode: response.StatusCode()}
 		if call.Tool == ToolLinks {
-			result.Links = extractLinks(response.Body())
+			result.Links = evidence.Links()
 		} else {
-			result.StructuredData = extractStructuredData(response.Body())
+			result.StructuredData = evidence.StructuredData()
 		}
 		return result, nil
 	default:
 		return ToolResult{}, ErrUnknownTool
 	}
-}
-
-func extractLinks(body []byte) []Link {
-	root, err := html.Parse(bytes.NewReader(body))
-	if err != nil {
-		return nil
-	}
-	var links []Link
-	walkHTML(root, func(node *html.Node) {
-		if node.Type != html.ElementNode || !strings.EqualFold(node.Data, "a") {
-			return
-		}
-		href := htmlAttr(node, "href")
-		text := normalizeText(htmlText(node))
-		if href != "" && text != "" {
-			links = append(links, Link{Text: text, Href: href})
-		}
-	})
-	return links
-}
-
-func extractStructuredData(body []byte) StructuredData {
-	root, err := html.Parse(bytes.NewReader(body))
-	if err != nil {
-		return StructuredData{}
-	}
-	data := StructuredData{OpenGraph: map[string]string{}}
-	walkHTML(root, func(node *html.Node) {
-		if node.Type != html.ElementNode {
-			return
-		}
-		switch strings.ToLower(node.Data) {
-		case "meta":
-			property := htmlAttr(node, "property")
-			if strings.HasPrefix(property, "og:") {
-				data.OpenGraph[strings.TrimPrefix(property, "og:")] = htmlAttr(node, "content")
-			}
-		case "script":
-			if !strings.EqualFold(htmlAttr(node, "type"), "application/ld+json") {
-				return
-			}
-			var value map[string]any
-			if err := json.Unmarshal([]byte(strings.TrimSpace(htmlText(node))), &value); err == nil {
-				data.JSONLD = append(data.JSONLD, value)
-			}
-		}
-	})
-	if len(data.OpenGraph) == 0 {
-		data.OpenGraph = nil
-	}
-	return data
-}
-
-func walkHTML(node *html.Node, visit func(*html.Node)) {
-	if node == nil {
-		return
-	}
-	visit(node)
-	for child := node.FirstChild; child != nil; child = child.NextSibling {
-		walkHTML(child, visit)
-	}
-}
-
-func htmlAttr(node *html.Node, name string) string {
-	for _, attr := range node.Attr {
-		if strings.EqualFold(attr.Key, name) {
-			return attr.Val
-		}
-	}
-	return ""
-}
-
-func htmlText(node *html.Node) string {
-	if node == nil {
-		return ""
-	}
-	if node.Type == html.TextNode {
-		return node.Data
-	}
-	var parts []string
-	for child := node.FirstChild; child != nil; child = child.NextSibling {
-		if text := htmlText(child); strings.TrimSpace(text) != "" {
-			parts = append(parts, text)
-		}
-	}
-	return strings.Join(parts, " ")
-}
-
-func normalizeText(value string) string {
-	return strings.Join(strings.Fields(value), " ")
 }

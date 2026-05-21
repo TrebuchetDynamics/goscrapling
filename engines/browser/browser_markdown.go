@@ -1,7 +1,6 @@
 package browser
 
 import (
-	"bytes"
 	"context"
 	"strings"
 
@@ -33,13 +32,11 @@ func (f BrowserFetcher) FetchMarkdown(ctx context.Context, rawURL string, opts B
 }
 
 func HTMLToMarkdown(body []byte) (string, error) {
-	root, err := html.Parse(bytes.NewReader(body))
+	evidence, err := NewRenderedEvidence(body)
 	if err != nil {
 		return "", err
 	}
-	var renderer markdownRenderer
-	renderer.renderBlocks(root)
-	return strings.TrimSpace(renderer.output.String()), nil
+	return evidence.Markdown(), nil
 }
 
 type markdownRenderer struct {
