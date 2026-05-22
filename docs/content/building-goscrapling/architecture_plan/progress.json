@@ -1123,34 +1123,54 @@
             },
             {
               "name": "Browser context options and resource blocking",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Support browser context options including cookies, locale, timezone, user agent, extra headers, proxy, CDP/real Chrome selection, resource disabling, custom blocked domains, ad-domain blocking, and DNS-over-HTTPS flag.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "browser",
               "source_refs": [
                 "references/Scrapling/scrapling/engines/_browsers/_config_tools.py",
                 "references/Scrapling/scrapling/engines/toolbelt/navigation.py",
                 "references/Scrapling/scrapling/engines/toolbelt/ad_domains.py",
-                "references/Scrapling/docs/fetching/dynamic.md"
+                "references/Scrapling/docs/fetching/dynamic.md",
+                "engines/browser/browser.go",
+                "engines/browser/browser_adapter.go",
+                "engines/browser/browser_session.go"
               ],
               "ready_when": [
                 "Browser adapter and session rows are stable."
               ],
+              "not_ready_when": [
+                "The row adds stealth, anti-bot, Cloudflare bypass, proxy rotation, or live-browser-only behavior.",
+                "The row requires copying the upstream ad-domain list instead of using a small explicit Go-owned blocklist boundary."
+              ],
               "write_scope": [
-                "browser_options.go",
-                "browser_options_test.go",
-                "browser_resources_test.go"
+                "engines/browser/browser_options.go",
+                "engines/browser/browser_options_test.go",
+                "engines/browser/browser.go",
+                "engines/browser/browser_adapter.go",
+                "engines/browser/browser_session.go",
+                "goscrapling.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/architecture_plan/boundaries.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md"
               ],
               "test_commands": [
-                "go test ./... -run TestBrowserContextOptions -count=1"
+                "go test ./... -run TestBrowserContextOptions -count=1",
+                "go test ./... -count=1"
               ],
               "acceptance": [
-                "Fake engine fixtures prove every option is explicit, validated, and passed through without hidden stealth behavior."
+                "Fake engine fixtures prove cookies, locale, timezone, user agent, proxy, CDP URL, real Chrome selection, resource flags, ad blocking flag, DNS-over-HTTPS flag, and extra flags are explicit, validated, defensively copied, and passed through without hidden stealth behavior.",
+                "Session fixtures prove browser context defaults merge with per-request options for cookies, locale headers, blocked domains, and ad-block flags.",
+                "Chromedp adapter code consumes the explicit request fields for remote allocator, proxy server, headers, cookies, timezone, URL blocking patterns, DNS-over-HTTPS flags, real Chrome executable selection, and extra flags."
               ],
               "done_signal": [
-                "Browser context option tests pass."
+                "TestBrowserContextOptions and the full Go test suite pass; generated queue docs expose the next assignable browser rows."
               ]
             },
             {
@@ -1183,9 +1203,6 @@
               ],
               "done_signal": [
                 "Stealth browser control tests pass."
-              ],
-              "blocked_by": [
-                "Browser context options and resource blocking"
               ]
             },
             {

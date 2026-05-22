@@ -20,30 +20,50 @@ type BrowserFetcher struct {
 
 type BrowserOptions struct {
 	Headers          http.Header
+	UserAgent        string
+	Cookies          []*http.Cookie
+	Locale           string
+	TimezoneID       string
+	Proxy            BrowserProxyOptions
+	CDPURL           string
+	RealChrome       bool
 	Headless         bool
 	DisableResources bool
 	BlockedDomains   []string
+	BlockAds         bool
+	DNSOverHTTPS     bool
 	NetworkIdle      bool
 	LoadDOM          bool
 	Timeout          time.Duration
 	Wait             time.Duration
 	WaitSelector     BrowserWaitSelector
 	Actions          []BrowserAction
+	ExtraFlags       []string
 	Store            Store
 }
 
 type BrowserRequest struct {
 	URL              string
 	Headers          http.Header
+	UserAgent        string
+	Cookies          []*http.Cookie
+	Locale           string
+	TimezoneID       string
+	Proxy            BrowserProxyOptions
+	CDPURL           string
+	RealChrome       bool
 	Headless         bool
 	DisableResources bool
 	BlockedDomains   []string
+	BlockAds         bool
+	DNSOverHTTPS     bool
 	NetworkIdle      bool
 	LoadDOM          bool
 	Timeout          time.Duration
 	Wait             time.Duration
 	WaitSelector     BrowserWaitSelector
 	Actions          []BrowserAction
+	ExtraFlags       []string
 }
 
 type BrowserResult struct {
@@ -91,18 +111,9 @@ func (f BrowserFetcher) Fetch(ctx context.Context, rawURL string, opts BrowserOp
 		ctx = context.Background()
 	}
 
-	request := BrowserRequest{
-		URL:              rawURL,
-		Headers:          opts.Headers.Clone(),
-		Headless:         opts.Headless,
-		DisableResources: opts.DisableResources,
-		BlockedDomains:   append([]string(nil), opts.BlockedDomains...),
-		NetworkIdle:      opts.NetworkIdle,
-		LoadDOM:          opts.LoadDOM,
-		Timeout:          opts.Timeout,
-		Wait:             opts.Wait,
-		WaitSelector:     opts.WaitSelector,
-		Actions:          append([]BrowserAction(nil), opts.Actions...),
+	request, err := newBrowserRequest(rawURL, opts)
+	if err != nil {
+		return nil, err
 	}
 
 	result, err := f.Engine.Fetch(ctx, request)

@@ -205,6 +205,27 @@ func (s *BrowserSession) cleanupErrorPagesLocked() {
 func mergeBrowserOptions(defaults, overrides BrowserOptions) BrowserOptions {
 	merged := cloneBrowserOptions(defaults)
 	merged.Headers = mergeHeaders(defaults.Headers, overrides.Headers)
+	if overrides.UserAgent != "" {
+		merged.UserAgent = overrides.UserAgent
+	}
+	if len(overrides.Cookies) > 0 {
+		merged.Cookies = append(merged.Cookies, cloneBrowserCookies(overrides.Cookies)...)
+	}
+	if overrides.Locale != "" {
+		merged.Locale = overrides.Locale
+	}
+	if overrides.TimezoneID != "" {
+		merged.TimezoneID = overrides.TimezoneID
+	}
+	if overrides.Proxy.Server != "" || overrides.Proxy.Username != "" || overrides.Proxy.Password != "" {
+		merged.Proxy = overrides.Proxy
+	}
+	if overrides.CDPURL != "" {
+		merged.CDPURL = overrides.CDPURL
+	}
+	if overrides.RealChrome {
+		merged.RealChrome = true
+	}
 	if overrides.Headless {
 		merged.Headless = true
 	}
@@ -213,6 +234,12 @@ func mergeBrowserOptions(defaults, overrides BrowserOptions) BrowserOptions {
 	}
 	if len(overrides.BlockedDomains) > 0 {
 		merged.BlockedDomains = append(merged.BlockedDomains, overrides.BlockedDomains...)
+	}
+	if overrides.BlockAds {
+		merged.BlockAds = true
+	}
+	if overrides.DNSOverHTTPS {
+		merged.DNSOverHTTPS = true
 	}
 	if overrides.NetworkIdle {
 		merged.NetworkIdle = true
@@ -232,6 +259,9 @@ func mergeBrowserOptions(defaults, overrides BrowserOptions) BrowserOptions {
 	if len(overrides.Actions) > 0 {
 		merged.Actions = append(merged.Actions, overrides.Actions...)
 	}
+	if len(overrides.ExtraFlags) > 0 {
+		merged.ExtraFlags = append(merged.ExtraFlags, overrides.ExtraFlags...)
+	}
 	if overrides.Store != nil {
 		merged.Store = overrides.Store
 	}
@@ -241,8 +271,10 @@ func mergeBrowserOptions(defaults, overrides BrowserOptions) BrowserOptions {
 func cloneBrowserOptions(opts BrowserOptions) BrowserOptions {
 	cloned := opts
 	cloned.Headers = opts.Headers.Clone()
+	cloned.Cookies = cloneBrowserCookies(opts.Cookies)
 	cloned.BlockedDomains = append([]string(nil), opts.BlockedDomains...)
 	cloned.Actions = append([]BrowserAction(nil), opts.Actions...)
+	cloned.ExtraFlags = append([]string(nil), opts.ExtraFlags...)
 	return cloned
 }
 

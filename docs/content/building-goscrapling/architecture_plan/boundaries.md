@@ -80,6 +80,13 @@ explicit rows, tests, and operator-visible configuration. They should not be
 added as incidental helpers while implementing static fetching or response
 behavior.
 
+Browser context/resource controls are explicit `BrowserOptions`, not hidden
+stealth defaults. User agent, cookies, locale, timezone, proxy, CDP URL, real
+Chrome selection, DNS-over-HTTPS, blocked domains, and ad/resource blocking
+must be visible in `BrowserRequest` and fixture-backed before stronger browser
+claims are made. The Go-owned ad-block boundary is intentionally small and must
+not copy upstream's full list without a licensing decision.
+
 Static identity controls are explicit request options. `StealthyHeaders` only
 adds deterministic browser-like HTTP headers and a Google referer when callers
 opt in; it does not claim TLS/browser fingerprint impersonation. Static

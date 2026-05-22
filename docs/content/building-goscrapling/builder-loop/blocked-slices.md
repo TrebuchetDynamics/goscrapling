@@ -10,7 +10,6 @@ This page is generated from canonical `progress.json` rows that declare
 | phase-4-spider / spider-core | Checkpoint pause and resume | Crawler engine concurrency, domain limits, and download delay | Scheduler fingerprints and crawler loop are stable. | - |
 | phase-4-spider / spider-core | Robots.txt manager and delay directives | Crawler engine concurrency, domain limits, and download delay | Crawler engine filtering hooks are available. | - |
 | phase-4-spider / spider-core | Spider lifecycle hooks, streaming, item hooks, and expanded stats | Crawler engine concurrency, domain limits, and download delay | Crawler engine loop and result struct are stable. | - |
-| phase-3-browser / browser-fetcher | Stealth browser controls and fingerprint options | Browser context options and resource blocking | Normal browser context options are stable. | - |
 | phase-4-spider / spider-core | LinkExtractor and crawl templates | XPath selection and CSS-to-XPath translator parity | Response.follow and selector helpers are stable. | - |
 | phase-4-spider / spider-core | Spider static, dynamic, stealth, and proxy session adapters | Proxy rotator strategies, Stealth browser controls and fingerprint options | Fetcher, browser session, and proxy rows are complete. | - |
 | phase-5-cli-tooling / tool-surfaces | MCP scraping tool server | Browser wait conditions, page actions, downloads, screenshots, and XHR capture, Stealth browser controls and fingerprint options | Static CLI extract and fetcher APIs are stable enough for tool output fixtures. | - |
