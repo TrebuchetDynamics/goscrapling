@@ -1,6 +1,7 @@
 package fetchers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -34,6 +35,7 @@ type RequestOptions struct {
 	Safety          FetchSafetyOptions
 	CookieValues    map[string]string
 	Cookies         []*http.Cookie
+	Context         context.Context
 
 	Store           Store
 	FollowRedirects RedirectPolicy

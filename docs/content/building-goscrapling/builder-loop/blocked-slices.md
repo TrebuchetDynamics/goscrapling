@@ -7,7 +7,6 @@ This page is generated from canonical `progress.json` rows that declare
 | Phase | Slice | Blocked by | Ready when | Unblocks |
 |---|---|---|---|---|
 | phase-3-browser / browser-fetcher | Browser context options and resource blocking | Browser sessions and page pool lifecycle | Browser adapter and session rows are stable. | - |
-| phase-3-browser / browser-fetcher | Browser sessions and page pool lifecycle | Real browser adapter with JavaScript fixture | Real browser adapter or fake-backed engine seam is stable. | - |
 | phase-3-browser / browser-fetcher | Browser wait conditions, page actions, downloads, screenshots, and XHR capture | Browser sessions and page pool lifecycle | Browser session pool is stable. | - |
 | phase-4-spider / spider-core | Blocked response detection and retry hooks | Crawler engine concurrency, domain limits, and download delay | Crawler engine loop and stats are stable. | - |
 | phase-4-spider / spider-core | Checkpoint pause and resume | Crawler engine concurrency, domain limits, and download delay | Scheduler fingerprints and crawler loop are stable. | - |

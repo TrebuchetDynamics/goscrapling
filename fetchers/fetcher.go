@@ -95,7 +95,10 @@ func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, erro
 }
 
 func (f Fetcher) doAttempt(method, rawURL string, body []byte, opts RequestOptions) (*Response, error) {
-	ctx := context.Background()
+	ctx := opts.Context
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	var cancel context.CancelFunc
 	if opts.Timeout > 0 {
 		ctx, cancel = context.WithTimeout(ctx, opts.Timeout)
@@ -334,6 +337,8 @@ func classifyRequestError(method, rawURL string, err error, proxyActive bool) er
 			URL:    rawURL,
 			Err:    ErrRedirectNotAllowed,
 		}
+	case errors.Is(err, context.Canceled):
+		return err
 	case errors.Is(err, context.DeadlineExceeded), os.IsTimeout(err):
 		return &FetcherError{
 			Kind:   FetcherErrorTimeout,
@@ -347,7 +352,8 @@ func classifyRequestError(method, rawURL string, err error, proxyActive bool) er
 }
 
 func isRetriableFetcherError(err error) bool {
-	if errors.Is(err, ErrPrivateAddressRedirect) ||
+	if errors.Is(err, context.Canceled) ||
+		errors.Is(err, ErrPrivateAddressRedirect) ||
 		errors.Is(err, ErrRedirectNotAllowed) ||
 		errors.Is(err, ErrRequestOptions) ||
 		errors.Is(err, ErrRequestTimeout) {

@@ -50,6 +50,10 @@ type ProxyRotator = fetchers.ProxyRotator
 type Fetcher = fetchers.Fetcher
 type FetcherSessionOptions = fetchers.FetcherSessionOptions
 type FetcherSession = fetchers.FetcherSession
+type ConcurrentFetcherOptions = fetchers.ConcurrentFetcherOptions
+type ConcurrentFetcher = fetchers.ConcurrentFetcher
+type ConcurrentRequest = fetchers.ConcurrentRequest
+type ConcurrentResult = fetchers.ConcurrentResult
 type FetcherErrorKind = fetchers.FetcherErrorKind
 type FetcherError = fetchers.FetcherError
 
@@ -115,6 +119,7 @@ var (
 	NewSQLiteStore                    = storage.NewSQLiteStore
 	NewResponse                       = toolbelt.NewResponse
 	NewFetcherSession                 = fetchers.NewFetcherSession
+	NewConcurrentFetcher              = fetchers.NewConcurrentFetcher
 	NewProxyRotator                   = fetchers.NewProxyRotator
 	WithProxyRotationStrategy         = fetchers.WithProxyRotationStrategy
 	CyclicProxyRotation               = fetchers.CyclicProxyRotation

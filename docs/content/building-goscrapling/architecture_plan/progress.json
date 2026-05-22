@@ -751,31 +751,51 @@
             },
             {
               "name": "Async and concurrent static fetcher API",
-              "status": "planned",
+              "status": "complete",
               "priority": "P2",
               "contract": "Provide a Go-native concurrent equivalent for Scrapling AsyncFetcher and async sessions using context, goroutines, cancellation, and bounded concurrency.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "fetcher",
               "source_refs": [
                 "references/Scrapling/scrapling/fetchers/requests.py",
-                "references/Scrapling/docs/api-reference/fetchers.md"
+                "references/Scrapling/scrapling/engines/static.py",
+                "references/Scrapling/docs/api-reference/fetchers.md",
+                "fetchers/fetcher.go",
+                "fetchers/fetcher_session.go"
               ],
               "ready_when": [
                 "Static fetcher options are stable."
               ],
+              "not_ready_when": [
+                "The row tries to mimic Python awaitable syntax instead of exposing a Go-native context and result API.",
+                "The row requires live web access or background goroutines after Fetch returns."
+              ],
               "write_scope": [
                 "fetchers/fetcher_async.go",
-                "fetchers/fetcher_async_test.go"
+                "fetchers/fetcher_async_test.go",
+                "fetchers/fetcher.go",
+                "fetchers/fetcher_options.go",
+                "goscrapling.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md"
               ],
               "test_commands": [
-                "go test ./... -run TestConcurrentFetcher -count=1"
+                "go test ./... -run TestConcurrentFetcher -count=1",
+                "go test ./... -count=1"
               ],
               "acceptance": [
-                "httptest fixtures prove concurrent fetch, cancellation, error collection, and session reuse without Python-style async mimicry."
+                "httptest fixtures prove bounded concurrent fetches return results in input order while overlapping request execution.",
+                "Context cancellation is propagated to in-flight requests and queued work without leaving background goroutines.",
+                "Per-request errors are collected beside successful responses, and a shared FetcherSession can supply cookies/defaults to concurrent calls without Python-style async mimicry."
               ],
               "done_signal": [
-                "Concurrent fetcher tests pass."
+                "TestConcurrentFetcher and the full Go test suite pass; generated queue docs expose the next assignable row."
               ]
             }
           ]
@@ -1034,14 +1054,20 @@
               "source_refs": [
                 "references/Scrapling/scrapling/fetchers/chrome.py",
                 "references/Scrapling/scrapling/engines/_browsers/_base.py",
-                "references/Scrapling/scrapling/engines/_browsers/_controllers.py"
+                "references/Scrapling/scrapling/engines/_browsers/_controllers.py",
+                "engines/browser/browser.go",
+                "engines/browser/browser_adapter.go"
               ],
               "ready_when": [
                 "Real browser adapter or fake-backed engine seam is stable."
               ],
               "write_scope": [
-                "browser_session.go",
-                "browser_session_test.go"
+                "engines/browser/browser_session.go",
+                "engines/browser/browser_session_test.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestBrowserSessionPool -count=1"
@@ -1051,9 +1077,6 @@
               ],
               "done_signal": [
                 "Browser session pool tests pass."
-              ],
-              "blocked_by": [
-                "Real browser adapter with JavaScript fixture"
               ]
             },
             {
