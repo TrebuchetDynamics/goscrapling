@@ -4,23 +4,7 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. CLI interactive shell command surface
-
-- Phase: `phase-5-cli-tooling / tool-surfaces`
-- Priority: `P3`
-- Owner: `cli`
-- Size: `large`
-- Contract status: `draft`
-- Contract: Map Scrapling's interactive shell concepts into a Go command surface with scripted evaluation first, before any full REPL dependency.
-- Ready when: Static CLI extract behavior is stable.
-- Not ready when: The row tries to build a full interactive REPL before scripted command fixtures exist.
-- Write scope: `cmd/goscrapling/`, `internal/cli/`, `internal/cli/testdata/`
-- Test commands: `go test ./... -run TestCLIShell -count=1`
-- Acceptance: Scripted shell fixtures prove command evaluation and page shortcut behavior without live web access.
-- Done signal: Shell command tests pass from local fixtures.
-- Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/interactive-shell.md`, `references/Scrapling/scrapling/core/shell.py`, `references/Scrapling/scrapling/core/_shell_signatures.py`
-
-## 2. Public docs, examples, and API reference parity
+## 1. Public docs, examples, and API reference parity
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`

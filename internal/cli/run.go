@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-const usage = "usage: goscrapling extract {get|post|put|delete} <url> <output_file> [--css-selector <selector>] [-H <key: value>] [--timeout <seconds>] [-p <key=value>] [--data <body>] [--json <json>] [--no-follow-redirects]"
+const usage = "usage: goscrapling {extract {get|post|put|delete} <url> <output_file> [--css-selector <selector>] [-H <key: value>] [--timeout <seconds>] [-p <key=value>] [--data <body>] [--json <json>] [--no-follow-redirects] | shell -c <script> [--loglevel <level>]}"
 
 var ErrParse = errors.New("parse error")
 
@@ -24,10 +24,14 @@ func Run(stdout, stderr io.Writer, args []string) error {
 		_, err := fmt.Fprintln(stdout, usage)
 		return err
 	}
-	if args[0] != "extract" {
+	switch args[0] {
+	case "extract":
+		return runExtract(stdout, args[1:])
+	case "shell":
+		return runShell(stdout, args[1:])
+	default:
 		return parseError("unknown command %q", args[0])
 	}
-	return runExtract(stdout, args[1:])
 }
 
 func parseError(format string, args ...any) error {

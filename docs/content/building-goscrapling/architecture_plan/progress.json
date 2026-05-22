@@ -1740,17 +1740,19 @@
             },
             {
               "name": "CLI interactive shell command surface",
-              "status": "planned",
+              "status": "complete",
               "priority": "P3",
               "contract": "Map Scrapling's interactive shell concepts into a Go command surface with scripted evaluation first, before any full REPL dependency.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "large",
               "execution_owner": "cli",
               "source_refs": [
                 "references/Scrapling/scrapling/cli.py",
                 "references/Scrapling/docs/cli/interactive-shell.md",
                 "references/Scrapling/scrapling/core/shell.py",
-                "references/Scrapling/scrapling/core/_shell_signatures.py"
+                "references/Scrapling/scrapling/core/_shell_signatures.py",
+                "internal/cli/shell_command.go",
+                "internal/cli/shell_test.go"
               ],
               "ready_when": [
                 "Static CLI extract behavior is stable."
@@ -1761,16 +1763,21 @@
               "write_scope": [
                 "cmd/goscrapling/",
                 "internal/cli/",
-                "internal/cli/testdata/"
+                "internal/cli/testdata/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestCLIShell -count=1"
               ],
               "acceptance": [
-                "Scripted shell fixtures prove command evaluation and page shortcut behavior without live web access."
+                "Scripted shell fixtures prove get(url), print(...), page/response shortcuts, pages history, CSS selector counts, and selected text extraction without live web access."
               ],
               "done_signal": [
-                "Shell command tests pass from local fixtures."
+                "TestCLIShell passes from local httptest fixtures."
               ]
             },
             {
