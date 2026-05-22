@@ -184,8 +184,12 @@ func retryAttempts(retries int) int {
 }
 
 func clientWithRedirectPolicy(client *http.Client, opts RequestOptions, onRedirect func(*http.Response), proxy *proxyTracker) (*http.Client, error) {
+	if opts.Proxy.hasValues() && opts.ProxyRotator != nil {
+		return nil, fmt.Errorf("%w: Proxy and ProxyRotator are mutually exclusive", ErrRequestOptions)
+	}
+
 	cloned := *client
-	if (opts.Verify != nil && !*opts.Verify) || opts.Proxy.hasValues() {
+	if (opts.Verify != nil && !*opts.Verify) || opts.Proxy.hasValues() || opts.ProxyRotator != nil {
 		transport, err := transportWithRequestOptions(cloned.Transport, opts, proxy)
 		if err != nil {
 			return nil, err
@@ -238,8 +242,19 @@ func transportWithRequestOptions(roundTripper http.RoundTripper, opts RequestOpt
 			cloned.TLSClientConfig.InsecureSkipVerify = true
 		}
 	}
-	if opts.Proxy.hasValues() {
-		proxyConfig, _, err := newProxyConfig(opts.Proxy)
+	proxyOptions := opts.Proxy
+	if opts.ProxyRotator != nil {
+		if opts.Proxy.hasValues() {
+			return nil, fmt.Errorf("%w: Proxy and ProxyRotator are mutually exclusive", ErrRequestOptions)
+		}
+		rotatedProxy, err := opts.ProxyRotator.Next()
+		if err != nil {
+			return nil, err
+		}
+		proxyOptions = rotatedProxy
+	}
+	if proxyOptions.hasValues() {
+		proxyConfig, _, err := newProxyConfig(proxyOptions)
 		if err != nil {
 			return nil, err
 		}

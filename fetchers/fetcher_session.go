@@ -1,35 +1,43 @@
 package fetchers
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/cookiejar"
 )
 
 type FetcherSessionOptions struct {
-	Headers http.Header
-	Client  *http.Client
-	Proxy   ProxyOptions
-	Store   Store
+	Headers      http.Header
+	Client       *http.Client
+	Proxy        ProxyOptions
+	ProxyRotator *ProxyRotator
+	Store        Store
 }
 
 type FetcherSession struct {
-	fetcher Fetcher
-	headers http.Header
-	proxy   ProxyOptions
-	store   Store
+	fetcher      Fetcher
+	headers      http.Header
+	proxy        ProxyOptions
+	proxyRotator *ProxyRotator
+	store        Store
 }
 
 func NewFetcherSession(opts FetcherSessionOptions) (*FetcherSession, error) {
+	if opts.Proxy.hasValues() && opts.ProxyRotator != nil {
+		return nil, fmt.Errorf("%w: Proxy and ProxyRotator are mutually exclusive", ErrRequestOptions)
+	}
+
 	client, err := sessionHTTPClient(opts.Client)
 	if err != nil {
 		return nil, err
 	}
 
 	return &FetcherSession{
-		fetcher: Fetcher{Client: client},
-		headers: opts.Headers.Clone(),
-		proxy:   cloneProxyOptions(opts.Proxy),
-		store:   opts.Store,
+		fetcher:      Fetcher{Client: client},
+		headers:      opts.Headers.Clone(),
+		proxy:        cloneProxyOptions(opts.Proxy),
+		proxyRotator: opts.ProxyRotator,
+		store:        opts.Store,
 	}, nil
 }
 
@@ -63,8 +71,12 @@ func (s *FetcherSession) mergeOptions(opts RequestOptions) RequestOptions {
 	}
 
 	opts.Headers = mergedHeaders
-	if !opts.Proxy.hasValues() {
-		opts.Proxy = cloneProxyOptions(s.proxy)
+	if !opts.Proxy.hasValues() && opts.ProxyRotator == nil {
+		if s.proxy.hasValues() {
+			opts.Proxy = cloneProxyOptions(s.proxy)
+		} else {
+			opts.ProxyRotator = s.proxyRotator
+		}
 	}
 	if opts.Store == nil {
 		opts.Store = s.store

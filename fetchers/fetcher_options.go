@@ -27,6 +27,7 @@ type RequestOptions struct {
 	Auth         *BasicAuth
 	Verify       *bool
 	Proxy        ProxyOptions
+	ProxyRotator *ProxyRotator
 	Safety       FetchSafetyOptions
 	CookieValues map[string]string
 	Cookies      []*http.Cookie

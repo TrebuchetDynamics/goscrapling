@@ -14,7 +14,6 @@ This page is generated from canonical `progress.json` rows that declare
 | phase-4-spider / spider-core | Robots.txt manager and delay directives | Crawler engine concurrency, domain limits, and download delay | Crawler engine filtering hooks are available. | - |
 | phase-4-spider / spider-core | Spider lifecycle hooks, streaming, item hooks, and expanded stats | Crawler engine concurrency, domain limits, and download delay | Crawler engine loop and result struct are stable. | - |
 | phase-1-response-fetcher / static-fetcher | Async and concurrent static fetcher API | Static request options: params, forms, JSON, auth, verify, and cookies | Static fetcher options are stable. | - |
-| phase-1-response-fetcher / static-fetcher | Static browser impersonation, HTTP/3, and stealthy headers boundary | Static request options: params, forms, JSON, auth, verify, and cookies | Core static options and proxy support are complete. | - |
 | phase-3-browser / browser-fetcher | Stealth browser controls and fingerprint options | Browser context options and resource blocking | Normal browser context options are stable. | - |
 | phase-4-spider / spider-core | LinkExtractor and crawl templates | XPath selection and CSS-to-XPath translator parity | Response.follow and selector helpers are stable. | - |
 | phase-4-spider / spider-core | Spider static, dynamic, stealth, and proxy session adapters | Proxy rotator strategies, Browser sessions and page pool lifecycle, Stealth browser controls and fingerprint options | Fetcher, browser session, and proxy rows are complete. | - |

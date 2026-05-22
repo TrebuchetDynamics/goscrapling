@@ -628,33 +628,39 @@
             },
             {
               "name": "Proxy rotator strategies",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Port ProxyRotator behavior with cyclic rotation, custom strategy hooks, string/dictionary-style configuration mapping, and proxy-error retry integration.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "fetcher",
               "source_refs": [
                 "references/Scrapling/scrapling/engines/toolbelt/proxy_rotation.py",
                 "references/Scrapling/docs/api-reference/proxy-rotation.md",
-                "references/Scrapling/docs/spiders/proxy-blocking.md"
+                "references/Scrapling/docs/spiders/proxy-blocking.md",
+                "fetchers/proxy_rotator.go",
+                "fetchers/proxy_rotator_test.go"
               ],
               "ready_when": [
                 "Static proxy support is complete."
               ],
               "write_scope": [
-                "proxy.go",
-                "proxy_rotator.go",
-                "proxy_rotator_test.go"
+                "fetchers/fetcher.go",
+                "fetchers/fetcher_options.go",
+                "fetchers/fetcher_session.go",
+                "fetchers/proxy_rotator.go",
+                "fetchers/proxy_rotator_test.go",
+                "goscrapling.go"
               ],
               "test_commands": [
-                "go test ./... -run TestProxyRotator -count=1"
+                "go test ./... -run TestProxyRotator -count=1",
+                "go test ./... -count=1"
               ],
               "acceptance": [
-                "Unit fixtures prove cyclic/custom rotation, exhausted proxy behavior, proxy config parsing, and retry-on-proxy-error semantics."
+                "Unit fixtures prove cyclic rotation, custom strategy hooks, empty/invalid proxy rejection, string and dictionary-style proxy config parsing, session-level rotated proxies, static proxy conflict rejection, and retry-on-proxy-error using the next rotated proxy."
               ],
               "done_signal": [
-                "Proxy rotator tests pass."
+                "TestProxyRotator and the full Go test suite pass."
               ]
             },
             {
@@ -686,9 +692,6 @@
               ],
               "done_signal": [
                 "Static identity option tests pass and boundaries document supported claims."
-              ],
-              "blocked_by": [
-                "Static request options: params, forms, JSON, auth, verify, and cookies"
               ]
             },
             {
