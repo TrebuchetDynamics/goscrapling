@@ -116,6 +116,61 @@ func TestRunMapWriteRegeneratesMarkdown(t *testing.T) {
 	}
 }
 
+func TestParityScorecard(t *testing.T) {
+	root := t.TempDir()
+	copyFile(t,
+		filepath.Join("..", "..", "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
+		filepath.Join(root, "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
+	)
+	benchmarkPath := filepath.Join(root, "benchmarks", "parity_bench_test.go")
+	if err := os.MkdirAll(filepath.Dir(benchmarkPath), 0o755); err != nil {
+		t.Fatalf("mkdir benchmark fixture: %v", err)
+	}
+	if err := os.WriteFile(benchmarkPath, []byte(`package benchmarks
+
+import "testing"
+
+func BenchmarkParserNestedText(b *testing.B) {}
+func BenchmarkStaticFetcherLocalResponse(b *testing.B) {}
+func BenchmarkSpiderSchedulerFingerprint(b *testing.B) {}
+func BenchmarkCLIExtractFixture(b *testing.B) {}
+`), 0o644); err != nil {
+		t.Fatalf("write benchmark fixture: %v", err)
+	}
+
+	var stdout, stderr bytes.Buffer
+	err := run(&stdout, &stderr, []string{"--repo-root", root, "scorecard"})
+	if err != nil {
+		t.Fatalf("run scorecard: %v\nstderr: %s", err, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "progress: wrote docs/research/parity-scorecard.md") {
+		t.Fatalf("stdout = %q, want scorecard write summary", stdout.String())
+	}
+
+	body, err := os.ReadFile(filepath.Join(root, "docs", "research", "parity-scorecard.md"))
+	if err != nil {
+		t.Fatalf("read generated scorecard: %v", err)
+	}
+	scorecard := string(body)
+	for _, phrase := range []string{
+		"# goscrapling Parity Scorecard",
+		"Text Extraction Speed Test",
+		"Parser and selectors",
+		"Static fetcher and response",
+		"Spider runtime",
+		"CLI shell and extract commands",
+		"BenchmarkParserNestedText",
+		"BenchmarkStaticFetcherLocalResponse",
+		"BenchmarkSpiderSchedulerFingerprint",
+		"BenchmarkCLIExtractFixture",
+		"No live network, live browser, or live LLM",
+	} {
+		if !strings.Contains(scorecard, phrase) {
+			t.Fatalf("scorecard missing %q:\n%s", phrase, scorecard)
+		}
+	}
+}
+
 func TestProgressMapWriteEndToEnd(t *testing.T) {
 	root := t.TempDir()
 	writeMinimalAppMapFixture(t, root)

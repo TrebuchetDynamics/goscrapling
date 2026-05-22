@@ -197,9 +197,6 @@
               ],
               "done_signal": [
                 "Selector generation tests pass."
-              ],
-              "blocked_by": [
-                "Traversal, filtering, and text search helpers"
               ]
             }
           ]
@@ -1971,16 +1968,19 @@
             },
             {
               "name": "Benchmarks and parity scorecard",
-              "status": "planned",
+              "status": "complete",
               "priority": "P4",
               "contract": "Add benchmark coverage and a generated parity scorecard so claims such as coverage, speed, and feature completion remain evidence-backed.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "docs",
               "source_refs": [
                 "references/Scrapling/docs/benchmarks.md",
                 "references/Scrapling/pyproject.toml",
-                "docs/research/scrapling-parity-matrix.md"
+                "docs/research/scrapling-parity-matrix.md",
+                "cmd/progress/scorecard.go",
+                "benchmarks/parity_bench_test.go",
+                "docs/research/parity-scorecard.md"
               ],
               "ready_when": [
                 "Major subsystem APIs are stable enough to benchmark."
@@ -1991,13 +1991,14 @@
                 "cmd/progress/"
               ],
               "test_commands": [
-                "go test ./... -run TestParityScorecard -count=1"
+                "go test ./... -run TestParityScorecard -count=1",
+                "go test ./benchmarks -run '^$' -bench . -benchmem -benchtime=1x"
               ],
               "acceptance": [
-                "Benchmark fixtures and generated scorecard summarize parser/fetcher/spider/CLI coverage without live services."
+                "Benchmark fixtures cover parser, static fetcher/response, spider scheduler, and CLI extraction with hermetic local inputs, and the generated scorecard summarizes those fixtures plus progress coverage without live services."
               ],
               "done_signal": [
-                "Parity scorecard tests pass."
+                "TestParityScorecard passes and one-shot benchmark fixtures run with local-only inputs."
               ]
             },
             {

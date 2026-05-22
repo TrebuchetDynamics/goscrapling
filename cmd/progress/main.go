@@ -10,7 +10,7 @@ import (
 	"github.com/TrebuchetDynamics/goscrapling/internal/progress"
 )
 
-const usage = "usage: progress [--repo-root <path>] {validate|write|map-validate|map-write}"
+const usage = "usage: progress [--repo-root <path>] {validate|write|map-validate|map-write|scorecard}"
 
 var errParse = errors.New("parse error")
 
@@ -55,6 +55,8 @@ func run(stdout, stderr io.Writer, args []string) error {
 		return err
 	case "map-write":
 		return writeAppMap(stdout, root)
+	case "scorecard":
+		return writeScorecard(stdout, root)
 	default:
 		_, _ = fmt.Fprintf(stderr, "unknown progress command %q\n", args[0])
 		return fmt.Errorf("%w\n%s", errParse, usage)

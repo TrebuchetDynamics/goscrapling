@@ -113,7 +113,7 @@ Hard rules:
 | Interactive shell | `core/shell.py` | planned | Scripted shell command fixtures should come before a full REPL dependency. |
 | MCP server | `core/ai.py`, docs `ai/mcp-server.md` | planned | Important if `goscrapling` becomes a Gormes/OpenClaw web-search tool. |
 | Agent skill metadata | `agent-skill/` | deferred | Only after CLI/MCP shape is real. |
-| Benchmarks | `benchmarks.py`, docs `benchmarks.md` | planned | Needed after comparable fetcher/parser surfaces exist. |
+| Benchmarks | `benchmarks.py`, docs `benchmarks.md` | partial | Hermetic parser, static fetcher/response, spider scheduler, and CLI benchmark fixtures exist under `benchmarks/`, and `cmd/progress scorecard` generates `docs/research/parity-scorecard.md`; broader upstream benchmark methodology and real timing comparisons remain future work. |
 
 ## Implementation Order
 
