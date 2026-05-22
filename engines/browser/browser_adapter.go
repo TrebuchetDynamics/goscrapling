@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/chromedp/cdproto/emulation"
@@ -39,7 +41,18 @@ func (e *ChromedpBrowserEngine) Fetch(ctx context.Context, request BrowserReques
 	browserCtx, browserCancel := chromedp.NewContext(allocatorCtx)
 	defer browserCancel()
 
+	documentCapture := &chromedpDocumentCapture{}
+	documentCapture.listen(browserCtx)
+	xhrCapture, err := newChromedpXHRCapture(request.CaptureXHR)
+	if err != nil {
+		return BrowserResult{}, err
+	}
+	if xhrCapture != nil {
+		xhrCapture.listen(browserCtx)
+	}
+
 	var renderedHTML string
+	var screenshot []byte
 	actions := []chromedp.Action{network.Enable()}
 	if blockedPatterns := browserBlockedURLPatterns(request); len(blockedPatterns) > 0 {
 		actions = append(actions, network.SetBlockedURLs().WithURLPatterns(chromedpBlockPatterns(blockedPatterns)))
@@ -72,6 +85,9 @@ func (e *ChromedpBrowserEngine) Fetch(ctx context.Context, request BrowserReques
 	if request.Wait > 0 {
 		actions = append(actions, chromedp.Sleep(request.Wait))
 	}
+	if request.Screenshot.Enabled {
+		actions = append(actions, chromedpScreenshotAction(request.Screenshot, &screenshot))
+	}
 	actions = append(actions, chromedp.OuterHTML("html", &renderedHTML, chromedp.ByQuery))
 
 	response, err := chromedp.RunResponse(browserCtx, actions...)
@@ -101,13 +117,176 @@ func (e *ChromedpBrowserEngine) Fetch(ctx context.Context, request BrowserReques
 		}
 	}
 
+	body := []byte(renderedHTML)
+	if !browserResponseIsHTML(headers, response) {
+		if rawBody, ok := documentCapture.body(browserCtx); ok {
+			body = rawBody
+		}
+	}
+
+	var capturedXHR []BrowserResult
+	if xhrCapture != nil {
+		capturedXHR = xhrCapture.results(browserCtx)
+	}
+
+	return BrowserResult{
+		URL:         resultURL,
+		StatusCode:  statusCode,
+		Reason:      reason,
+		Headers:     headers,
+		Body:        body,
+		Screenshot:  screenshot,
+		CapturedXHR: capturedXHR,
+	}, nil
+}
+
+type chromedpCapturedXHR struct {
+	requestID network.RequestID
+	response  *network.Response
+}
+
+type chromedpDocumentCapture struct {
+	mu   sync.Mutex
+	item chromedpCapturedXHR
+}
+
+func (c *chromedpDocumentCapture) listen(ctx context.Context) {
+	chromedp.ListenTarget(ctx, func(ev any) {
+		received, ok := ev.(*network.EventResponseReceived)
+		if !ok || received.Response == nil || received.Type != network.ResourceTypeDocument {
+			return
+		}
+		c.mu.Lock()
+		c.item = chromedpCapturedXHR{requestID: received.RequestID, response: received.Response}
+		c.mu.Unlock()
+	})
+}
+
+func (c *chromedpDocumentCapture) body(ctx context.Context) ([]byte, bool) {
+	c.mu.Lock()
+	item := c.item
+	c.mu.Unlock()
+	if item.requestID == "" {
+		return nil, false
+	}
+	body, err := network.GetResponseBody(item.requestID).Do(ctx)
+	if err != nil {
+		return nil, false
+	}
+	return body, true
+}
+
+type chromedpXHRCapture struct {
+	pattern *regexp.Regexp
+	mu      sync.Mutex
+	items   []chromedpCapturedXHR
+}
+
+func newChromedpXHRCapture(pattern string) (*chromedpXHRCapture, error) {
+	if pattern == "" {
+		return nil, nil
+	}
+	compiled, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("%w: invalid capture_xhr pattern: %v", ErrBrowserOptions, err)
+	}
+	return &chromedpXHRCapture{pattern: compiled}, nil
+}
+
+func (c *chromedpXHRCapture) listen(ctx context.Context) {
+	chromedp.ListenTarget(ctx, func(ev any) {
+		if c == nil {
+			return
+		}
+		received, ok := ev.(*network.EventResponseReceived)
+		if !ok || received.Response == nil {
+			return
+		}
+		if received.Type != network.ResourceTypeXHR && received.Type != network.ResourceTypeFetch {
+			return
+		}
+		if !c.pattern.MatchString(received.Response.URL) {
+			return
+		}
+
+		c.mu.Lock()
+		c.items = append(c.items, chromedpCapturedXHR{requestID: received.RequestID, response: received.Response})
+		c.mu.Unlock()
+	})
+}
+
+func (c *chromedpXHRCapture) results(ctx context.Context) []BrowserResult {
+	if c == nil {
+		return nil
+	}
+	c.mu.Lock()
+	items := append([]chromedpCapturedXHR(nil), c.items...)
+	c.mu.Unlock()
+	if len(items) == 0 {
+		return nil
+	}
+
+	results := make([]BrowserResult, 0, len(items))
+	for _, item := range items {
+		results = append(results, browserResultFromChromedpResponse(ctx, item))
+	}
+	return results
+}
+
+func browserResponseIsHTML(headers http.Header, response *network.Response) bool {
+	contentType := strings.ToLower(headers.Get("Content-Type"))
+	if strings.Contains(contentType, "html") {
+		return true
+	}
+	if response != nil && strings.Contains(strings.ToLower(response.MimeType), "html") {
+		return true
+	}
+	return contentType == "" && (response == nil || response.MimeType == "")
+}
+
+func browserResultFromChromedpResponse(ctx context.Context, item chromedpCapturedXHR) BrowserResult {
+	response := item.response
+	body, _ := network.GetResponseBody(item.requestID).Do(ctx)
+	statusCode := http.StatusOK
+	reason := http.StatusText(http.StatusOK)
+	headers := http.Header{}
+	resultURL := ""
+	if response != nil {
+		resultURL = response.URL
+		if response.Status > 0 {
+			statusCode = int(response.Status)
+		}
+		if response.StatusText != "" {
+			reason = response.StatusText
+		} else if statusText := http.StatusText(statusCode); statusText != "" {
+			reason = statusText
+		}
+		headers = httpHeadersFromChromedp(response.Headers)
+		if headers.Get("Content-Type") == "" && response.MimeType != "" {
+			headers.Set("Content-Type", response.MimeType)
+		}
+	}
 	return BrowserResult{
 		URL:        resultURL,
 		StatusCode: statusCode,
 		Reason:     reason,
 		Headers:    headers,
-		Body:       []byte(renderedHTML),
-	}, nil
+		Body:       body,
+	}
+}
+
+func chromedpScreenshotAction(screenshot BrowserScreenshotOptions, output *[]byte) chromedp.Action {
+	if screenshot.Selector != "" {
+		return chromedp.Screenshot(screenshot.Selector, output, chromedp.ByQuery)
+	}
+	if screenshot.FullPage {
+		quality := screenshot.Quality
+		if quality == 0 {
+			quality = 100
+		}
+		return chromedp.FullScreenshot(output, quality)
+	}
+	return chromedp.CaptureScreenshot(output)
 }
 
 func chromedpAllocatorContext(ctx context.Context, engine *ChromedpBrowserEngine, request BrowserRequest) (context.Context, context.CancelFunc) {

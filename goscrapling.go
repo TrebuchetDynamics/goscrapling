@@ -70,6 +70,7 @@ type BrowserWaitState = browser.BrowserWaitState
 type BrowserWaitSelector = browser.BrowserWaitSelector
 type BrowserActionKind = browser.BrowserActionKind
 type BrowserAction = browser.BrowserAction
+type BrowserScreenshotOptions = browser.BrowserScreenshotOptions
 type ChromedpBrowserOptions = browser.ChromedpBrowserOptions
 type ChromedpBrowserEngine = browser.ChromedpBrowserEngine
 

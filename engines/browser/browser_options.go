@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -29,6 +30,21 @@ var supportedBrowserCDPSchemes = map[string]struct{}{
 	"https": {},
 	"ws":    {},
 	"wss":   {},
+}
+
+var supportedBrowserWaitStates = map[BrowserWaitState]struct{}{
+	"":                  {},
+	BrowserWaitAttached: {},
+	BrowserWaitDetached: {},
+	BrowserWaitVisible:  {},
+	BrowserWaitHidden:   {},
+}
+
+var supportedBrowserActionKinds = map[BrowserActionKind]struct{}{
+	BrowserActionClick:           {},
+	BrowserActionFill:            {},
+	BrowserActionWaitForSelector: {},
+	BrowserActionEvaluate:        {},
 }
 
 var browserDefaultBlockedResourcePatterns = []string{
@@ -93,6 +109,8 @@ func newBrowserRequest(rawURL string, opts BrowserOptions) (BrowserRequest, erro
 		Wait:             opts.Wait,
 		WaitSelector:     opts.WaitSelector,
 		Actions:          append([]BrowserAction(nil), opts.Actions...),
+		CaptureXHR:       opts.CaptureXHR,
+		Screenshot:       opts.Screenshot,
 		ExtraFlags:       append([]string(nil), opts.ExtraFlags...),
 	}, nil
 }
@@ -115,8 +133,54 @@ func validateBrowserOptions(opts BrowserOptions) error {
 			return fmt.Errorf("%w: empty browser extra flag", ErrBrowserOptions)
 		}
 	}
+	if _, ok := supportedBrowserWaitStates[opts.WaitSelector.State]; !ok {
+		return fmt.Errorf("%w: unsupported wait selector state %q", ErrBrowserOptions, opts.WaitSelector.State)
+	}
+	if err := validateBrowserActions(opts.Actions); err != nil {
+		return err
+	}
+	if opts.CaptureXHR != "" {
+		if _, err := regexp.Compile(opts.CaptureXHR); err != nil {
+			return fmt.Errorf("%w: invalid capture_xhr pattern: %v", ErrBrowserOptions, err)
+		}
+	}
+	if err := validateBrowserScreenshot(opts.Screenshot); err != nil {
+		return err
+	}
 	if strings.ContainsAny(opts.UserAgent, "\r\n") || strings.ContainsAny(opts.Locale, "\r\n") {
 		return fmt.Errorf("%w: browser header values must not contain newlines", ErrBrowserOptions)
+	}
+	return nil
+}
+
+func validateBrowserActions(actions []BrowserAction) error {
+	for _, action := range actions {
+		if _, ok := supportedBrowserActionKinds[action.Kind]; !ok {
+			return fmt.Errorf("%w: unsupported browser action %q", ErrBrowserOptions, action.Kind)
+		}
+		switch action.Kind {
+		case BrowserActionClick, BrowserActionFill, BrowserActionWaitForSelector:
+			if strings.TrimSpace(action.Selector) == "" {
+				return fmt.Errorf("%w: browser action %q requires selector", ErrBrowserOptions, action.Kind)
+			}
+		case BrowserActionEvaluate:
+			if strings.TrimSpace(action.Value) == "" {
+				return fmt.Errorf("%w: browser evaluate action requires script", ErrBrowserOptions)
+			}
+		}
+	}
+	return nil
+}
+
+func validateBrowserScreenshot(screenshot BrowserScreenshotOptions) error {
+	if !screenshot.Enabled {
+		return nil
+	}
+	if screenshot.Quality < 0 || screenshot.Quality > 100 {
+		return fmt.Errorf("%w: screenshot quality must be between 0 and 100", ErrBrowserOptions)
+	}
+	if strings.TrimSpace(screenshot.Selector) != "" && screenshot.FullPage {
+		return fmt.Errorf("%w: screenshot selector and full_page are mutually exclusive", ErrBrowserOptions)
 	}
 	return nil
 }

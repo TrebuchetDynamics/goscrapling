@@ -38,6 +38,8 @@ type BrowserOptions struct {
 	Wait             time.Duration
 	WaitSelector     BrowserWaitSelector
 	Actions          []BrowserAction
+	CaptureXHR       string
+	Screenshot       BrowserScreenshotOptions
 	ExtraFlags       []string
 	Store            Store
 }
@@ -63,15 +65,19 @@ type BrowserRequest struct {
 	Wait             time.Duration
 	WaitSelector     BrowserWaitSelector
 	Actions          []BrowserAction
+	CaptureXHR       string
+	Screenshot       BrowserScreenshotOptions
 	ExtraFlags       []string
 }
 
 type BrowserResult struct {
-	URL        string
-	StatusCode int
-	Reason     string
-	Headers    http.Header
-	Body       []byte
+	URL         string
+	StatusCode  int
+	Reason      string
+	Headers     http.Header
+	Body        []byte
+	Screenshot  []byte
+	CapturedXHR []BrowserResult
 }
 
 type BrowserWaitState string
@@ -103,6 +109,13 @@ type BrowserAction struct {
 	Value    string
 }
 
+type BrowserScreenshotOptions struct {
+	Enabled  bool
+	FullPage bool
+	Selector string
+	Quality  int
+}
+
 func (f BrowserFetcher) Fetch(ctx context.Context, rawURL string, opts BrowserOptions) (*Response, error) {
 	if f.Engine == nil {
 		return nil, ErrMissingBrowserEngine
@@ -125,6 +138,10 @@ func (f BrowserFetcher) Fetch(ctx context.Context, rawURL string, opts BrowserOp
 	if responseURL == "" {
 		responseURL = rawURL
 	}
+	capturedXHR, err := browserResponsesFromResults(result.CapturedXHR, opts.Store)
+	if err != nil {
+		return nil, err
+	}
 	return NewResponse(bytes.NewReader(result.Body), ResponseOptions{
 		URL:        responseURL,
 		StatusCode: result.StatusCode,
@@ -135,6 +152,41 @@ func (f BrowserFetcher) Fetch(ctx context.Context, rawURL string, opts BrowserOp
 			URL:     rawURL,
 			Headers: request.Headers,
 		},
-		Store: opts.Store,
+		Meta:        browserResultMeta(result),
+		CapturedXHR: capturedXHR,
+		Store:       opts.Store,
 	})
+}
+
+func browserResultMeta(result BrowserResult) map[string]any {
+	if len(result.Screenshot) == 0 {
+		return nil
+	}
+	return map[string]any{"screenshot": append([]byte(nil), result.Screenshot...)}
+}
+
+func browserResponsesFromResults(results []BrowserResult, store Store) ([]*Response, error) {
+	if len(results) == 0 {
+		return nil, nil
+	}
+	responses := make([]*Response, 0, len(results))
+	for _, result := range results {
+		response, err := NewResponse(bytes.NewReader(result.Body), ResponseOptions{
+			URL:        result.URL,
+			StatusCode: result.StatusCode,
+			Reason:     result.Reason,
+			Headers:    result.Headers,
+			Request: RequestMetadata{
+				Method: http.MethodGet,
+				URL:    result.URL,
+			},
+			Meta:  browserResultMeta(result),
+			Store: store,
+		})
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, response)
+	}
+	return responses, nil
 }

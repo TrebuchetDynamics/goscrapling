@@ -259,6 +259,12 @@ func mergeBrowserOptions(defaults, overrides BrowserOptions) BrowserOptions {
 	if len(overrides.Actions) > 0 {
 		merged.Actions = append(merged.Actions, overrides.Actions...)
 	}
+	if overrides.CaptureXHR != "" {
+		merged.CaptureXHR = overrides.CaptureXHR
+	}
+	if overrides.Screenshot.Enabled {
+		merged.Screenshot = overrides.Screenshot
+	}
 	if len(overrides.ExtraFlags) > 0 {
 		merged.ExtraFlags = append(merged.ExtraFlags, overrides.ExtraFlags...)
 	}

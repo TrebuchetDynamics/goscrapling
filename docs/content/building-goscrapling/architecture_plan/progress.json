@@ -1091,34 +1091,50 @@
             },
             {
               "name": "Browser wait conditions, page actions, downloads, screenshots, and XHR capture",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Port dynamic fetch controls for wait selector/state, network idle, fixed wait, page actions, downloads, screenshots, and captured XHR responses.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "browser",
               "source_refs": [
                 "references/Scrapling/scrapling/engines/_browsers/_page.py",
+                "references/Scrapling/scrapling/engines/_browsers/_controllers.py",
+                "references/Scrapling/scrapling/engines/_browsers/_types.py",
                 "references/Scrapling/scrapling/engines/toolbelt/convertor.py",
                 "references/Scrapling/docs/fetching/dynamic.md"
               ],
               "ready_when": [
                 "Browser session pool is stable."
               ],
+              "not_ready_when": [
+                "The row expands into stealth, Cloudflare challenge solving, proxy rotation, live-web browser tests, or Playwright callback APIs not expressible through the Go engine seam."
+              ],
               "write_scope": [
-                "browser.go",
-                "browser_actions.go",
-                "browser_actions_test.go",
-                "testdata/browser/"
+                "engines/browser/browser.go",
+                "engines/browser/browser_actions_test.go",
+                "engines/browser/browser_adapter.go",
+                "engines/browser/browser_options.go",
+                "engines/browser/browser_session.go",
+                "goscrapling.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md"
               ],
               "test_commands": [
-                "go test ./... -run TestBrowserActionsAndCapture -count=1"
+                "go test ./... -run TestBrowserActionsAndCapture -count=1",
+                "go test ./... -count=1"
               ],
               "acceptance": [
-                "Fixtures prove waits/actions/capture fields are passed to the engine and reflected in Response metadata."
+                "Fake-engine fixtures prove wait selector/state, network idle, fixed wait, page actions, capture_xhr, screenshot options, and binary body/download bytes are passed through the browser engine seam.",
+                "BrowserResult conversion attaches screenshot bytes to response metadata and converts captured XHR/fetch BrowserResult values into Response.CapturedXHR entries with headers, status, reason, URL, and body preserved.",
+                "Chromedp adapter code executes screenshot capture, regex-matched XHR/fetch collection, and best-effort non-HTML document body preservation without live-web test dependencies."
               ],
               "done_signal": [
-                "Browser action and capture tests pass."
+                "TestBrowserActionsAndCapture and the full Go test suite pass; generated queue docs expose the next assignable browser row."
               ]
             },
             {
@@ -1784,7 +1800,6 @@
                 "Advanced extract mode tests pass from local fixtures."
               ],
               "blocked_by": [
-                "Browser wait conditions, page actions, downloads, screenshots, and XHR capture",
                 "Stealth browser controls and fingerprint options"
               ]
             },
@@ -1948,7 +1963,6 @@
                 "MCP server tool tests pass."
               ],
               "blocked_by": [
-                "Browser wait conditions, page actions, downloads, screenshots, and XHR capture",
                 "Stealth browser controls and fingerprint options"
               ]
             },
