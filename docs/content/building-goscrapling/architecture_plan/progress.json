@@ -1775,16 +1775,18 @@
             },
             {
               "name": "Gormes web-search tool adapter",
-              "status": "planned",
+              "status": "complete",
               "priority": "P2",
               "contract": "Expose goscrapling as a production-friendly Go web search/scraping tool for Gormes without importing Gormes runtime dependencies into the core library.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "integration",
               "source_refs": [
                 "README.md",
                 "docs/research/go-scraping-oss-survey.md",
-                "docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md"
+                "docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md",
+                "integrations/gormes/static_tools.go",
+                "integrations/gormes/static_tools_test.go"
               ],
               "ready_when": [
                 "Static fetcher and response objects are validated",
@@ -1797,18 +1799,21 @@
               ],
               "write_scope": [
                 "integrations/gormes/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
-                "docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md"
+                "docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestGormesIntegration -count=1"
               ],
               "acceptance": [
                 "A fake tool call can fetch a local page, extract selected content, and return structured evidence",
-                "The adapter output includes enough evidence for Gormes to render or truncate without depending on goscrapling internals."
+                "The adapter output includes URL, title, content, HTTP status, content type, final URL, and selector evidence without depending on goscrapling internals."
               ],
               "done_signal": [
-                "Integration tests pass without reaching the network",
+                "TestGormesIntegration passes without reaching the network.",
                 "The Gormes boundary docs link back to the goscrapling strategy page."
               ]
             },

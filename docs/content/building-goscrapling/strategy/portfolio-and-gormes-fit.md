@@ -67,13 +67,13 @@ behavior, response construction, selector APIs, browser fetcher contracts, and
 spider/crawl primitives.
 
 The core goscrapling package must not import Gormes runtime packages. The
-current Gormes integration keeps goscrapling behind the existing `web_extract`
-tool surface and returns structured `extraction` evidence for static selector
-calls. The browser extraction adapter is similarly standalone: it exposes
-rendered Markdown, links, semantic tree, structured data, and interactive
-element discovery from a fakeable browser engine without live LLM, live web, or
-Gormes runtime dependencies. Any future standalone Gormes adapter package still
-belongs outside the core library.
+current Gormes integration exposes a standalone `StaticExtractionAdapter` for
+the existing `web_extract` tool surface and returns structured `extraction`
+evidence for static selector calls. The browser extraction adapter is similarly
+standalone: it exposes rendered Markdown, links, semantic tree, structured data,
+and interactive element discovery from a fakeable browser engine without live
+LLM, live web, or Gormes runtime dependencies. Any future standalone Gormes
+adapter package still belongs outside the core library.
 
 ## Recommended Milestones
 

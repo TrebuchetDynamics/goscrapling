@@ -46,7 +46,7 @@ business boundary, public positioning, and downstream integration rationale.
 goscrapling is strategically useful when it keeps moving toward a tested
 Scrapling-style extraction engine for Go agent runtimes. The portfolio story is
 the porting method: upstream feature inventory, parity ledgers, generated
-builder rows, and hermetic tests. The Gormes story is a future single-binary
+builder rows, and hermetic tests. The Gormes story is an emerging single-binary
 web extraction substrate that can serve agent tools without a Python sidecar.
 Lightpanda is a non-vendored design reference for browser/agent surfaces such
 as markdown dumps, semantic trees, safety controls, and MCP-style tool names;
@@ -96,5 +96,5 @@ than polishing the existing parser in isolation.
 
 The project is still worth continuing for a company portfolio and Gormes if the
 docs, tests, and progress ledger stay synchronized with what is actually
-implemented. The next high-value integration proof is a static Gormes adapter
-that returns structured evidence from local fixtures.
+implemented. The latest integration proof is a static Gormes `web_extract`
+adapter that returns structured selector evidence from local fixtures.
