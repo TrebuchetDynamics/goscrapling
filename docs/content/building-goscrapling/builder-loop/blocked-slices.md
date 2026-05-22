@@ -24,5 +24,4 @@ This page is generated from canonical `progress.json` rows that declare
 | phase-3-browser / browser-fetcher | Cloudflare challenge strategy boundary | Stealth browser controls and fingerprint options | Stealth browser controls are explicit and tested. | - |
 | phase-5-cli-tooling / tool-surfaces | CLI extract markdown, AI-targeted, and browser modes | Browser wait conditions, page actions, downloads, screenshots, and XHR capture, Stealth browser controls and fingerprint options | Static extract methods are complete, Browser fetcher has a real adapter or stable fake-backed command seam. | - |
 | phase-5-cli-tooling / tool-surfaces | Install command, Docker image, and dependency packaging docs | Real browser adapter with JavaScript fixture | Browser adapter dependency boundary is documented. | - |
-| phase-5-cli-tooling / tool-surfaces | Benchmarks and parity scorecard | Public docs, examples, and API reference parity | Major subsystem APIs are stable enough to benchmark. | - |
 <!-- PROGRESS:END -->

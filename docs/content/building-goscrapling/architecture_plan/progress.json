@@ -1937,17 +1937,19 @@
             },
             {
               "name": "Public docs, examples, and API reference parity",
-              "status": "planned",
+              "status": "complete",
               "priority": "P3",
               "contract": "Maintain Go docs/examples for parser, adaptive scraping, fetchers, browser fetching, spiders, CLI, MCP, and migration guidance mapped from upstream docs.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "docs",
               "source_refs": [
                 "references/Scrapling/docs/index.md",
                 "references/Scrapling/docs/overview.md",
                 "references/Scrapling/docs/tutorials/migrating_from_beautifulsoup.md",
-                "references/Scrapling/docs/tutorials/replacing_ai.md"
+                "references/Scrapling/docs/tutorials/replacing_ai.md",
+                "README.md",
+                "example_test.go"
               ],
               "ready_when": [
                 "Core APIs have stable examples for each subsystem."
@@ -1961,10 +1963,10 @@
                 "go test ./... -run TestExamples -count=1"
               ],
               "acceptance": [
-                "Examples compile and docs point each major upstream feature group to a Go status or owned exclusion."
+                "Examples compile for public parser and static fetcher APIs, and README maps parser, adaptive, static fetcher/response, browser, spider, CLI, MCP/Gormes, migration, and excluded docs/assets groups to explicit Go statuses."
               ],
               "done_signal": [
-                "Example tests and docs checks pass."
+                "TestExamples passes with README status-map checks."
               ]
             },
             {
@@ -1996,9 +1998,6 @@
               ],
               "done_signal": [
                 "Parity scorecard tests pass."
-              ],
-              "blocked_by": [
-                "Public docs, examples, and API reference parity"
               ]
             },
             {
