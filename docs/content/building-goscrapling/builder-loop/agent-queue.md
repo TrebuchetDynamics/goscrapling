@@ -4,18 +4,33 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Browser sessions and page pool lifecycle
+## 1. Browser context options and resource blocking
 
 - Phase: `phase-3-browser / browser-fetcher`
 - Priority: `P1`
 - Owner: `browser`
 - Size: `medium`
 - Contract status: `draft`
-- Contract: Add DynamicSession-style lifecycle with reusable browser contexts/pages, page pool stats, and clean close semantics.
-- Ready when: Real browser adapter or fake-backed engine seam is stable.
-- Write scope: `engines/browser/browser_session.go`, `engines/browser/browser_session_test.go`, `docs/content/building-goscrapling/architecture_plan/progress.json`, `docs/content/building-goscrapling/builder-loop/agent-queue.md`, `docs/content/building-goscrapling/builder-loop/blocked-slices.md`, `docs/content/building-goscrapling/builder-loop/next-slices.md`
-- Test commands: `go test ./... -run TestBrowserSessionPool -count=1`
-- Acceptance: Fake and local fixtures prove session reuse, pool stats, busy/free/error page counts, and close behavior.
-- Done signal: Browser session pool tests pass.
-- Source refs: `references/Scrapling/scrapling/fetchers/chrome.py`, `references/Scrapling/scrapling/engines/_browsers/_base.py`, `references/Scrapling/scrapling/engines/_browsers/_controllers.py`, `engines/browser/browser.go`, `engines/browser/browser_adapter.go`
+- Contract: Support browser context options including cookies, locale, timezone, user agent, extra headers, proxy, CDP/real Chrome selection, resource disabling, custom blocked domains, ad-domain blocking, and DNS-over-HTTPS flag.
+- Ready when: Browser adapter and session rows are stable.
+- Write scope: `browser_options.go`, `browser_options_test.go`, `browser_resources_test.go`
+- Test commands: `go test ./... -run TestBrowserContextOptions -count=1`
+- Acceptance: Fake engine fixtures prove every option is explicit, validated, and passed through without hidden stealth behavior.
+- Done signal: Browser context option tests pass.
+- Source refs: `references/Scrapling/scrapling/engines/_browsers/_config_tools.py`, `references/Scrapling/scrapling/engines/toolbelt/navigation.py`, `references/Scrapling/scrapling/engines/toolbelt/ad_domains.py`, `references/Scrapling/docs/fetching/dynamic.md`
+
+## 2. Browser wait conditions, page actions, downloads, screenshots, and XHR capture
+
+- Phase: `phase-3-browser / browser-fetcher`
+- Priority: `P1`
+- Owner: `browser`
+- Size: `medium`
+- Contract status: `draft`
+- Contract: Port dynamic fetch controls for wait selector/state, network idle, fixed wait, page actions, downloads, screenshots, and captured XHR responses.
+- Ready when: Browser session pool is stable.
+- Write scope: `browser.go`, `browser_actions.go`, `browser_actions_test.go`, `testdata/browser/`
+- Test commands: `go test ./... -run TestBrowserActionsAndCapture -count=1`
+- Acceptance: Fixtures prove waits/actions/capture fields are passed to the engine and reflected in Response metadata.
+- Done signal: Browser action and capture tests pass.
+- Source refs: `references/Scrapling/scrapling/engines/_browsers/_page.py`, `references/Scrapling/scrapling/engines/toolbelt/convertor.py`, `references/Scrapling/docs/fetching/dynamic.md`
 <!-- PROGRESS:END -->

@@ -1045,38 +1045,48 @@
             },
             {
               "name": "Browser sessions and page pool lifecycle",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Add DynamicSession-style lifecycle with reusable browser contexts/pages, page pool stats, and clean close semantics.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "browser",
               "source_refs": [
                 "references/Scrapling/scrapling/fetchers/chrome.py",
                 "references/Scrapling/scrapling/engines/_browsers/_base.py",
                 "references/Scrapling/scrapling/engines/_browsers/_controllers.py",
+                "references/Scrapling/scrapling/engines/_browsers/_page.py",
                 "engines/browser/browser.go",
                 "engines/browser/browser_adapter.go"
               ],
               "ready_when": [
                 "Real browser adapter or fake-backed engine seam is stable."
               ],
+              "not_ready_when": [
+                "The row requires a live browser for the core session lifecycle proof.",
+                "The row expands into wait actions, downloads, screenshots, XHR capture, context options, resource blocking, stealth, or proxy behavior."
+              ],
               "write_scope": [
                 "engines/browser/browser_session.go",
                 "engines/browser/browser_session_test.go",
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
                 "docs/content/building-goscrapling/builder-loop/agent-queue.md",
                 "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
                 "docs/content/building-goscrapling/builder-loop/next-slices.md"
               ],
               "test_commands": [
-                "go test ./... -run TestBrowserSessionPool -count=1"
+                "go test ./... -run TestBrowserSessionPool -count=1",
+                "go test ./... -count=1"
               ],
               "acceptance": [
-                "Fake and local fixtures prove session reuse, pool stats, busy/free/error page counts, and close behavior."
+                "Fake engine fixtures prove session default option reuse and page slot reuse without live browser execution.",
+                "Concurrent fetch fixtures prove max page bounds, busy/free stats, and queued work starting only after a page is free.",
+                "Error and close fixtures prove error page counts, idempotent close behavior, and closed-session rejection."
               ],
               "done_signal": [
-                "Browser session pool tests pass."
+                "TestBrowserSessionPool and the full Go test suite pass; generated queue docs expose the next assignable browser rows."
               ]
             },
             {
@@ -1109,9 +1119,6 @@
               ],
               "done_signal": [
                 "Browser action and capture tests pass."
-              ],
-              "blocked_by": [
-                "Browser sessions and page pool lifecycle"
               ]
             },
             {
@@ -1144,9 +1151,6 @@
               ],
               "done_signal": [
                 "Browser context option tests pass."
-              ],
-              "blocked_by": [
-                "Browser sessions and page pool lifecycle"
               ]
             },
             {
@@ -1567,7 +1571,6 @@
               ],
               "blocked_by": [
                 "Proxy rotator strategies",
-                "Browser sessions and page pool lifecycle",
                 "Stealth browser controls and fingerprint options"
               ]
             }
