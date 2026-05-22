@@ -101,24 +101,26 @@ var (
 	ErrUnsupportedStoreSchema = storage.ErrUnsupportedStoreSchema
 	ErrClosedStore            = storage.ErrClosedStore
 
-	ErrRequestOptions         = fetchers.ErrRequestOptions
-	ErrRequestTimeout         = fetchers.ErrRequestTimeout
-	ErrRetryExhausted         = fetchers.ErrRetryExhausted
-	ErrRedirectNotAllowed     = fetchers.ErrRedirectNotAllowed
-	ErrPrivateAddressRedirect = fetchers.ErrPrivateAddressRedirect
-	ErrProxyRequest           = fetchers.ErrProxyRequest
-	ErrMissingBrowserEngine   = browser.ErrMissingBrowserEngine
-	NewMemoryStore            = storage.NewMemoryStore
-	NewFileStore              = storage.NewFileStore
-	NewSQLiteStore            = storage.NewSQLiteStore
-	NewResponse               = toolbelt.NewResponse
-	NewFetcherSession         = fetchers.NewFetcherSession
-	NewProxyRotator           = fetchers.NewProxyRotator
-	WithProxyRotationStrategy = fetchers.WithProxyRotationStrategy
-	CyclicProxyRotation       = fetchers.CyclicProxyRotation
-	NewChromedpBrowserEngine  = browser.NewChromedpBrowserEngine
-	Bool                      = fetchers.Bool
-	NewAttributesHandler      = customtypes.NewAttributesHandler
+	ErrRequestOptions                 = fetchers.ErrRequestOptions
+	ErrRequestTimeout                 = fetchers.ErrRequestTimeout
+	ErrRetryExhausted                 = fetchers.ErrRetryExhausted
+	ErrRedirectNotAllowed             = fetchers.ErrRedirectNotAllowed
+	ErrPrivateAddressRedirect         = fetchers.ErrPrivateAddressRedirect
+	ErrProxyRequest                   = fetchers.ErrProxyRequest
+	ErrUnsupportedStaticImpersonation = fetchers.ErrUnsupportedStaticImpersonation
+	ErrUnsupportedHTTP3               = fetchers.ErrUnsupportedHTTP3
+	ErrMissingBrowserEngine           = browser.ErrMissingBrowserEngine
+	NewMemoryStore                    = storage.NewMemoryStore
+	NewFileStore                      = storage.NewFileStore
+	NewSQLiteStore                    = storage.NewSQLiteStore
+	NewResponse                       = toolbelt.NewResponse
+	NewFetcherSession                 = fetchers.NewFetcherSession
+	NewProxyRotator                   = fetchers.NewProxyRotator
+	WithProxyRotationStrategy         = fetchers.WithProxyRotationStrategy
+	CyclicProxyRotation               = fetchers.CyclicProxyRotation
+	NewChromedpBrowserEngine          = browser.NewChromedpBrowserEngine
+	Bool                              = fetchers.Bool
+	NewAttributesHandler              = customtypes.NewAttributesHandler
 )
 
 func Parse(r io.Reader, opts ParseOptions) (*Document, error) {

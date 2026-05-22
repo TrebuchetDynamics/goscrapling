@@ -665,14 +665,15 @@
             },
             {
               "name": "Static browser impersonation, HTTP/3, and stealthy headers boundary",
-              "status": "planned",
+              "status": "complete",
               "priority": "P2",
               "contract": "Evaluate and implement the Go-native boundary for Scrapling static fetcher impersonation claims, including browser-like headers, TLS/browser impersonation, and HTTP/3 where supported.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "fetcher",
               "source_refs": [
                 "references/Scrapling/scrapling/engines/toolbelt/fingerprints.py",
+                "references/Scrapling/scrapling/engines/static.py",
                 "references/Scrapling/scrapling/fetchers/requests.py",
                 "references/Scrapling/docs/fetching/static.md"
               ],
@@ -680,18 +681,27 @@
                 "Core static options and proxy support are complete."
               ],
               "write_scope": [
-                "fetcher_identity.go",
-                "fetcher_identity_test.go",
-                "docs/content/building-goscrapling/architecture_plan/boundaries.md"
+                "fetchers/fetcher_identity.go",
+                "fetchers/fetcher_identity_test.go",
+                "fetchers/fetcher_options.go",
+                "goscrapling.go",
+                "docs/content/building-goscrapling/architecture_plan/boundaries.md",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md"
               ],
               "test_commands": [
-                "go test ./... -run TestStaticFetcherIdentityOptions -count=1"
+                "go test ./... -run TestStaticFetcherIdentityOptions -count=1",
+                "go test ./... -count=1"
               ],
               "acceptance": [
-                "Fixtures prove explicit header generation and any unsupported impersonation modes return honest operator-visible errors."
+                "Fixtures prove explicit browser-like header generation without overwriting caller headers and unsupported impersonation/HTTP3 modes return honest operator-visible errors before sending a request."
               ],
               "done_signal": [
-                "Static identity option tests pass and boundaries document supported claims."
+                "TestStaticFetcherIdentityOptions and the full Go test suite pass; boundaries document supported claims."
               ]
             },
             {
@@ -755,8 +765,8 @@
                 "Static fetcher options are stable."
               ],
               "write_scope": [
-                "fetcher_async.go",
-                "fetcher_async_test.go"
+                "fetchers/fetcher_async.go",
+                "fetchers/fetcher_async_test.go"
               ],
               "test_commands": [
                 "go test ./... -run TestConcurrentFetcher -count=1"
@@ -766,9 +776,6 @@
               ],
               "done_signal": [
                 "Concurrent fetcher tests pass."
-              ],
-              "blocked_by": [
-                "Static request options: params, forms, JSON, auth, verify, and cookies"
               ]
             }
           ]

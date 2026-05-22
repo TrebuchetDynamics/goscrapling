@@ -59,7 +59,7 @@ core source-class names below when the local upstream checkout exists.
 | `scrapling/engines/static.py`, `scrapling/engines/toolbelt/custom.py`, `scrapling/engines/toolbelt/convertor.py` | Response object, static fetcher | `engines/toolbelt.Response`, `fetchers.Fetcher`, `fetchers.FetcherSession`, and root facade aliases | Phase 1 | partial |
 | `scrapling/engines/_browsers/**` | Browser fetching | `engines/browser.BrowserFetcher`, `ChromedpBrowserEngine`, future sessions and page pools, and root facade aliases | Phase 3 | partial |
 | `scrapling/engines/toolbelt/proxy_rotation.py` | Proxy rotation | `ProxyRotator`, fetcher/session proxy rotator options, and future spider proxy options | Phase 1, Phase 4 | partial |
-| `scrapling/engines/toolbelt/fingerprints.py` | Static fetcher, Browser fetching | explicit identity and stealth option boundaries | Phase 1, Phase 3 | planned |
+| `scrapling/engines/toolbelt/fingerprints.py` | Static fetcher, Browser fetching | explicit static identity headers, unsupported impersonation/HTTP3 errors, and future browser stealth option boundaries | Phase 1, Phase 3 | partial |
 | `scrapling/engines/toolbelt/navigation.py`, `scrapling/engines/toolbelt/ad_domains.py`, `scrapling/engines/constants.py` | Browser fetching, Proxy rotation | browser context/resource controls and proxy error helpers | Phase 1, Phase 3 | partial |
 | `scrapling/fetchers/requests.py` | Static fetcher | `fetchers.Fetcher`, `fetchers.FetcherSession`, and root facade aliases | Phase 1 | partial |
 | `scrapling/fetchers/chrome.py` | Browser fetching | `engines/browser.BrowserFetcher`, `ChromedpBrowserEngine`, and root facade aliases | Phase 3 | partial |
@@ -76,7 +76,7 @@ core source-class names below when the local upstream checkout exists.
 | `docs/parsing/**` | Parser and selector objects, adaptive storage | `parser`, `core/storage`, and root facade aliases | Phase 0, Phase 2 | partial |
 | `docs/api-reference/selector.md`, `docs/api-reference/custom-types.md` | Parser and selector objects | `parser` selector helpers, selector generation methods, `core/customtypes`, and root facade aliases | Phase 0 | partial |
 | `docs/api-reference/response.md` | Response object | `engines/toolbelt.Response` and root facade alias | Phase 1 | partial |
-| `docs/api-reference/fetchers.md`, `docs/fetching/**` | Fetchers and browser fetching | `fetchers`, `engines/browser`, and root facade aliases | Phase 1, Phase 3 | partial |
+| `docs/api-reference/fetchers.md`, `docs/fetching/**` | Fetchers and browser fetching | `fetchers`, explicit static identity boundaries, `engines/browser`, and root facade aliases | Phase 1, Phase 3 | partial |
 | `docs/api-reference/proxy-rotation.md` | Proxy rotation | `ProxyRotator`, fetcher/session proxy rotator options, and future browser/spider proxy options | Phase 1, Phase 4 | partial |
 | `docs/spiders/**` | Spider runtime | `spiders` package with fixture-backed core, allowed-domain filtering, concurrency/domain-delay controls, and development response cache | Phase 4 | partial |
 | `docs/cli/**` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` | Phase 5 | partial |

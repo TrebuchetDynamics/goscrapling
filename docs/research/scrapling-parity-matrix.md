@@ -71,7 +71,7 @@ Hard rules:
 | Async HTTP fetcher | `AsyncFetcher` | planned | Go equivalent should use context and goroutines rather than Python-style awaitable API. |
 | Fetcher sessions | `FetcherSession`, async sessions | partial | Synchronous Go-native session behavior has default headers, per-request overrides, cookies, and connection reuse. Async-style coordination remains future Go API work. |
 | Request options merging | fetcher tests | partial | Session default headers and per-request overrides are covered. Broader request option merging remains planned. |
-| Headers and browser-ish defaults | `toolbelt/fingerprints.py` | planned | Needs careful, honest implementation without overclaiming stealth. |
+| Headers and browser-ish defaults | `toolbelt/fingerprints.py` | partial | Request-level `StealthyHeaders` now adds explicit browser-like HTTP headers without overwriting caller values; TLS/browser impersonation and HTTP/3 return unsupported request-option errors instead of overclaiming stealth. |
 | Proxies and proxy rotation | `proxy_rotation.py`, docs `api-reference/proxy-rotation.md` | partial | Static proxy options and `ProxyRotator` cyclic/custom rotation are fixture-backed for fetchers and sessions; spider production routing remains planned. |
 | Response history/cookies/body/status | fetcher docs/tests | partial | Body, status helpers, and session cookie persistence are covered; response cookie access and redirect history remain planned. |
 

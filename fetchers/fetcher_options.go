@@ -19,18 +19,21 @@ type BasicAuth struct {
 }
 
 type RequestOptions struct {
-	Headers      http.Header
-	Body         io.Reader
-	Params       url.Values
-	Data         url.Values
-	JSON         any
-	Auth         *BasicAuth
-	Verify       *bool
-	Proxy        ProxyOptions
-	ProxyRotator *ProxyRotator
-	Safety       FetchSafetyOptions
-	CookieValues map[string]string
-	Cookies      []*http.Cookie
+	Headers         http.Header
+	Body            io.Reader
+	Params          url.Values
+	Data            url.Values
+	JSON            any
+	Auth            *BasicAuth
+	Verify          *bool
+	Proxy           ProxyOptions
+	ProxyRotator    *ProxyRotator
+	StealthyHeaders *bool
+	Impersonate     string
+	HTTP3           *bool
+	Safety          FetchSafetyOptions
+	CookieValues    map[string]string
+	Cookies         []*http.Cookie
 
 	Store           Store
 	FollowRedirects RedirectPolicy
@@ -45,6 +48,10 @@ func Bool(value bool) *bool {
 }
 
 func prepareRequest(rawURL string, opts RequestOptions) (string, []byte, http.Header, error) {
+	if err := validateStaticIdentityOptions(opts); err != nil {
+		return "", nil, nil, err
+	}
+
 	requestURL, err := appendRequestParams(rawURL, opts.Params)
 	if err != nil {
 		return "", nil, nil, err
@@ -61,6 +68,7 @@ func prepareRequest(rawURL string, opts RequestOptions) (string, []byte, http.He
 	if contentType != "" && headers.Get("Content-Type") == "" {
 		headers.Set("Content-Type", contentType)
 	}
+	applyStaticIdentityHeaders(headers, opts)
 
 	return requestURL, body, headers, nil
 }

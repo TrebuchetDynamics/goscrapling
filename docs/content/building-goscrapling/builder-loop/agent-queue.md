@@ -4,18 +4,18 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Static browser impersonation, HTTP/3, and stealthy headers boundary
+## 1. Async and concurrent static fetcher API
 
 - Phase: `phase-1-response-fetcher / static-fetcher`
 - Priority: `P2`
 - Owner: `fetcher`
 - Size: `medium`
 - Contract status: `draft`
-- Contract: Evaluate and implement the Go-native boundary for Scrapling static fetcher impersonation claims, including browser-like headers, TLS/browser impersonation, and HTTP/3 where supported.
-- Ready when: Core static options and proxy support are complete.
-- Write scope: `fetcher_identity.go`, `fetcher_identity_test.go`, `docs/content/building-goscrapling/architecture_plan/boundaries.md`
-- Test commands: `go test ./... -run TestStaticFetcherIdentityOptions -count=1`
-- Acceptance: Fixtures prove explicit header generation and any unsupported impersonation modes return honest operator-visible errors.
-- Done signal: Static identity option tests pass and boundaries document supported claims.
-- Source refs: `references/Scrapling/scrapling/engines/toolbelt/fingerprints.py`, `references/Scrapling/scrapling/fetchers/requests.py`, `references/Scrapling/docs/fetching/static.md`
+- Contract: Provide a Go-native concurrent equivalent for Scrapling AsyncFetcher and async sessions using context, goroutines, cancellation, and bounded concurrency.
+- Ready when: Static fetcher options are stable.
+- Write scope: `fetchers/fetcher_async.go`, `fetchers/fetcher_async_test.go`
+- Test commands: `go test ./... -run TestConcurrentFetcher -count=1`
+- Acceptance: httptest fixtures prove concurrent fetch, cancellation, error collection, and session reuse without Python-style async mimicry.
+- Done signal: Concurrent fetcher tests pass.
+- Source refs: `references/Scrapling/scrapling/fetchers/requests.py`, `references/Scrapling/docs/api-reference/fetchers.md`
 <!-- PROGRESS:END -->

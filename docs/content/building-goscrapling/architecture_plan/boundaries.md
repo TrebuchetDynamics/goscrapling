@@ -80,6 +80,12 @@ explicit rows, tests, and operator-visible configuration. They should not be
 added as incidental helpers while implementing static fetching or response
 behavior.
 
+Static identity controls are explicit request options. `StealthyHeaders` only
+adds deterministic browser-like HTTP headers and a Google referer when callers
+opt in; it does not claim TLS/browser fingerprint impersonation. Static
+`Impersonate` and `HTTP3` options fail with operator-visible request-option
+errors until a Go dependency and tests can prove those behaviors honestly.
+
 Static fetch safety controls are explicit request options. Robots enforcement
 and private-network/CIDR blocking are opt-in, return typed `FetcherError`
 values, and must be proven with `httptest` or pre-dispatch fixtures instead of
