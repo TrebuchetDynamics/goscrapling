@@ -4,22 +4,7 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Development response cache
-
-- Phase: `phase-4-spider / spider-core`
-- Priority: `P1`
-- Owner: `spider`
-- Size: `medium`
-- Contract status: `draft`
-- Contract: Add spider development cache behavior keyed by request fingerprint with encoded response bodies and cache hit/miss stats.
-- Ready when: Request fingerprints and Response body helpers are validated.
-- Write scope: `spiders/cache.go`, `spiders/cache_test.go`, `testdata/spiders/cache/`
-- Test commands: `go test ./... -run TestSpiderResponseCache -count=1`
-- Acceptance: Temp-dir fixtures prove cache put/get/clear, binary-safe bodies, method separation, and cache stats.
-- Done signal: Spider response cache tests pass.
-- Source refs: `references/Scrapling/scrapling/spiders/cache.py`, `references/Scrapling/docs/spiders/advanced.md`
-
-## 2. Gormes web-search tool adapter
+## 1. Gormes web-search tool adapter
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P2`
@@ -35,7 +20,7 @@ non-umbrella, and builder-ready.
 - Done signal: Integration tests pass without reaching the network, The Gormes boundary docs link back to the goscrapling strategy page.
 - Source refs: `README.md`, `docs/research/go-scraping-oss-survey.md`, `docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md`
 
-## 3. CLI interactive shell command surface
+## 2. CLI interactive shell command surface
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
@@ -51,7 +36,7 @@ non-umbrella, and builder-ready.
 - Done signal: Shell command tests pass from local fixtures.
 - Source refs: `references/Scrapling/scrapling/cli.py`, `references/Scrapling/docs/cli/interactive-shell.md`, `references/Scrapling/scrapling/core/shell.py`, `references/Scrapling/scrapling/core/_shell_signatures.py`
 
-## 4. Public docs, examples, and API reference parity
+## 3. Public docs, examples, and API reference parity
 
 - Phase: `phase-5-cli-tooling / tool-surfaces`
 - Priority: `P3`
