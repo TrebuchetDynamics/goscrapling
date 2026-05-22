@@ -50,7 +50,7 @@ core source-class names below when the local upstream checkout exists.
 |---|---|---|---|---|
 | `scrapling/parser.py` | Parser and selector objects | `parser.Document`, `parser.Element`, `parser.Selection`, and root facade aliases | Phase 0 | partial |
 | `scrapling/core/storage.py` | Adaptive storage | `core/storage.Store`, `MemoryStore`, `FileStore`, `SQLiteStore`, and root facade aliases | Phase 0, Phase 2 | partial |
-| `scrapling/core/mixins.py` | Parser and selector objects | selector generation helpers | Phase 0 | planned |
+| `scrapling/core/mixins.py` | Parser and selector objects | selector generation helpers with short/full CSS and XPath output | Phase 0 | covered |
 | `scrapling/core/custom_types.py`, `scrapling/core/_types.py` | Parser and selector objects | `core/customtypes` plus root facade aliases for `TextHandler`, `TextHandlers`, and `AttributesHandler` behavior | Phase 0 | partial |
 | `scrapling/core/translator.py` | Parser and selector objects | `core/translator.CSSToXPath` with `parser` and root facade aliases | Phase 0 | partial |
 | `scrapling/core/shell.py`, `scrapling/core/_shell_signatures.py`, `scrapling/core/utils/_shell.py` | CLI shell and extract commands | `cmd/goscrapling`, `internal/cli` scripted shell evaluator, page shortcuts, and future curl helpers | Phase 5 | partial |
@@ -74,7 +74,7 @@ core source-class names below when the local upstream checkout exists.
 | Upstream docs class | Feature-map anchor | Go target | Progress anchor | Coverage |
 |---|---|---|---|---|
 | `docs/parsing/**` | Parser and selector objects, adaptive storage | `parser`, `core/storage`, and root facade aliases | Phase 0, Phase 2 | partial |
-| `docs/api-reference/selector.md`, `docs/api-reference/custom-types.md` | Parser and selector objects | `parser` selector helpers, `core/customtypes`, and root facade aliases | Phase 0 | planned |
+| `docs/api-reference/selector.md`, `docs/api-reference/custom-types.md` | Parser and selector objects | `parser` selector helpers, selector generation methods, `core/customtypes`, and root facade aliases | Phase 0 | partial |
 | `docs/api-reference/response.md` | Response object | `engines/toolbelt.Response` and root facade alias | Phase 1 | partial |
 | `docs/api-reference/fetchers.md`, `docs/fetching/**` | Fetchers and browser fetching | `fetchers`, `engines/browser`, and root facade aliases | Phase 1, Phase 3 | partial |
 | `docs/api-reference/proxy-rotation.md` | Proxy rotation | `ProxyRotator`, fetcher/browser/spider proxy options | Phase 1, Phase 4 | planned |

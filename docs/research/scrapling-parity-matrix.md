@@ -45,7 +45,7 @@ Hard rules:
 | Similar element search | `find_similar`, parser tests | planned | Related to adaptive scoring but user-facing API is missing. |
 | Selection collections | `Selectors` class | partial | `Selection.Len`, `First`, `Text`, and `HTML` exist. Needs iteration, attr extraction, filtering, chaining, and get/getall-style helpers. |
 | Element traversal | ancestors, parent, siblings, children | planned | Required to approach Scrapling parser ergonomics. |
-| Selector generation | `core/mixins.py` | planned | Needed for CSS/XPath generation parity. |
+| Selector generation | `core/mixins.py` | partial | `Element.GenerateCSSSelector`, `GenerateFullCSSSelector`, `GenerateXPathSelector`, and `GenerateFullXPathSelector` produce deterministic selectors that re-select fixture elements; deeper edge-case parity remains future work. |
 | Custom types | `core/custom_types.py`, docs `api-reference/custom-types.md` | planned | Go equivalent should be typed wrappers, not dynamic Python types. |
 
 ## Adaptive Scraping Parity

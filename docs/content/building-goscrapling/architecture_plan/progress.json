@@ -172,31 +172,34 @@
             },
             {
               "name": "Selector generation helpers",
-              "status": "planned",
+              "status": "complete",
               "priority": "P2",
               "contract": "Generate robust CSS, full CSS, XPath, and full XPath selectors for selected elements using a Go-native equivalent of Scrapling selector generation.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "parser",
               "source_refs": [
                 "references/Scrapling/scrapling/core/mixins.py",
-                "references/Scrapling/docs/api-reference/selector.md"
+                "references/Scrapling/docs/api-reference/selector.md",
+                "parser/selector_generation.go",
+                "parser/selector_generation_test.go"
               ],
               "ready_when": [
                 "Traversal helpers expose enough DOM context to generate selectors."
               ],
               "write_scope": [
-                "selector_generation.go",
-                "selector_generation_test.go"
+                "parser/selector_generation.go",
+                "parser/selector_generation_test.go"
               ],
               "test_commands": [
-                "go test ./... -run TestSelectorGeneration -count=1"
+                "go test ./... -run TestSelectorGeneration -count=1",
+                "go test ./... -count=1"
               ],
               "acceptance": [
-                "Fixtures prove generated selectors re-select the original element and remain deterministic."
+                "Fixtures prove generated short and full CSS/XPath selectors anchor at id-bearing ancestors, use deterministic nth-of-type sibling indexes, and re-select the original element."
               ],
               "done_signal": [
-                "Selector generation tests pass."
+                "TestSelectorGeneration and the full Go test suite pass."
               ]
             }
           ]
@@ -652,9 +655,6 @@
               ],
               "done_signal": [
                 "Proxy rotator tests pass."
-              ],
-              "blocked_by": [
-                "Static proxy support and proxy error classification"
               ]
             },
             {

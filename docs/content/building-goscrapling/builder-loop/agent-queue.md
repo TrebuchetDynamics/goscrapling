@@ -4,18 +4,18 @@ This page is generated from canonical `progress.json` rows that are unblocked,
 non-umbrella, and builder-ready.
 
 <!-- PROGRESS:START kind=agent-queue -->
-## 1. Selector generation helpers
+## 1. Proxy rotator strategies
 
-- Phase: `phase-0-parser-adaptive / static-document`
-- Priority: `P2`
-- Owner: `parser`
+- Phase: `phase-1-response-fetcher / static-fetcher`
+- Priority: `P1`
+- Owner: `fetcher`
 - Size: `medium`
 - Contract status: `draft`
-- Contract: Generate robust CSS, full CSS, XPath, and full XPath selectors for selected elements using a Go-native equivalent of Scrapling selector generation.
-- Ready when: Traversal helpers expose enough DOM context to generate selectors.
-- Write scope: `selector_generation.go`, `selector_generation_test.go`
-- Test commands: `go test ./... -run TestSelectorGeneration -count=1`
-- Acceptance: Fixtures prove generated selectors re-select the original element and remain deterministic.
-- Done signal: Selector generation tests pass.
-- Source refs: `references/Scrapling/scrapling/core/mixins.py`, `references/Scrapling/docs/api-reference/selector.md`
+- Contract: Port ProxyRotator behavior with cyclic rotation, custom strategy hooks, string/dictionary-style configuration mapping, and proxy-error retry integration.
+- Ready when: Static proxy support is complete.
+- Write scope: `proxy.go`, `proxy_rotator.go`, `proxy_rotator_test.go`
+- Test commands: `go test ./... -run TestProxyRotator -count=1`
+- Acceptance: Unit fixtures prove cyclic/custom rotation, exhausted proxy behavior, proxy config parsing, and retry-on-proxy-error semantics.
+- Done signal: Proxy rotator tests pass.
+- Source refs: `references/Scrapling/scrapling/engines/toolbelt/proxy_rotation.py`, `references/Scrapling/docs/api-reference/proxy-rotation.md`, `references/Scrapling/docs/spiders/proxy-blocking.md`
 <!-- PROGRESS:END -->
