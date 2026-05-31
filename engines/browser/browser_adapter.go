@@ -11,6 +11,7 @@ import (
 
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/network"
+	cdppage "github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 )
 
@@ -69,6 +70,12 @@ func (e *ChromedpBrowserEngine) Fetch(ctx context.Context, request BrowserReques
 	}
 	if request.TimezoneID != "" {
 		actions = append(actions, emulation.SetTimezoneOverride(request.TimezoneID))
+	}
+	if script := browserStealthInitScript(request); script != "" {
+		actions = append(actions, chromedp.ActionFunc(func(ctx context.Context) error {
+			_, err := cdppage.AddScriptToEvaluateOnNewDocument(script).Do(ctx)
+			return err
+		}))
 	}
 	actions = append(actions, chromedpCookieActions(request.Cookies, request.URL)...)
 	actions = append(actions, chromedp.Navigate(request.URL))

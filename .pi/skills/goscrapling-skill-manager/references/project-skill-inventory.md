@@ -1,8 +1,8 @@
-# goscrapling Development Skills
+# goscrapling Project Skill Inventory
 
-These repo-local workflow skills keep goscrapling tied to tested
-Scrapling-style parity. They are source-controlled project instructions, not a
-parallel backlog and not global agent skills.
+These repo-local workflow skills live under `.pi/skills/` so Pi discovers them
+as project skills at startup. They are source-controlled project instructions,
+not global user skills and not a parallel backlog.
 
 ## Required Order
 
@@ -11,6 +11,10 @@ parallel backlog and not global agent skills.
 3. `goscrapling-planner` — create or refine one builder-ready row.
 4. `goscrapling-tdd-slice` — write the failing test for runtime behavior.
 5. `goscrapling-builder` — implement exactly one row and validate it.
+
+Use `scrapling-mirror` only as an orchestrator for mirror refresh, next-row
+selection, and repeated safe slices. It must call into the narrower skills when
+parity mapping, planning, TDD, or implementation work starts.
 
 Docs-only skill maintenance may stay in `goscrapling-skill-manager`, but must
 still preserve `progress.json` as the only implementation backlog.

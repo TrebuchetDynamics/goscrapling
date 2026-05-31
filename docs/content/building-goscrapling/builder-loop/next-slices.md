@@ -6,5 +6,5 @@ leverage rows to execute next.
 <!-- PROGRESS:START kind=next-slices -->
 | Phase | Slice | Owner | Size | Contract status | Why now |
 |---|---|---|---|---|---|
-| phase-3-browser / browser-fetcher | Stealth browser controls and fingerprint options | `browser` | `medium` | `draft` | Contract metadata is present and the row is unblocked. |
+| phase-5-cli-tooling / tool-surfaces | Shell static method shortcuts beyond get | `cli` | `small` | `fixture_ready` | Fixture-ready row with complete handoff metadata. |
 <!-- PROGRESS:END -->

@@ -93,6 +93,16 @@ opt in; it does not claim TLS/browser fingerprint impersonation. Static
 `Impersonate` and `HTTP3` options fail with operator-visible request-option
 errors until a Go dependency and tests can prove those behaviors honestly.
 
+Browser stealth controls are explicit `BrowserStealthOptions`, not defaults.
+They may generate deterministic browser-like headers, opt into a Google
+referer, pass WebRTC/WebGL launch controls, and install a canvas-noise init
+script, but they do not claim automatic challenge solving. `SolveCloudflare`
+returns an operator-visible unsupported browser option error before browser
+engine work. `CloudflareChallengeBoundary()` is the inspectable status surface:
+unsupported and disabled by default until a future row adds deterministic local
+challenge fixtures, explicit tests, and operator-visible controls before any
+Cloudflare/Turnstile bypass claim ships.
+
 Static fetch safety controls are explicit request options. Robots enforcement
 and private-network/CIDR blocking are opt-in, return typed `FetcherError`
 values, and must be proven with `httptest` or pre-dispatch fixtures instead of

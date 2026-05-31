@@ -21,8 +21,9 @@ type Request struct {
 	Headers    http.Header
 	Priority   int
 	DontFilter bool
+	RetryCount int
 	Meta       map[string]any
-	Callback   Callback
+	Callback   Callback `json:"-"`
 }
 
 type FingerprintOptions struct {

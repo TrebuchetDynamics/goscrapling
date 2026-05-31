@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-const usage = "usage: goscrapling {extract {get|post|put|delete} <url> <output_file> [--css-selector <selector>] [-H <key: value>] [--timeout <seconds>] [-p <key=value>] [--data <body>] [--json <json>] [--no-follow-redirects] | shell -c <script> [--loglevel <level>]}"
+const usage = "usage: goscrapling {install [--force] [--json] | extract {get|post|put|delete|fetch|stealthy-fetch} <url> <output_file> [--css-selector <selector>] [-H <key: value>] [--timeout <seconds|milliseconds>] [--ai-targeted] [-p <key=value>] [--data <body>] [--json <json>] [--no-follow-redirects] [browser options] | shell -c <script> [--loglevel <level>]}"
 
 var ErrParse = errors.New("parse error")
 
@@ -25,6 +25,8 @@ func Run(stdout, stderr io.Writer, args []string) error {
 		return err
 	}
 	switch args[0] {
+	case "install":
+		return runInstall(stdout, args[1:])
 	case "extract":
 		return runExtract(stdout, args[1:])
 	case "shell":

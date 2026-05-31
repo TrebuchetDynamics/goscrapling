@@ -10,3 +10,5 @@ coverage.out
 bin/
 dist/
 tmp/
+.pi/development-loop.json
+.pi/development-loop/

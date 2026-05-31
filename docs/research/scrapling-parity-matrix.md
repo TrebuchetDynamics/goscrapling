@@ -1,132 +1,122 @@
-# Scrapling Parity Matrix
+# Scrapling → goscrapling Mirror Matrix
 
-Date: 2026-05-13
+Date: 2026-05-25
 
-Purpose: define what "true Scrapling-style Go port" means for `goscrapling`, track current coverage, and prevent the project from drifting into a small unrelated scraper.
+Purpose: mirror the D4Vinci/Scrapling feature surface into goscrapling targets,
+current evidence, and remaining parity rows. This page is a human-readable
+research matrix; `progress.json`, the feature map, the upstream coverage ledger,
+and the generated upstream app map remain the authoritative planning surfaces.
 
 ## Parity Doctrine
 
-`goscrapling` is a long-term Go-native feature port of D4Vinci/Scrapling.
-
-This does not mean line-by-line translation or Python API mimicry where that would be awkward in Go. It means `goscrapling` should cover Scrapling's major user-visible capabilities, preserve the same scraping mental model, and document any intentional differences.
-
-Hard rules:
-
-- Feature parity is the product target.
-- Go-native APIs are acceptable only when the Scrapling behavior remains recognizable.
-- Upstream source is reference material, not code to copy.
-- Every parity item needs tests before implementation.
-- Public docs must not imply affiliation with D4Vinci/Scrapling.
+`goscrapling` is a Go-native Scrapling-style feature port. It should preserve
+Scrapling-visible behavior where practical, choose Go-native APIs where that is
+clearer, and document intentional divergences. Upstream source is reference
+material, not code to copy, and public docs must not imply affiliation with
+D4Vinci/Scrapling.
 
 ## Source Snapshot
 
-- Upstream repository: `https://github.com/D4Vinci/Scrapling`
+- Upstream repository: `https://github.com/D4Vinci/Scrapling.git`
 - Local reference path: `references/Scrapling`
-- Local commit: `6380ef0f266a5fff898c18953d6b03ca320b2fd4`
-- Local describe: `v0.4.8-1-g6380ef0`
+- Baseline commit used by the port ledger: `6380ef0f266a5fff898c18953d6b03ca320b2fd4`
+- Baseline describe: `v0.4.8-1-g6380ef0`
 - Upstream release observed: `v0.4.8`
+- Remote check on 2026-05-25: `origin/main` at
+  `ed008efcf77e13048192579d465b0ed2192d1925`; the delta from the baseline is a
+  Docker-image command change in `docs/ai/mcp-server.md` plus a sponsor image,
+  with no new feature-bearing Python source. The Docker command delta is covered
+  by the planned `Install command, Docker image, and dependency packaging docs`
+  row.
 
 ## Status Legend
 
-- `done`: implemented and tested in `goscrapling`
-- `partial`: started but materially incomplete
-- `planned`: required for parity, not started
-- `deferred`: parity-relevant but intentionally later
-- `excluded`: intentionally out of scope, with rationale
+Use the architecture-plan vocabulary:
 
-## Core Parser And Selector Parity
+- `covered`: repository evidence and tests exist for the named behavior.
+- `partial`: working Go behavior exists, but the full Scrapling surface is not
+  yet proven.
+- `planned`: `progress.json` has a builder-ready or umbrella row for the gap.
+- `owned`: goscrapling intentionally diverges with a documented Go-native
+  contract.
+- `excluded`: the upstream surface is not a Go runtime/product parity target.
 
-| Scrapling Area | Upstream Reference | goscrapling Status | Notes |
-| --- | --- | --- | --- |
-| Main selector/document object | `scrapling/parser.py`, docs `parsing/main_classes.md` | partial | `Document`, `Element`, and `Selection` exist, but only a small subset of Scrapling selector behavior is implemented. |
-| CSS selection | `Selector.css`, tests `tests/parser/` | partial | Basic CSS selection exists through goquery. Needs pseudo extraction behavior such as text and attr helpers. |
-| XPath selection | `Selector.xpath` | planned | Needs dependency evaluation and test fixtures. |
-| Text search | `find_by_text`, docs selection pages | planned | Needs exact/contains/regex behavior decisions. |
-| Similar element search | `find_similar`, parser tests | planned | Related to adaptive scoring but user-facing API is missing. |
-| Selection collections | `Selectors` class | partial | `Selection.Len`, `First`, `Text`, and `HTML` exist. Needs iteration, attr extraction, filtering, chaining, and get/getall-style helpers. |
-| Element traversal | ancestors, parent, siblings, children | planned | Required to approach Scrapling parser ergonomics. |
-| Selector generation | `core/mixins.py` | partial | `Element.GenerateCSSSelector`, `GenerateFullCSSSelector`, `GenerateXPathSelector`, and `GenerateFullXPathSelector` produce deterministic selectors that re-select fixture elements; deeper edge-case parity remains future work. |
-| Custom types | `core/custom_types.py`, docs `api-reference/custom-types.md` | planned | Go equivalent should be typed wrappers, not dynamic Python types. |
+Current ledger posture:
 
-## Adaptive Scraping Parity
+- `progress.json`: 57 rows, 45 complete, 12 planned.
+- `upstream-app-map.json`: 23 mirror entries, 18 partial, 2 planned, 3 excluded.
+- Validation command for the mirror inventory: `go run ./cmd/progress map-validate`.
 
-| Scrapling Area | Upstream Reference | goscrapling Status | Notes |
-| --- | --- | --- | --- |
-| Element fingerprint extraction | `core/utils/_utils.py`, adaptive docs | partial | Current fingerprint captures tag, text, attrs, parent, siblings, path. Needs parity review against upstream fields and scoring. |
-| Save by identifier | `Selector.save` | done | `Document.Save(ctx, element, identifier)` exists. |
-| Retrieve by identifier | `Selector.retrieve` | partial | Store API exists, but no public `Document.Retrieve` helper yet. |
-| Relocate | `Selector.relocate` | partial | `Document.Relocate` exists with deterministic scoring. Needs richer diagnostics and parity against upstream behavior. |
-| Auto-save from CSS/XPath selectors | `auto_save=True` | planned | Needed for recognizably Scrapling-style adaptive usage. |
-| Adaptive selector fallback | `adaptive=True` | planned | Needed so failed selectors can automatically relocate saved elements. |
-| Domain override | `adaptive_domain` | planned | Current domain derivation exists; explicit override is missing. |
-| Pluggable storage | `StorageSystemMixin` | partial | `Store` interface and JSON `FileStore` exist with schema-version checks. SQLite parity remains planned. |
-| SQLite default storage | `SQLiteStorageSystem` | planned | Required for useful production parity. |
+## Feature Mirror Matrix
 
-## Fetcher And Response Parity
+| Scrapling surface | Upstream refs | goscrapling target | Current evidence | Remaining parity anchor | Status |
+|---|---|---|---|---|---|
+| Package exports and public API shape | `scrapling/__init__.py`, package `__init__.py` files | Root facade plus `parser`, `core/storage`, `core/translator`, `fetchers`, `engines/browser`, `engines/toolbelt`, `spiders`, `integrations/*` packages | `Scrapling-shaped Go package taxonomy` is complete and root aliases preserve stable examples. | Future package/export deltas route through `Future upstream release delta and unclassified surfaces`. | partial |
+| Parser, selectors, custom types, and translator | `scrapling/parser.py`, `scrapling/core/custom_types.py`, `_types.py`, `mixins.py`, `translator.py`, docs `parsing/**`, selector/custom-type API docs | `parser.Document`, `Element`, `Selection`, `core/customtypes`, `core/translator`, root aliases | Static parse/CSS, pseudo-elements, extraction helpers, XPath/CSS-to-XPath, traversal/filter/search/similar, selector generation, and custom handlers are tested. | No known open parser builder row; future deltas route through the upstream-delta umbrella before implementation. | partial |
+| Adaptive storage and relocation | `scrapling/core/storage.py`, `core/utils/_utils.py`, docs `parsing/adaptive.md`, `development/adaptive_storage_system.md` | `core/storage.Store`, `MemoryStore`, `FileStore`, `SQLiteStore`, parser adaptive selectors and diagnostics | Domain isolation, save/retrieve, relocation scoring, adaptive selector fallback/auto-save, diagnostics, file store, and SQLite store rows are complete. | Future storage compatibility deltas route through the upstream-delta umbrella. | partial |
+| Response object | `engines/toolbelt/custom.py`, `convertor.py`, `docs/api-reference/response.md` | `engines/toolbelt.Response` plus root facade | Metadata/selectors, body/text/bytes/JSON, cookies, history, meta, and captured-XHR attachment points are covered. | Browser-produced capture paths are covered through browser rows; future response deltas route through the upstream-delta umbrella. | partial |
+| Static fetcher and sessions | `fetchers/requests.py`, `engines/static.py`, docs `fetching/static.md`, `api-reference/fetchers.md` | `fetchers.Fetcher`, `FetcherSession`, `ConcurrentFetcher` | Methods, sessions, cookies, redirects, timeout/retry/errors, params/forms/JSON/auth/verify/cookies, safety controls, and bounded concurrent fetching are tested. | Future static fetcher work should cite a specific upstream delta instead of copying Python async shape. | partial |
+| Proxy rotation and network helper constants | `engines/toolbelt/proxy_rotation.py`, `engines/constants.py`, docs `api-reference/proxy-rotation.md` | `fetchers.ProxyRotator`, static proxy options, and spider proxy adapters | Static proxy support, proxy error classification, cyclic/custom rotators, session integration, retry-on-proxy-error rotation, and spider static/browser proxy rotation metadata are covered. | Future proxy deltas route through the upstream-delta umbrella. | partial |
+| Identity, impersonation, and safety boundaries | `engines/toolbelt/fingerprints.py`, `navigation.py`, docs `fetching/stealthy.md` | Explicit identity options, safety controls, and honest unsupported-feature errors | Browser-like headers are opt-in; TLS/browser impersonation and HTTP/3 return unsupported errors; robots/private-network blocking is covered for fetchers. | Stealth and Cloudflare claims stay separate under browser rows. | owned |
+| Browser fetchers and sessions | `fetchers/chrome.py`, `engines/_browsers/**`, docs `fetching/dynamic.md` | `engines/browser.BrowserFetcher`, `ChromedpBrowserEngine`, `BrowserSession`, context/resource/wait/action/capture options | Engine contract, real chromedp JavaScript fixture, markdown dump, semantic tree, session/page pool, waits/actions/downloads/screenshots/XHR, context/resource options, stealth controls, and Cloudflare/Turnstile unsupported boundary are complete. | Future browser deltas route through upstream-delta rows. | partial |
+| Stealth browser fetcher | `fetchers/stealth_chrome.py`, `engines/_browsers/_stealth.py`, docs `fetching/stealthy.md` | Explicit browser stealth controls with operator-visible limits | `BrowserStealthOptions` covers deterministic browser-like headers, Google referer opt-in, WebRTC/WebGL launch controls, canvas-noise script injection, and visible unsupported Cloudflare/Turnstile challenge-solving errors before engine work. | Future solver work requires local fixtures and explicit controls. | partial |
+| Spider core and crawler engine | `spiders/request.py`, `result.py`, `scheduler.py`, `session.py`, `engine.py`, `spider.py`, docs `spiders/**` | `spiders` package request/result/session/scheduler/crawler APIs | Request/result/session/scheduler contracts, response follow helpers, allowed-domain filtering, concurrency, per-domain limits, download delay, cancellation, cache fixtures, blocked response retry hooks, checkpoint pause/resume, robots.txt manager/delay directives, lifecycle hooks, streaming, item hooks, expanded stats, ItemList export, LinkExtractor, CrawlSpider/SitemapSpider helpers, and static/browser/stealth/proxy session adapters are covered. | Future spider deltas route through the upstream-delta umbrella. | partial |
+| Spider production controls | `spiders/robotstxt.py`, `cache.py`, `checkpoint.py` | Robots manager, development cache, checkpoint store | Development response cache, robots.txt manager/delay directives, blocked retry hooks, checkpoint pause/resume, lifecycle hooks, streaming, and stats/export controls are complete. | Link/template and session-adapter rows. | partial |
+| Link extraction and spider templates | `spiders/links.py`, `spiders/templates/**`, docs `spiders/generic-templates.md` | `spiders.LinkExtractor` plus `spiders/templates` crawler/sitemap helpers | Link extraction filters, crawl rules, sitemap indexes, robots Sitemap directives, alternate links, and request generation are fixture-backed. | Future template deltas route through the upstream-delta umbrella. | partial |
+| CLI extract commands and shell | `scrapling/cli.py`, `core/shell.py`, `_shell_signatures.py`, `core/utils/_shell.py`, docs `cli/**` | `cmd/goscrapling`, `internal/cli` | Non-mutating install guidance, static extract GET/POST/PUT/DELETE, request bodies, Markdown output, AI-targeted cleanup, fake-backed dynamic/stealth browser command wiring, full local CLI E2E, cross-layer E2E, scripted shell shortcuts, and curl helper parsing/execution are covered. | `Shell static method shortcuts beyond get`; future full REPL/deeper shell gaps require split rows. | partial |
+| Gormes, MCP, and AI tools | `core/ai.py`, docs `ai/mcp-server.md`, `api-reference/mcp-server.md`, `server.json` | `integrations/gormes`, `integrations/mcp` | Static `web_extract`, browser extraction Gormes tools, and deterministic MCP-style get/bulk_get/fetch/bulk_fetch/stealthy_fetch/bulk_stealthy_fetch/screenshot/session tools are fixture-backed with fake seams and no live LLM dependency. | Future MCP transport/deployment deltas route through upstream-delta rows. | partial |
+| Public docs, examples, benchmarks, packaging | `docs/overview.md`, `docs/tutorials/**`, `docs/benchmarks.md`, `Dockerfile`, `pyproject.toml` | README status map, examples, benchmarks, generated scorecards, install/Docker docs | README maps major upstream groups, examples compile, hermetic benchmark fixtures exist, `cmd/progress scorecard` writes `parity-scorecard.md`, upstream app map validates, and install-packaging docs describe the no-download browser/Docker boundary. | Future upstream release delta umbrella or specific published-packaging row. | partial |
+| Translated READMEs, docs assets, stylesheets, sponsor images | `docs/README_*.md`, `docs/assets/**`, top-level images and branding docs | Docs/branding reference only | Coverage ledger marks translated docs/assets as excluded from runtime parity. | None. | excluded |
 
-| Scrapling Area | Upstream Reference | goscrapling Status | Notes |
-| --- | --- | --- | --- |
-| Response object | `engines/toolbelt/custom.py`, docs `fetching/choosing.md` | partial | Response now behaves like a parsed document with URL/status/header/request metadata, body bytes, text, and JSON decoding. Cookies, history, meta, and captured XHR remain future work. |
-| Static HTTP fetcher | `fetchers/requests.py`, `engines/static.py` | partial | Basic GET, POST, PUT, DELETE, session defaults, cookies, connection reuse, redirects, timeouts, retry attempts, and error taxonomy are fixture-backed. Query params, form/JSON request helpers, browser-style headers, proxies, and response history remain planned. |
-| Async HTTP fetcher | `AsyncFetcher` | partial | Go-native `ConcurrentFetcher` covers bounded goroutine concurrency, context cancellation, session reuse, and per-request result/error collection; future work should cite a specific upstream async delta rather than copying Python awaitable syntax. |
-| Fetcher sessions | `FetcherSession`, async sessions | partial | Synchronous Go-native session behavior has default headers, per-request overrides, cookies, and connection reuse. Async-style coordination remains future Go API work. |
-| Request options merging | fetcher tests | partial | Session default headers and per-request overrides are covered. Broader request option merging remains planned. |
-| Headers and browser-ish defaults | `toolbelt/fingerprints.py` | partial | Request-level `StealthyHeaders` now adds explicit browser-like HTTP headers without overwriting caller values; TLS/browser impersonation and HTTP/3 return unsupported request-option errors instead of overclaiming stealth. |
-| Proxies and proxy rotation | `proxy_rotation.py`, docs `api-reference/proxy-rotation.md` | partial | Static proxy options and `ProxyRotator` cyclic/custom rotation are fixture-backed for fetchers and sessions; spider production routing remains planned. |
-| Response history/cookies/body/status | fetcher docs/tests | partial | Body, status helpers, and session cookie persistence are covered; response cookie access and redirect history remain planned. |
+## Source, Test, And Docs Mirror Index
 
-## Browser Fetcher Parity
+This table mirrors the generated upstream app map at a higher level. Use
+`docs/content/building-goscrapling/architecture_plan/upstream-app-map.json` for
+full upstream ref lists.
 
-| Scrapling Area | Upstream Reference | goscrapling Status | Notes |
-| --- | --- | --- | --- |
-| Dynamic browser fetcher | `fetchers/chrome.py`, docs `fetching/dynamic.md` | partial | Engine-neutral `BrowserFetcher` contract is fake-engine tested; real chromedp adapter is fixture-backed. Session pools, deeper wait/action behavior, XHR capture, and stealth remain planned. |
-| Stealth browser fetcher | `fetchers/stealth_chrome.py`, docs `fetching/stealthy.md` | planned | Hard parity area; avoid unsupported anti-bot claims until proven. |
-| Browser sessions | `engines/_browsers/` | planned | Required for reuse and spider sessions. |
-| Wait selector/network idle | browser docs/tests | partial | Contract fields are covered through a fake engine; real browser fixture remains planned. |
-| Captured XHR | response docs | planned | Important for modern web extraction. |
-| Proxy/browser context settings | browser fetcher docs | planned | Later phase after basic browser fetch is stable. |
-| Cloudflare challenge solving | stealth docs | deferred | High-risk claim; implement only after evidence and tests. |
+| Upstream mirror entry | goscrapling feature target | Progress evidence | Coverage |
+|---|---|---|---|
+| Package metadata and public exports | Root facade plus package-level adapters | Parser, response, fetcher, browser, spider, CLI, taxonomy rows | partial |
+| Python typing marker | No Go target | Explicit exclusion | excluded |
+| Parser/selectors/custom types/translator | Parser and selector objects | Parse, extraction, XPath, traversal/search, selector generation rows | partial |
+| Adaptive storage and relocation helpers | Adaptive storage and relocation | Save, relocate, fallback/auto-save, diagnostics, file/SQLite store rows | partial |
+| Static response and fetchers | Response and static fetcher | Response, static methods, sessions, request options, concurrent fetch rows | partial |
+| Proxy rotation, impersonation, network constants | Proxy rotation and identity boundaries | Static proxy, rotator, identity boundary rows | partial |
+| Browser and stealth fetchers | Browser fetching | Browser adapter/session/wait/action/context/stealth rows complete; Cloudflare row planned | partial |
+| Spider core and crawler engine | Spider runtime | Core spider, concurrency, allowed-domain, robots, blocked retry, cache, checkpoint, lifecycle, streaming, stats, link/template, and session-adapter rows are complete | partial |
+| Robots/cache/checkpoint controls | Spider runtime | Robots manager, cache, blocked retry, and checkpoint fixture coverage complete | partial |
+| Link extraction and templates | Spider runtime | LinkExtractor plus CrawlSpider/SitemapSpider fixture coverage complete | partial |
+| CLI extract and shell | CLI shell and extract commands | Install guidance, static extract, advanced output/browser command seams, shell get/page shortcuts, and curl helpers complete; static method shortcuts planned | partial |
+| MCP and AI tools | MCP/AI integration | Deterministic MCP tool schemas and fake static/browser/session fixtures complete; Gormes rows complete | partial |
+| Upstream parser/adaptive tests | Parser/adaptive fixtures | Parser/adaptive rows cover local hermetic equivalents | partial |
+| Upstream fetcher/browser tests | Fetcher/browser fixtures | Static/proxy/browser rows cover local hermetic equivalents | partial |
+| Upstream spider tests | Spider fixtures | Core/concurrency/domain/cache/blocked-retry/checkpoint/robots/lifecycle-stats/link-template rows complete; remaining rows planned | partial |
+| Upstream CLI/core/storage/AI tests | CLI, storage, MCP fixtures | CLI static/advanced extract, shell, storage, and MCP fixture rows complete | partial |
+| Upstream parser/adaptive docs | Parser/adaptive docs and examples | Public docs/examples plus parser/adaptive rows | partial |
+| Upstream response/fetching/browser docs | Response, fetcher, proxy, browser docs | Public docs/examples plus response/fetcher/browser rows | partial |
+| Upstream spider docs | Spider docs and examples | Public docs/examples plus spider rows | partial |
+| Upstream CLI/MCP/AI docs | CLI, MCP, AI docs | CLI install/extract/shell and MCP tool rows complete; deeper docs remain delta-driven | partial |
+| Public docs, tutorials, donate page, benchmarks | README/docs/examples/benchmarks/packaging | Public docs/examples, install-packaging boundary, and scorecard complete; published packaging remains delta-driven | partial |
+| Translated README files | No runtime target | Explicit exclusion | excluded |
+| Docs assets and branding images | No runtime target | Explicit exclusion | excluded |
 
-## Spider/Crawler Parity
+## Remaining Planned Feature Rows
 
-| Scrapling Area | Upstream Reference | goscrapling Status | Notes |
-| --- | --- | --- | --- |
-| Spider base type | `spiders/spider.py` | partial | Go-native `Crawler` and callback funcs exist with allowed-domain filtering and crawler concurrency controls; start URL helpers, lifecycle hooks, and streaming remain planned. |
-| Request type | `spiders/request.py` | partial | URL, method/body, callback, priority, session ID, metadata, and dedupe flag are covered; retry/blocking metadata remains planned. |
-| Response follow helpers | `engines/toolbelt/custom.py` | partial | Relative URL resolution, meta merge, callback/session override, priority, and referer flow are fixture-backed. Broader response ergonomics remain future work. |
-| Scheduler | `spiders/scheduler.py` | done | Priority queue and duplicate filtering by deterministic request fingerprint are covered. Checkpoint snapshot/restore belongs to the checkpoint row. |
-| Request fingerprinting | `spiders/request.py` | partial | URL/method/body/session fingerprints are deterministic with header and fragment options; kwargs/retry-related dimensions remain future work. |
-| Session manager | `spiders/session.py` | partial | Named session routing plus eager/lazy startup is covered with fake sessions; static/dynamic/stealth session adapters remain planned. |
-| Engine concurrency | `spiders/engine.py` | done | Global concurrency, per-domain active request limits, fixed download delay, backpressure, and context cancellation are covered with fake sessions. |
-| Allowed domains | `spiders/engine.py` | done | Callback-yielded requests are filtered by exact host/subdomain match and offsite drops increment crawl stats. |
-| Robots.txt | `spiders/robotstxt.py` | planned | Required for production-friendly crawling. |
-| Development response cache | `spiders/cache.py` | planned | Useful for test/debug cycles. |
-| Checkpoint pause/resume | `spiders/checkpoint.py` | planned | Required parity for long crawls. |
-| Crawl result and stats | `spiders/result.py` | partial | Items, errors, skipped duplicates, offsite drops, request counts, configured concurrency controls, download delay, and per-session counts are covered; richer timing/status/cache/export stats remain planned. |
-| Generic templates | `spiders/templates/` | planned | Later convenience layer. |
+The matrix is not a side backlog. These are the current `progress.json` anchors
+for known remaining gaps:
 
-## CLI, Shell, AI, And Tooling Parity
+- `Shell static method shortcuts beyond get`
+- `Future upstream release delta and unclassified surfaces` (umbrella only; split
+  before builder work)
 
-| Scrapling Area | Upstream Reference | goscrapling Status | Notes |
-| --- | --- | --- | --- |
-| CLI fetch/extract | `cli.py`, docs `cli/` | partial | `goscrapling extract get/post/put/delete` is fixture-backed for local/static pages, headers, timeout, CSS selection, txt/html output, bodies, JSON, query params, and parse errors. Markdown, AI-targeted cleanup, and browser modes remain planned. |
-| Interactive shell | `core/shell.py` | planned | Scripted shell command fixtures should come before a full REPL dependency. |
-| MCP server | `core/ai.py`, docs `ai/mcp-server.md` | planned | Important if `goscrapling` becomes a Gormes/OpenClaw web-search tool. |
-| Agent skill metadata | `agent-skill/` | deferred | Only after CLI/MCP shape is real. |
-| Benchmarks | `benchmarks.py`, docs `benchmarks.md` | partial | Hermetic parser, static fetcher/response, spider scheduler, and CLI benchmark fixtures exist under `benchmarks/`, and `cmd/progress scorecard` generates `docs/research/parity-scorecard.md`; broader upstream benchmark methodology and real timing comparisons remain future work. |
+## Validation Commands
 
-## Implementation Order
+Use these after changing the matrix or canonical ledgers:
 
-1. Parser parity foundation: selection helpers, text/attr extraction, traversal, retrieve, adaptive selector options.
-2. Response plus static fetcher: `Fetcher`, session, HTTP metadata, request option merging, local HTTP tests.
-3. Durable adaptive storage: SQLite adapter and storage tests.
-4. Browser fetcher depth: add sessions, deeper wait/action behavior, XHR capture, and context/resource controls on top of the chromedp adapter.
-5. Spider core: request, scheduler, fingerprints, engine, stats, callbacks.
-6. Robots/cache/checkpoint/session manager.
-7. CLI fetch/extract.
-8. MCP/Gormes integration.
-9. Stealth browser features and proxy rotation once testable.
-
-## Current Reality
-
-`goscrapling` is far from parity. It currently covers only a small part of parser/adaptive behavior. That is acceptable only if the project continues toward this matrix. If the matrix is not the target, the project should not claim to be a real Scrapling-style port.
+```sh
+go run ./cmd/progress map-validate
+go run ./cmd/progress map-write
+go run ./cmd/progress validate
+go test ./... -count=1
+git diff --check
+```

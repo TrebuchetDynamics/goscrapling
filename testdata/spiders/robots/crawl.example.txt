@@ -1,0 +1,7 @@
+User-agent: GoodBot
+Disallow: /blocked
+Crawl-delay: 0.3
+Request-rate: 2/1
+
+User-agent: *
+Disallow: /wildcard-blocked

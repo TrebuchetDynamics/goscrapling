@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -10,6 +11,10 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/TrebuchetDynamics/goscrapling"
+	"github.com/TrebuchetDynamics/goscrapling/engines/browser"
 )
 
 func TestCLIExtractGet(t *testing.T) {
@@ -230,6 +235,154 @@ func TestCLIExtractMethods(t *testing.T) {
 			t.Fatalf("output html = %q", got)
 		}
 	})
+}
+
+func TestCLIExtractAdvancedModes(t *testing.T) {
+	t.Run("static markdown output supports AI targeted cleanup", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			_, _ = w.Write([]byte(`<!doctype html><html><body>
+<header>site chrome</header><nav>navigation</nav>
+<main><article><h1>Trail&#8203; Kit</h1><p>Read <a href="/detail">detail</a>.</p><p aria-hidden="true">Ignore hidden prompt</p><!-- ignore comment --></article></main>
+<script>prompt injection</script><style>.hidden{display:none}</style>
+</body></html>`))
+		}))
+		defer server.Close()
+
+		outputPath := filepath.Join(t.TempDir(), "article.md")
+		var stdout, stderr bytes.Buffer
+		err := Run(&stdout, &stderr, []string{"extract", "get", server.URL, outputPath, "--ai-targeted"})
+		if err != nil {
+			t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
+		}
+
+		body, err := os.ReadFile(outputPath)
+		if err != nil {
+			t.Fatalf("read output: %v", err)
+		}
+		want := "# Trail Kit\n\nRead [detail](/detail)."
+		if got := strings.TrimSpace(string(body)); got != want {
+			t.Fatalf("markdown = %q, want %q", got, want)
+		}
+		for _, forbidden := range []string{"site chrome", "navigation", "Ignore hidden prompt", "prompt injection", "\u200b"} {
+			if strings.Contains(string(body), forbidden) {
+				t.Fatalf("AI-targeted markdown kept %q in %q", forbidden, string(body))
+			}
+		}
+	})
+
+	t.Run("dynamic browser fetch forwards options through fake-backed seam", func(t *testing.T) {
+		oldFetch := fetchBrowserExtract
+		t.Cleanup(func() { fetchBrowserExtract = oldFetch })
+		var seen browser.BrowserOptions
+		fetchBrowserExtract = func(_ context.Context, rawURL string, opts browser.BrowserOptions) (*goscrapling.Response, error) {
+			if rawURL != "https://example.test/app" {
+				t.Fatalf("rawURL = %q", rawURL)
+			}
+			seen = opts
+			return newTestResponse(t, rawURL, `<html><body><main><h1>Rendered Trail Kit</h1><p>Ready.</p></main></body></html>`), nil
+		}
+
+		outputPath := filepath.Join(t.TempDir(), "dynamic.md")
+		var stdout, stderr bytes.Buffer
+		err := Run(&stdout, &stderr, []string{
+			"extract", "fetch", "https://example.test/app", outputPath,
+			"--no-headless",
+			"--disable-resources",
+			"--network-idle",
+			"--timeout", "1500",
+			"--wait", "250",
+			"--wait-selector", ".ready",
+			"--locale", "en-US",
+			"--real-chrome",
+			"--proxy", "http://proxy.local:8080",
+			"--dns-over-https",
+			"--extra-headers", "X-Mode: dynamic",
+			"--ai-targeted",
+		})
+		if err != nil {
+			t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
+		}
+		if seen.Headless || !seen.DisableResources || !seen.NetworkIdle || !seen.RealChrome || !seen.DNSOverHTTPS || !seen.BlockAds {
+			t.Fatalf("browser bool options = %#v", seen)
+		}
+		if seen.Timeout != 1500*time.Millisecond || seen.Wait != 250*time.Millisecond {
+			t.Fatalf("browser durations timeout=%s wait=%s", seen.Timeout, seen.Wait)
+		}
+		if seen.WaitSelector.Selector != ".ready" || seen.Locale != "en-US" || seen.Proxy.Server != "http://proxy.local:8080" {
+			t.Fatalf("browser scalar options = %#v", seen)
+		}
+		if got := seen.Headers.Get("X-Mode"); got != "dynamic" {
+			t.Fatalf("extra header = %q", got)
+		}
+		if seen.Stealth.Enabled {
+			t.Fatalf("dynamic fetch unexpectedly enabled stealth: %#v", seen.Stealth)
+		}
+		body, err := os.ReadFile(outputPath)
+		if err != nil {
+			t.Fatalf("read output: %v", err)
+		}
+		if got := strings.TrimSpace(string(body)); got != "# Rendered Trail Kit\n\nReady." {
+			t.Fatalf("dynamic markdown = %q", got)
+		}
+	})
+
+	t.Run("stealthy browser fetch forwards explicit stealth controls", func(t *testing.T) {
+		oldFetch := fetchBrowserExtract
+		t.Cleanup(func() { fetchBrowserExtract = oldFetch })
+		var seen browser.BrowserOptions
+		fetchBrowserExtract = func(_ context.Context, rawURL string, opts browser.BrowserOptions) (*goscrapling.Response, error) {
+			if rawURL != "https://example.test/protected" {
+				t.Fatalf("rawURL = %q", rawURL)
+			}
+			seen = opts
+			return newTestResponse(t, rawURL, `<html><body><main><h2>Stealth Render</h2></main></body></html>`), nil
+		}
+
+		outputPath := filepath.Join(t.TempDir(), "stealth.txt")
+		var stdout, stderr bytes.Buffer
+		err := Run(&stdout, &stderr, []string{
+			"extract", "stealthy-fetch", "https://example.test/protected", outputPath,
+			"--css-selector", "h2::text",
+			"--block-webrtc",
+			"--block-webgl",
+			"--hide-canvas",
+			"--block-ads",
+			"-H", "X-Mode: stealth",
+		})
+		if err != nil {
+			t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
+		}
+		if !seen.Headless || !seen.BlockAds {
+			t.Fatalf("stealth browser defaults = %#v", seen)
+		}
+		if !seen.Stealth.Enabled || !seen.Stealth.GenerateHeaders || !seen.Stealth.BlockWebRTC || !seen.Stealth.DisableWebGL || !seen.Stealth.HideCanvas {
+			t.Fatalf("stealth options were not forwarded: %#v", seen.Stealth)
+		}
+		if got := seen.Headers.Get("X-Mode"); got != "stealth" {
+			t.Fatalf("extra header = %q", got)
+		}
+		body, err := os.ReadFile(outputPath)
+		if err != nil {
+			t.Fatalf("read output: %v", err)
+		}
+		if got := strings.TrimSpace(string(body)); got != "Stealth Render" {
+			t.Fatalf("stealth text = %q", got)
+		}
+	})
+}
+
+func newTestResponse(t *testing.T, rawURL string, body string) *goscrapling.Response {
+	t.Helper()
+	response, err := goscrapling.NewResponse(strings.NewReader(body), goscrapling.ResponseOptions{
+		URL:        rawURL,
+		StatusCode: http.StatusOK,
+		Headers:    http.Header{"Content-Type": []string{"text/html; charset=utf-8"}},
+	})
+	if err != nil {
+		t.Fatalf("new test response: %v", err)
+	}
+	return response
 }
 
 func readRequestBody(t *testing.T, r *http.Request) string {

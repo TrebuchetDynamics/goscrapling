@@ -41,6 +41,7 @@ type BrowserOptions struct {
 	CaptureXHR       string
 	Screenshot       BrowserScreenshotOptions
 	ExtraFlags       []string
+	Stealth          BrowserStealthOptions
 	Store            Store
 }
 
@@ -68,6 +69,7 @@ type BrowserRequest struct {
 	CaptureXHR       string
 	Screenshot       BrowserScreenshotOptions
 	ExtraFlags       []string
+	Stealth          BrowserStealthOptions
 }
 
 type BrowserResult struct {

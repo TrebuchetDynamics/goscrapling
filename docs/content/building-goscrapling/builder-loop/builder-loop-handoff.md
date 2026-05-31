@@ -7,7 +7,7 @@ execution facts on the rows.
 <!-- PROGRESS:START kind=builder-loop-handoff -->
 ## Control Plane
 
-- Entrypoint: `docs/development-skills/goscrapling-skill-manager/SKILL.md`
+- Entrypoint: `.pi/skills/goscrapling-skill-manager/SKILL.md`
 - Plan: `docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md`
 - Coverage ledger: `docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md`
 - Agent queue: `docs/content/building-goscrapling/builder-loop/agent-queue.md`

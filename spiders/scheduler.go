@@ -1,6 +1,9 @@
 package spiders
 
-import "container/heap"
+import (
+	"container/heap"
+	"sort"
+)
 
 type SchedulerOptions struct {
 	IncludeHeaders bool
@@ -59,6 +62,41 @@ func (s *Scheduler) Len() int {
 		return 0
 	}
 	return s.queue.Len()
+}
+
+func (s *Scheduler) Snapshot() SchedulerSnapshot {
+	if s == nil {
+		return SchedulerSnapshot{}
+	}
+	items := append([]scheduledRequest(nil), s.queue...)
+	sort.SliceStable(items, func(i, j int) bool {
+		if items[i].request.Priority != items[j].request.Priority {
+			return items[i].request.Priority > items[j].request.Priority
+		}
+		return items[i].order < items[j].order
+	})
+	requests := make([]Request, 0, len(items))
+	for _, item := range items {
+		requests = append(requests, item.request.clone())
+	}
+	return SchedulerSnapshot{Requests: requests, Seen: sortedSeenFingerprints(s.seen)}
+}
+
+func (s *Scheduler) Restore(snapshot SchedulerSnapshot) {
+	if s == nil {
+		return
+	}
+	s.queue = nil
+	s.seen = make(map[string]struct{}, len(snapshot.Seen))
+	for _, fp := range snapshot.Seen {
+		s.seen[fp] = struct{}{}
+	}
+	s.counter = 0
+	heap.Init(&s.queue)
+	for _, request := range snapshot.Requests {
+		s.counter++
+		heap.Push(&s.queue, scheduledRequest{request: request.clone(), order: s.counter})
+	}
 }
 
 type scheduledRequest struct {

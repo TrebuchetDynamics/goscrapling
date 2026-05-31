@@ -74,6 +74,7 @@ var browserOwnedAdDomains = []string{
 }
 
 func newBrowserRequest(rawURL string, opts BrowserOptions) (BrowserRequest, error) {
+	opts.Stealth = normalizeBrowserStealthOptions(opts.Stealth)
 	if err := validateBrowserOptions(opts); err != nil {
 		return BrowserRequest{}, err
 	}
@@ -87,11 +88,16 @@ func newBrowserRequest(rawURL string, opts BrowserOptions) (BrowserRequest, erro
 	if opts.Locale != "" && headers.Get("Accept-Language") == "" {
 		headers.Set("Accept-Language", opts.Locale)
 	}
+	applyBrowserStealthHeaders(headers, opts.Stealth)
+	userAgent := opts.UserAgent
+	if userAgent == "" {
+		userAgent = headers.Get("User-Agent")
+	}
 
 	return BrowserRequest{
 		URL:              rawURL,
 		Headers:          headers,
-		UserAgent:        opts.UserAgent,
+		UserAgent:        userAgent,
 		Cookies:          cloneBrowserCookies(opts.Cookies),
 		Locale:           opts.Locale,
 		TimezoneID:       opts.TimezoneID,
@@ -111,11 +117,15 @@ func newBrowserRequest(rawURL string, opts BrowserOptions) (BrowserRequest, erro
 		Actions:          append([]BrowserAction(nil), opts.Actions...),
 		CaptureXHR:       opts.CaptureXHR,
 		Screenshot:       opts.Screenshot,
-		ExtraFlags:       append([]string(nil), opts.ExtraFlags...),
+		ExtraFlags:       browserStealthExtraFlags(opts.Stealth, opts.ExtraFlags),
+		Stealth:          opts.Stealth,
 	}, nil
 }
 
 func validateBrowserOptions(opts BrowserOptions) error {
+	if err := validateBrowserStealth(opts.Stealth); err != nil {
+		return err
+	}
 	if err := validateBrowserProxy(opts.Proxy); err != nil {
 		return err
 	}

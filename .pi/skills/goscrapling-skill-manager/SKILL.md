@@ -17,7 +17,7 @@ Read these before substantive planning or implementation:
 
 - user request;
 - `AGENTS.md`;
-- `docs/development-skills/README.md`;
+- `references/project-skill-inventory.md` (relative to this skill directory);
 - `docs/content/building-goscrapling/architecture_plan/progress.json`;
 - `docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md`;
 - `docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md`.
@@ -32,6 +32,7 @@ above plus the nearest package docs/tests.
 | Unsure, broad, or mixed request | Stay here, split scope, then route |
 | "What does Scrapling do?" or parity inventory | `goscrapling-scrapling-parity` |
 | "What should we build next?" or row readiness | `goscrapling-planner` |
+| Mirror matrix, autopilot, "build goscrapling automatically", or repeated safe slices | `scrapling-mirror`, then the narrower parity/planner/TDD/builder skills as needed |
 | Implement a runtime behavior row | `goscrapling-tdd-slice`, then `goscrapling-builder` |
 | Edit repo-local skills | This skill plus skill-authoring checks; keep changes docs-only unless asked |
 

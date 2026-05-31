@@ -268,6 +268,7 @@ func mergeBrowserOptions(defaults, overrides BrowserOptions) BrowserOptions {
 	if len(overrides.ExtraFlags) > 0 {
 		merged.ExtraFlags = append(merged.ExtraFlags, overrides.ExtraFlags...)
 	}
+	merged.Stealth = mergeBrowserStealthOptions(defaults.Stealth, overrides.Stealth)
 	if overrides.Store != nil {
 		merged.Store = overrides.Store
 	}

@@ -15,10 +15,10 @@ Source: `references/Scrapling/docs/benchmarks.md`.
 
 | Area | Status | Complete | In progress | Planned | Benchmark fixture |
 |---|---:|---:|---:|---:|---|
-| Parser and selectors | partial | 7 | 0 | 1 | `BenchmarkParserNestedText` |
-| Static fetcher and response | partial | 9 | 0 | 3 | `BenchmarkStaticFetcherLocalResponse` |
-| Spider runtime | partial | 4 | 0 | 6 | `BenchmarkSpiderSchedulerFingerprint` |
-| CLI shell and extract commands | partial | 4 | 0 | 2 | `BenchmarkCLIExtractFixture` |
+| Parser and selectors | covered | 8 | 0 | 0 | `BenchmarkParserNestedText` |
+| Static fetcher and response | covered | 12 | 0 | 0 | `BenchmarkStaticFetcherLocalResponse` |
+| Spider runtime | covered | 10 | 0 | 0 | `BenchmarkSpiderSchedulerFingerprint` |
+| CLI shell and extract commands | partial | 7 | 0 | 1 | `BenchmarkCLIExtractFixture` |
 
 ## Benchmark Fixtures
 

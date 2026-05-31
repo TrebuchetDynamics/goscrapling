@@ -1,0 +1,9 @@
+User-agent: GoScraplingBot
+Allow: /private/public
+Disallow: /private
+Crawl-delay: 1.5
+Request-rate: 4/8
+
+User-agent: *
+Disallow: /tmp
+Crawl-delay: 0.25

@@ -332,7 +332,7 @@ func RenderAppMapMarkdown(m *AppMap) string {
 	renderAppMapSummary(&b, m.Entries)
 	renderAppMapTable(&b, sortedAppMapEntries(m.Entries))
 	renderAppMapDetails(&b, sortedAppMapEntries(m.Entries))
-	return b.String()
+	return strings.TrimRight(b.String(), "\n") + "\n"
 }
 
 func renderAppMapMetadata(b *strings.Builder, meta AppMapMeta) {

@@ -71,6 +71,7 @@ type BrowserWaitSelector = browser.BrowserWaitSelector
 type BrowserActionKind = browser.BrowserActionKind
 type BrowserAction = browser.BrowserAction
 type BrowserScreenshotOptions = browser.BrowserScreenshotOptions
+type BrowserStealthOptions = browser.BrowserStealthOptions
 type ChromedpBrowserOptions = browser.ChromedpBrowserOptions
 type ChromedpBrowserEngine = browser.ChromedpBrowserEngine
 
@@ -120,6 +121,7 @@ var (
 	ErrUnsupportedHTTP3               = fetchers.ErrUnsupportedHTTP3
 	ErrMissingBrowserEngine           = browser.ErrMissingBrowserEngine
 	ErrBrowserOptions                 = browser.ErrBrowserOptions
+	ErrUnsupportedBrowserChallenge    = browser.ErrUnsupportedBrowserChallenge
 	ErrBrowserSessionClosed           = browser.ErrBrowserSessionClosed
 	NewMemoryStore                    = storage.NewMemoryStore
 	NewFileStore                      = storage.NewFileStore

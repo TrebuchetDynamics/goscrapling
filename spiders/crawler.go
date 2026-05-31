@@ -15,32 +15,69 @@ type Crawler struct {
 	Sessions                    *SessionManager
 	Scheduler                   *Scheduler
 	DefaultCallback             Callback
+	OnStart                     func(context.Context, bool) error
+	OnClose                     func(context.Context, Result) error
+	OnError                     func(context.Context, Request, error) error
+	OnScrapedItem               func(context.Context, map[string]any) (map[string]any, error)
 	AllowedDomains              []string
+	RobotsTxtObey               bool
+	RobotsTxtManager            *RobotsTxtManager
+	RobotsUserAgent             string
 	ConcurrentRequests          int
 	ConcurrentRequestsPerDomain int
 	DownloadDelay               time.Duration
+	CheckpointDir               string
+	MaxBlockedRetries           int
+	IsBlocked                   BlockedCheckFunc
+	RetryBlockedRequest         BlockedRetryFunc
 	sleep                       func(context.Context, time.Duration) error
 }
 
 func (c Crawler) Run(ctx context.Context, start []Request) (Result, error) {
+	return c.run(ctx, start, nil)
+}
+
+func (c Crawler) Stream(ctx context.Context, start []Request) (<-chan map[string]any, <-chan StreamResult) {
+	items := make(chan map[string]any, 100)
+	done := make(chan StreamResult, 1)
+	go func() {
+		defer close(items)
+		result, err := c.run(ctx, start, items)
+		done <- StreamResult{Result: result, Err: err}
+		close(done)
+	}()
+	return items, done
+}
+
+func (c Crawler) run(ctx context.Context, start []Request, stream chan<- map[string]any) (Result, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	if c.Sessions == nil {
 		return Result{}, fmt.Errorf("sessions are required")
 	}
-	return newCrawlRuntime(ctx, c).run(start)
+	runtime := newCrawlRuntime(ctx, c)
+	runtime.itemStream = stream
+	return runtime.run(start)
 }
 
 func (c Crawler) processRequest(ctx context.Context, request Request, domainLimiters *crawlerDomainLimiters, sleep func(context.Context, time.Duration) error) crawlerTaskResult {
+	allowed, delay, err := c.robotsRequestPolicy(ctx, request)
+	if err != nil {
+		return crawlerTaskResult{request: request, err: err}
+	}
+	if !allowed {
+		return crawlerTaskResult{request: request, robotsDisallowed: true}
+	}
+
 	release, err := domainLimiters.Acquire(ctx, request.URL)
 	if err != nil {
 		return crawlerTaskResult{request: request, err: err}
 	}
 	defer release()
 
-	if c.DownloadDelay > 0 {
-		if err := sleep(ctx, c.DownloadDelay); err != nil {
+	if delay > 0 {
+		if err := sleep(ctx, delay); err != nil {
 			return crawlerTaskResult{request: request, err: err}
 		}
 	}
@@ -48,6 +85,22 @@ func (c Crawler) processRequest(ctx context.Context, request Request, domainLimi
 	response, err := c.Sessions.Fetch(ctx, request)
 	if err != nil {
 		return crawlerTaskResult{request: request, err: err}
+	}
+
+	blocked, err := c.isBlocked(ctx, response)
+	if err != nil {
+		return crawlerTaskResult{request: request, response: response, err: err}
+	}
+	if blocked {
+		result := crawlerTaskResult{request: request, response: response, blocked: true}
+		if request.RetryCount < effectiveMaxBlockedRetries(c.MaxBlockedRetries) {
+			retry, err := c.blockedRetryRequest(ctx, request, response)
+			if err != nil {
+				return crawlerTaskResult{request: request, response: response, err: err}
+			}
+			result.retry = &retry
+		}
+		return result
 	}
 
 	callback := request.Callback
@@ -63,6 +116,29 @@ func (c Crawler) processRequest(ctx context.Context, request Request, domainLimi
 		return crawlerTaskResult{request: request, response: response, err: err}
 	}
 	return crawlerTaskResult{request: request, response: response, outputs: outputs}
+}
+
+func (c Crawler) robotsRequestPolicy(ctx context.Context, request Request) (bool, time.Duration, error) {
+	delay := c.DownloadDelay
+	if !c.RobotsTxtObey || c.RobotsTxtManager == nil {
+		return true, delay, nil
+	}
+	userAgent := request.Headers.Get("User-Agent")
+	if userAgent == "" {
+		userAgent = c.RobotsUserAgent
+	}
+	if userAgent == "" {
+		userAgent = "*"
+	}
+	allowed, err := c.RobotsTxtManager.CanFetch(ctx, request.URL, request.SID, userAgent)
+	if err != nil || !allowed {
+		return allowed, delay, err
+	}
+	directives, err := c.RobotsTxtManager.DelayDirectives(ctx, request.URL, request.SID, userAgent)
+	if err != nil {
+		return false, delay, err
+	}
+	return true, directives.EffectiveDelay(delay), nil
 }
 
 func normalizeAllowedDomains(domains []string) []string {
@@ -127,11 +203,19 @@ func crawlerDomain(rawURL string) string {
 	return strings.ToLower(strings.TrimSuffix(parsed.Host, "."))
 }
 
+type StreamResult struct {
+	Result Result
+	Err    error
+}
+
 type crawlerTaskResult struct {
-	request  Request
-	response Response
-	outputs  []Output
-	err      error
+	request          Request
+	response         Response
+	outputs          []Output
+	blocked          bool
+	robotsDisallowed bool
+	retry            *Request
+	err              error
 }
 
 type crawlerDomainLimiters struct {

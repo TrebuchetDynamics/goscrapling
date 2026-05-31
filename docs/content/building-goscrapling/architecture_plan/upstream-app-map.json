@@ -238,13 +238,14 @@
         "Static browser impersonation, HTTP/3, and stealthy headers boundary",
         "Spider static, dynamic, stealth, and proxy session adapters"
       ],
-      "coverage_status": "planned",
+      "coverage_status": "partial",
       "translation_suitability": "manual_rewrite",
       "static_reference_paths": [
         "docs/research/python-to-go-probes/py2many/go/engines__toolbelt__proxy_rotation.go.txt",
         "docs/research/python-to-go-probes/py2many/summary.md"
       ],
       "notes": [
+        "Spider static/browser proxy rotation is now covered through explicit session adapters that rotate per request and surface selected proxy metadata.",
         "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
       ]
     },
@@ -324,6 +325,8 @@
         "docs/research/python-to-go-probes/py2many/summary.md"
       ],
       "notes": [
+        "Cloudflare/Turnstile challenge solving boundary is now covered: disabled by default, SolveCloudflare returns ErrUnsupportedBrowserChallenge before engine work, and CloudflareChallengeBoundary exposes the unsupported status.",
+        "Explicit BrowserStealthOptions now cover deterministic browser-like headers, Google referer opt-in, WebRTC/WebGL launch controls, canvas-noise script injection, and unsupported challenge-solving errors; Cloudflare claim boundaries remain planned.",
         "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
       ]
     },
@@ -371,7 +374,13 @@
         "Spider static, dynamic, stealth, and proxy session adapters"
       ],
       "coverage_status": "partial",
-      "translation_suitability": "manual_rewrite"
+      "translation_suitability": "manual_rewrite",
+      "notes": [
+        "Spider static, browser, explicit stealth browser, and proxy-rotating session adapters are now covered with SID routing, typed per-request options, response meta merging, and SessionManager close semantics.",
+        "Spider lifecycle hooks, streaming, item hooks, expanded stats, timing, per-session/status/byte counters, and ItemList export are now covered by fake crawler fixtures.",
+        "Robots.txt manager/delay directives are now covered with cached parser lookup, SID-aware fetches, allow/deny matching, effective delay calculation, crawler filtering, and robots-disallowed stats.",
+        "Blocked response detection and retry hooks are now covered with default status detection, custom hooks, retry scheduling, proxy metadata cleanup, and retry stats."
+      ]
     },
     {
       "id": "09-spider-production-controls",
@@ -400,7 +409,7 @@
         "Development response cache",
         "Checkpoint pause and resume"
       ],
-      "coverage_status": "planned",
+      "coverage_status": "partial",
       "translation_suitability": "probe_candidate",
       "static_reference_paths": [
         "docs/research/python-to-go-probes/py2many/go/spiders__robotstxt.go.txt",
@@ -409,6 +418,7 @@
         "docs/research/python-to-go-probes/py2many/summary.md"
       ],
       "notes": [
+        "Robots.txt manager/delay directives are now covered with local fixtures for allow/deny precedence, wildcard user agents, crawl-delay, request-rate, prefetch cache warming, crawler filtering, and stats.",
         "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
       ]
     },
@@ -437,7 +447,7 @@
       "progress_rows": [
         "LinkExtractor and crawl templates"
       ],
-      "coverage_status": "planned",
+      "coverage_status": "partial",
       "translation_suitability": "probe_candidate",
       "static_reference_paths": [
         "docs/research/python-to-go-probes/py2many/go/spiders__links.go.txt",
@@ -446,6 +456,7 @@
         "docs/research/python-to-go-probes/py2many/summary.md"
       ],
       "notes": [
+        "LinkExtractor plus CrawlSpider and SitemapSpider helpers are now covered with fixture tests for filters, scopes, canonicalization, process hooks, sitemap indexes, robots Sitemap directives, alternate links, and rule dispatch.",
         "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
       ]
     },
@@ -511,13 +522,14 @@
       "progress_rows": [
         "MCP scraping tool server"
       ],
-      "coverage_status": "planned",
+      "coverage_status": "partial",
       "translation_suitability": "manual_rewrite",
       "static_reference_paths": [
         "docs/research/python-to-go-probes/py2many/go/core__ai.go.txt",
         "docs/research/python-to-go-probes/py2many/summary.md"
       ],
       "notes": [
+        "Deterministic MCP-style get/bulk_get/fetch/bulk_fetch/stealthy_fetch/bulk_stealthy_fetch/screenshot/open_session/close_session/list_sessions handlers are now covered with fake static/browser seams, schemas, CSS/main-content extraction, screenshot blocks, and session lifecycle tests.",
         "The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation."
       ]
     },
@@ -678,7 +690,11 @@
         "Stealth browser controls and fingerprint options"
       ],
       "coverage_status": "partial",
-      "translation_suitability": "not_applicable"
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "Local browser tests now include Cloudflare/Turnstile unsupported-boundary fixture coverage.",
+        "Local browser tests now include explicit stealth control fixture coverage in addition to static, proxy, and browser contract tests."
+      ]
     },
     {
       "id": "15-tests-spiders",
@@ -752,7 +768,15 @@
         "LinkExtractor and crawl templates"
       ],
       "coverage_status": "partial",
-      "translation_suitability": "not_applicable"
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "Local spider tests now include static/browser/stealth/proxy session adapter fixture coverage.",
+        "Local spider tests now include LinkExtractor, CrawlSpider, and SitemapSpider template fixture coverage.",
+        "Local spider tests now include lifecycle hooks, stream output, expanded stats, and ItemList export fixture coverage.",
+        "Local spider tests now include robots.txt manager and crawler integration fixture coverage.",
+        "Local spider tests now include checkpoint persistence and pause/resume fixture coverage.",
+        "Local spider tests now include blocked response retry fixture coverage."
+      ]
     },
     {
       "id": "16-tests-cli-core-ai",
@@ -806,7 +830,10 @@
         "MCP scraping tool server"
       ],
       "coverage_status": "partial",
-      "translation_suitability": "not_applicable"
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "Local integration tests now include MCP tool schema, static/browser fake seam, screenshot, and session lifecycle coverage."
+      ]
     },
     {
       "id": "17-docs-parser-adaptive",
@@ -849,8 +876,11 @@
         "CSS adaptive selector fallback and auto-save modes",
         "Public docs, examples, and API reference parity"
       ],
-      "coverage_status": "planned",
-      "translation_suitability": "not_applicable"
+      "coverage_status": "partial",
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "Public examples and README status mapping cover parser/adaptive entry points; deeper upstream API-reference parity remains bounded by complete/parser rows and future delta audits."
+      ]
     },
     {
       "id": "18-docs-response-fetching-browser",
@@ -895,8 +925,11 @@
         "Stealth browser controls and fingerprint options",
         "Public docs, examples, and API reference parity"
       ],
-      "coverage_status": "planned",
-      "translation_suitability": "not_applicable"
+      "coverage_status": "partial",
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "Response, static fetching, proxy, browser adapter, browser session, wait/action/capture, resource-option, stealth, and Cloudflare-boundary docs are represented by tested APIs."
+      ]
     },
     {
       "id": "19-docs-spider-runtime",
@@ -945,8 +978,11 @@
         "Spider static, dynamic, stealth, and proxy session adapters",
         "Public docs, examples, and API reference parity"
       ],
-      "coverage_status": "planned",
-      "translation_suitability": "not_applicable"
+      "coverage_status": "partial",
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "Spider request/result/session/scheduler, allowed-domain, concurrency, and cache behavior have tested Go APIs; robots, checkpointing, link extraction/templates, and session adapters remain planned."
+      ]
     },
     {
       "id": "20-docs-cli-mcp-ai",
@@ -983,8 +1019,12 @@
         "MCP scraping tool server",
         "Public docs, examples, and API reference parity"
       ],
-      "coverage_status": "planned",
-      "translation_suitability": "not_applicable"
+      "coverage_status": "partial",
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "MCP docs are now represented by deterministic Go tool schemas and fake static/browser/session fixtures; advanced CLI rows remain planned.",
+        "Static extract and scripted shell behavior are fixture-backed; advanced extract modes and MCP server remain planned."
+      ]
     },
     {
       "id": "21-docs-public-examples-benchmarks",
@@ -1022,8 +1062,11 @@
         "Benchmarks and parity scorecard",
         "Install command, Docker image, and dependency packaging docs"
       ],
-      "coverage_status": "planned",
-      "translation_suitability": "not_applicable"
+      "coverage_status": "partial",
+      "translation_suitability": "not_applicable",
+      "notes": [
+        "README status mapping, compiling public examples, hermetic benchmarks, and generated parity scorecard are covered; install command and Docker packaging docs remain planned."
+      ]
     },
     {
       "id": "22-docs-translated-readmes",

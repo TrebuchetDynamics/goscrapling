@@ -102,7 +102,7 @@ func fixtureProgress() *Progress {
 		Meta: Meta{
 			Version: "1.0",
 			BuilderLoop: BuilderLoopMeta{
-				Entrypoint:      "docs/development-skills/goscrapling-skill-manager/SKILL.md",
+				Entrypoint:      ".pi/skills/goscrapling-skill-manager/SKILL.md",
 				Plan:            "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
 				AgentQueue:      "docs/content/building-goscrapling/builder-loop/agent-queue.md",
 				ProgressSchema:  "docs/content/building-goscrapling/builder-loop/progress-schema.md",

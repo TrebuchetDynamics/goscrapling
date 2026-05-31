@@ -10,7 +10,7 @@
       "local_checkout": "references/Scrapling"
     },
     "builder_loop": {
-      "entrypoint": "docs/development-skills/goscrapling-skill-manager/SKILL.md",
+      "entrypoint": ".pi/skills/goscrapling-skill-manager/SKILL.md",
       "plan": "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
       "coverage_ledger": "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
       "agent_queue": "docs/content/building-goscrapling/builder-loop/agent-queue.md",
@@ -1191,15 +1191,17 @@
             },
             {
               "name": "Stealth browser controls and fingerprint options",
-              "status": "planned",
+              "status": "complete",
               "priority": "P2",
-              "contract": "Expose stealth controls separately from normal browser fetching: fingerprint/header generation, WebRTC blocking, canvas hiding, WebGL control, extra args, real Chrome, and proxy hygiene.",
-              "contract_status": "draft",
+              "contract": "Expose stealth controls separately from normal browser fetching: deterministic browser-like header generation, Google referer opt-in, WebRTC blocking, canvas-noise script injection, WebGL disabling, extra launch flags, real Chrome selection, and proxy hygiene with unsupported challenge-solving claims rejected visibly.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "browser",
               "source_refs": [
                 "references/Scrapling/scrapling/fetchers/stealth_chrome.py",
                 "references/Scrapling/scrapling/engines/_browsers/_stealth.py",
+                "references/Scrapling/scrapling/engines/_browsers/_validators.py",
+                "references/Scrapling/scrapling/engines/_browsers/_types.py",
                 "references/Scrapling/scrapling/engines/toolbelt/fingerprints.py",
                 "references/Scrapling/docs/fetching/stealthy.md"
               ],
@@ -1207,26 +1209,38 @@
                 "Normal browser context options are stable."
               ],
               "write_scope": [
-                "browser_stealth.go",
-                "browser_stealth_test.go",
-                "docs/content/building-goscrapling/architecture_plan/boundaries.md"
+                "engines/browser/browser.go",
+                "engines/browser/browser_adapter.go",
+                "engines/browser/browser_session.go",
+                "engines/browser/browser_stealth.go",
+                "engines/browser/browser_stealth_test.go",
+                "goscrapling.go",
+                "docs/content/building-goscrapling/architecture_plan/boundaries.md",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-behavior-atoms.md",
+                "docs/content/building-goscrapling/builder-loop/*.md"
               ],
               "test_commands": [
                 "go test ./... -run TestStealthBrowserControls -count=1"
               ],
               "acceptance": [
-                "Fixtures prove controls are explicit, unsupported anti-bot claims are rejected visibly, and docs describe supported behavior."
+                "Fixtures prove stealth mode is opt-in and copied into BrowserRequest without hidden defaults.",
+                "Generated browser-like headers and Google referer are deterministic and preserve caller headers unless GoogleReferer explicitly replaces the referer.",
+                "WebRTC, canvas, WebGL, real Chrome, extra flags, and proxy controls are visible to the browser engine or chromedp adapter.",
+                "SolveCloudflare returns an operator-visible ErrUnsupportedBrowserChallenge browser option error, and boundaries docs describe supported behavior."
               ],
               "done_signal": [
-                "Stealth browser control tests pass."
+                "TestStealthBrowserControls passes with full repository validation."
               ]
             },
             {
               "name": "Cloudflare challenge strategy boundary",
-              "status": "planned",
+              "status": "complete",
               "priority": "P3",
-              "contract": "Document and test the boundary for any Cloudflare challenge or Turnstile solving support before shipping claims.",
-              "contract_status": "draft",
+              "contract": "Document and test the Go-owned Cloudflare/Turnstile challenge boundary: challenge solving is disabled by default, SolveCloudflare is an explicit unsupported option that fails before engine work, and any future solver requires deterministic local fixtures plus operator-visible controls before claims ship.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "browser",
               "source_refs": [
@@ -1237,21 +1251,28 @@
                 "Stealth browser controls are explicit and tested."
               ],
               "write_scope": [
-                "browser_cloudflare.go",
-                "browser_cloudflare_test.go",
-                "docs/content/building-goscrapling/architecture_plan/boundaries.md"
+                "engines/browser/browser_cloudflare.go",
+                "engines/browser/browser_cloudflare_test.go",
+                "docs/content/building-goscrapling/architecture_plan/boundaries.md",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-behavior-atoms.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/*.md"
               ],
               "test_commands": [
                 "go test ./... -run TestCloudflareBoundary -count=1"
               ],
               "acceptance": [
-                "Tests prove disabled-by-default behavior and honest unsupported-mode errors unless a local deterministic challenge fixture exists."
+                "Tests prove normal browser and explicit stealth controls do not enable challenge solving by default.",
+                "Tests prove SolveCloudflare returns ErrUnsupportedBrowserChallenge wrapped in ErrBrowserOptions before any browser engine fetch.",
+                "Boundary docs and exported CloudflareChallengeBoundary status helper state that Cloudflare/Turnstile solving is unsupported until a future row adds deterministic local fixtures and operator-visible controls."
               ],
               "done_signal": [
-                "Cloudflare boundary tests and docs pass."
-              ],
-              "blocked_by": [
-                "Stealth browser controls and fingerprint options"
+                "TestCloudflareBoundary passes with full repository validation."
               ]
             }
           ]
@@ -1369,15 +1390,16 @@
             },
             {
               "name": "Robots.txt manager and delay directives",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
-              "contract": "Port robots.txt compliance with can_fetch, crawl-delay, request-rate directive handling, prefetch, and per-session user-agent behavior.",
-              "contract_status": "draft",
+              "contract": "Port robots.txt compliance with cached parser lookup, can_fetch allow/deny checks, crawl-delay/request-rate delay calculation, start-domain prefetch, per-request SID/user-agent handling, and crawler stats for disallowed requests.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "spider",
               "source_refs": [
                 "references/Scrapling/scrapling/spiders/robotstxt.py",
-                "references/Scrapling/docs/spiders/advanced.md"
+                "references/Scrapling/docs/spiders/advanced.md",
+                "references/Scrapling/tests/spiders/test_robotstxt.py"
               ],
               "ready_when": [
                 "Crawler engine filtering hooks are available."
@@ -1385,19 +1407,29 @@
               "write_scope": [
                 "spiders/robots.go",
                 "spiders/robots_test.go",
-                "testdata/spiders/robots/"
+                "spiders/crawler.go",
+                "spiders/crawl_runtime.go",
+                "spiders/result.go",
+                "testdata/spiders/robots/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-behavior-atoms.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/*.md"
               ],
               "test_commands": [
                 "go test ./... -run TestRobotsTxtManager -count=1"
               ],
               "acceptance": [
-                "Local robots fixtures prove allow/deny, crawl-delay, request-rate, prefetch, and stats without live network calls."
+                "Local robots.txt fixtures prove allow/deny precedence, crawl-delay, request-rate, and wildcard user-agent matching without live network calls.",
+                "Robots prefetch fetches each seed domain once through the requested SID and later parser reads are served from cache.",
+                "Crawler robots mode filters disallowed requests, applies the maximum of configured delay, Crawl-delay, and Request-rate delay, preserves request user-agent matching, and records robots stats without counting filtered URLs as fetched requests."
               ],
               "done_signal": [
-                "Robots manager tests pass."
-              ],
-              "blocked_by": [
-                "Crawler engine concurrency, domain limits, and download delay"
+                "TestRobotsTxtManager passes with full repository validation."
               ]
             },
             {
@@ -1439,10 +1471,10 @@
             },
             {
               "name": "Checkpoint pause and resume",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
-              "contract": "Add checkpoint persistence for scheduler pending requests and seen fingerprints with atomic save, load, cleanup, and graceful pause/resume hooks.",
-              "contract_status": "draft",
+              "contract": "Add JSON checkpoint persistence for scheduler pending requests and seen fingerprints with atomic save, load, cleanup, and context-driven pause/resume hooks.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "spider",
               "source_refs": [
@@ -1456,27 +1488,35 @@
               "write_scope": [
                 "spiders/checkpoint.go",
                 "spiders/checkpoint_test.go",
-                "testdata/spiders/checkpoint/"
+                "spiders/scheduler.go",
+                "spiders/crawler.go",
+                "spiders/crawl_runtime.go",
+                "spiders/result.go",
+                "testdata/spiders/checkpoint/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-behavior-atoms.md",
+                "docs/content/building-goscrapling/builder-loop/*.md"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderCheckpoint -count=1"
               ],
               "acceptance": [
-                "Temp-dir fixtures prove snapshot/restore ordering, seen-set restoration, atomic write, cleanup, and paused result state."
+                "Temp-dir fixtures prove checkpoint save/load/cleanup uses an atomic temp-file rename and preserves pending request order plus seen fingerprints.",
+                "A paused crawler with CheckpointDir saves pending scheduler state and returns a paused result.",
+                "A later crawler run with the same CheckpointDir restores pending requests without replaying completed start requests and cleans up after successful completion."
               ],
               "done_signal": [
-                "Spider checkpoint tests pass."
-              ],
-              "blocked_by": [
-                "Crawler engine concurrency, domain limits, and download delay"
+                "TestSpiderCheckpoint passes with full repository validation."
               ]
             },
             {
               "name": "Blocked response detection and retry hooks",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
-              "contract": "Add is_blocked and retry_blocked_request hooks with default blocked status codes and retry accounting.",
-              "contract_status": "draft",
+              "contract": "Add Scrapling-style blocked response detection and retry hooks with default blocked status codes, per-request retry counters, retry scheduling, proxy cleanup, and blocked retry stats.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "spider",
               "source_refs": [
@@ -1489,33 +1529,44 @@
               ],
               "write_scope": [
                 "spiders/blocked.go",
-                "spiders/blocked_test.go"
+                "spiders/blocked_test.go",
+                "spiders/crawler.go",
+                "spiders/crawl_runtime.go",
+                "spiders/request.go",
+                "spiders/result.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-behavior-atoms.md",
+                "docs/content/building-goscrapling/builder-loop/*.md"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderBlockedRetry -count=1"
               ],
               "acceptance": [
-                "Fake responses prove default status detection, custom hook override, retry scheduling, and blocked request stats."
+                "Fake crawler sessions prove default blocked status detection retries a request with DontFilter, lower priority, incremented RetryCount, and cleared proxy metadata.",
+                "A custom IsBlocked hook can override default detection and a RetryBlockedRequest hook can modify the retry request before scheduling.",
+                "MaxBlockedRetries caps blocked retries and stats count blocked responses and scheduled retries."
               ],
               "done_signal": [
-                "Blocked retry tests pass."
-              ],
-              "blocked_by": [
-                "Crawler engine concurrency, domain limits, and download delay"
+                "TestSpiderBlockedRetry passes with full repository validation."
               ]
             },
             {
               "name": "Spider lifecycle hooks, streaming, item hooks, and expanded stats",
-              "status": "planned",
+              "status": "complete",
               "priority": "P1",
               "contract": "Port spider lifecycle hooks and observability: on_start, on_close, on_error, on_scraped_item, stream output, status counters, response bytes, timing, per-session stats, and ItemList export.",
-              "contract_status": "draft",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "spider",
               "source_refs": [
                 "references/Scrapling/scrapling/spiders/spider.py",
                 "references/Scrapling/scrapling/spiders/result.py",
-                "references/Scrapling/docs/spiders/architecture.md"
+                "references/Scrapling/docs/spiders/architecture.md",
+                "references/Scrapling/docs/spiders/advanced.md",
+                "references/Scrapling/tests/spiders/test_result.py",
+                "references/Scrapling/tests/spiders/test_spider.py"
               ],
               "ready_when": [
                 "Crawler engine loop and result struct are stable."
@@ -1528,83 +1579,107 @@
                 "go test ./... -run TestSpiderLifecycleStatsAndStream -count=1"
               ],
               "acceptance": [
-                "Fake crawl fixtures prove lifecycle order, item hook behavior, streaming, JSON/JSONL export, and stats fields."
+                "Fake crawl fixtures prove OnStart, OnClose, OnError, and OnScrapedItem lifecycle order with item modification and dropping.",
+                "Crawler Stream yields accepted items while preserving the final Result and error channel.",
+                "Stats cover failed requests, dropped items, status counters, response bytes, per-domain bytes, per-session counts, timing, and ItemList JSON/JSONL export."
               ],
               "done_signal": [
-                "Spider lifecycle/stats tests pass."
-              ],
-              "blocked_by": [
-                "Crawler engine concurrency, domain limits, and download delay"
+                "TestSpiderLifecycleStatsAndStream passes with full repository validation."
               ]
             },
             {
               "name": "LinkExtractor and crawl templates",
-              "status": "planned",
+              "status": "complete",
               "priority": "P2",
-              "contract": "Port LinkExtractor plus CrawlSpider and SitemapSpider templates with allow/deny regex, domain filters, restrict CSS/XPath, extension filtering, canonicalization, and process hooks.",
-              "contract_status": "draft",
+              "contract": "Port LinkExtractor plus Go-native CrawlSpider and SitemapSpider template helpers with allow/deny regex filters, domain filters, restrict CSS/XPath scopes, extension filtering, canonicalization/fragment handling, process hooks, sitemap indexes, robots Sitemap directives, and rule dispatch.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "spider",
               "source_refs": [
                 "references/Scrapling/scrapling/spiders/links.py",
                 "references/Scrapling/scrapling/spiders/templates/crawler.py",
                 "references/Scrapling/scrapling/spiders/templates/sitemap.py",
-                "references/Scrapling/docs/spiders/generic-templates.md"
+                "references/Scrapling/docs/spiders/generic-templates.md",
+                "references/Scrapling/tests/spiders/test_links.py",
+                "references/Scrapling/tests/spiders/test_templates.py",
+                "references/Scrapling/tests/spiders/test_sitemap.py"
               ],
               "ready_when": [
                 "Response.follow and selector helpers are stable."
               ],
               "write_scope": [
                 "spiders/links.go",
-                "spiders/templates/",
-                "spider_links_test.go",
-                "testdata/spiders/templates/"
+                "spiders/templates/crawler.go",
+                "spiders/templates/sitemap.go",
+                "spiders/spider_links_test.go",
+                "testdata/spiders/templates/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-behavior-atoms.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/*.md"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderLinkExtractorAndTemplates -count=1"
               ],
               "acceptance": [
-                "Local HTML and sitemap fixtures prove link extraction, rules, templates, and generated requests without live crawling."
+                "Local HTML fixtures prove LinkExtractor extraction, dedupe, allow/deny regex, allow/deny domains, restrict CSS/XPath scopes, extension filtering, canonicalization, fragment handling, and process hooks.",
+                "CrawlSpider rule fixtures prove generated requests, callbacks, priorities, and process_request mutation.",
+                "SitemapSpider fixtures prove sitemap indexes, robots Sitemap directives, sitemap_follow filtering, alternate links, first-matching rule dispatch, and no-live-network request generation."
               ],
               "done_signal": [
-                "Link extractor and template tests pass."
-              ],
-              "blocked_by": [
-                "XPath selection and CSS-to-XPath translator parity"
+                "TestSpiderLinkExtractorAndTemplates passes with full repository validation."
               ]
             },
             {
               "name": "Spider static, dynamic, stealth, and proxy session adapters",
-              "status": "planned",
+              "status": "complete",
               "priority": "P2",
-              "contract": "Connect spider SessionManager to static fetcher sessions, browser sessions, stealth sessions, and proxy rotation while preserving explicit operator controls.",
-              "contract_status": "draft",
+              "contract": "Connect spider SessionManager to static fetcher sessions, browser sessions, explicit stealth browser sessions, and proxy rotation with SID routing, lazy/eager lifecycle semantics, typed per-request option hooks, response meta merging, and operator-visible proxy/stealth controls.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "spider",
               "source_refs": [
                 "references/Scrapling/scrapling/spiders/session.py",
                 "references/Scrapling/docs/spiders/sessions.md",
-                "references/Scrapling/docs/spiders/proxy-blocking.md"
+                "references/Scrapling/docs/spiders/proxy-blocking.md",
+                "references/Scrapling/scrapling/fetchers/requests.py",
+                "references/Scrapling/scrapling/fetchers/chrome.py",
+                "references/Scrapling/scrapling/fetchers/stealth_chrome.py",
+                "references/Scrapling/scrapling/engines/toolbelt/proxy_rotation.py",
+                "references/Scrapling/docs/fetching/static.md",
+                "references/Scrapling/docs/fetching/dynamic.md",
+                "references/Scrapling/docs/fetching/stealthy.md"
               ],
               "ready_when": [
                 "Fetcher, browser session, and proxy rows are complete."
               ],
               "write_scope": [
                 "spiders/session_adapters.go",
-                "spiders/session_adapters_test.go"
+                "spiders/session_adapters_test.go",
+                "spiders/session.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-behavior-atoms.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/*.md"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderSessionAdapters -count=1"
               ],
               "acceptance": [
-                "Fake and local fixtures prove requests route through configured static/browser/stealth/proxy sessions by sid."
+                "Local HTTP fixtures prove StaticSessionAdapter routes GET/POST requests by SID through fetchers.FetcherSession and preserves request headers/body plus response meta.",
+                "Fake browser fixtures prove BrowserSessionAdapter and StealthBrowserSessionAdapter route by SID, forward typed browser options, enforce explicit stealth options, and close cleanly through SessionManager.",
+                "Local proxy fixtures prove static proxy rotation and browser proxy rotation are explicit operator controls, rotate per request, and surface selected proxy metadata."
               ],
               "done_signal": [
-                "Spider session adapter tests pass."
-              ],
-              "blocked_by": [
-                "Proxy rotator strategies",
-                "Stealth browser controls and fingerprint options"
+                "TestSpiderSessionAdapters passes with full repository validation."
               ]
             }
           ]
@@ -1766,41 +1841,54 @@
             },
             {
               "name": "CLI extract markdown, AI-targeted, and browser modes",
-              "status": "planned",
+              "status": "complete",
               "priority": "P3",
               "contract": "Add the remaining extract output and fetch modes: markdown conversion, AI-targeted cleanup, dynamic browser fetch, and stealth fetch as explicit, test-backed CLI surfaces.",
-              "contract_status": "draft",
-              "slice_size": "large",
+              "contract_status": "validated",
+              "slice_size": "medium",
               "execution_owner": "cli",
               "source_refs": [
                 "references/Scrapling/scrapling/cli.py",
                 "references/Scrapling/docs/cli/extract-commands.md",
                 "references/Scrapling/docs/fetching/dynamic.md",
-                "references/Scrapling/docs/fetching/stealthy.md"
+                "references/Scrapling/docs/fetching/stealthy.md",
+                "references/Scrapling/scrapling/core/shell.py",
+                "engines/browser/browser_markdown.go",
+                "engines/browser/browser_stealth.go",
+                "internal/cli/extract_command.go",
+                "internal/cli/extract_test.go"
               ],
               "ready_when": [
-                "Static extract methods are complete",
-                "Browser fetcher has a real adapter or stable fake-backed command seam."
+                "Static extract methods are complete.",
+                "Browser fetcher command paths use a stable fake-backed seam for hermetic tests."
               ],
               "not_ready_when": [
                 "The row would require live browsers, live websites, or untested stealth claims."
               ],
               "write_scope": [
-                "cmd/goscrapling/",
-                "internal/cli/",
-                "internal/cli/testdata/"
+                "internal/cli/extract_command.go",
+                "internal/cli/extract_test.go",
+                "internal/cli/run.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md",
+                "docs/research/parity-scorecard.md"
               ],
               "test_commands": [
-                "go test ./... -run TestCLIExtractAdvancedModes -count=1"
+                "go test ./internal/cli -run TestCLIExtractAdvancedModes -count=1",
+                "go test ./internal/cli -count=1",
+                "go test ./... -count=1"
               ],
               "acceptance": [
-                "Fixtures prove markdown/text/html behavior and browser-mode command wiring without live network or stealth claims."
+                ".md outputs use the shared HTML-to-Markdown renderer instead of plain text.",
+                "--ai-targeted sanitizes local HTML fixtures by focusing main/body content, removing hidden/noise nodes, comments, and zero-width characters.",
+                "extract fetch and extract stealthy-fetch parse browser flags and forward BrowserOptions through a fake-backed seam without live browser or stealth-bypass claims."
               ],
               "done_signal": [
-                "Advanced extract mode tests pass from local fixtures."
-              ],
-              "blocked_by": [
-                "Stealth browser controls and fingerprint options"
+                "TestCLIExtractAdvancedModes passes from local fixtures and fake browser fetchers."
               ]
             },
             {
@@ -1934,16 +2022,17 @@
             },
             {
               "name": "MCP scraping tool server",
-              "status": "planned",
+              "status": "complete",
               "priority": "P2",
-              "contract": "Expose deterministic MCP tools for get, bulk_get, fetch, bulk_fetch, stealthy_fetch, bulk_stealthy_fetch, screenshots, sessions, and CSS/main-content extraction.",
-              "contract_status": "draft",
+              "contract": "Expose a deterministic Go MCP-style scraping tool layer with tool schemas and get, bulk_get, fetch, bulk_fetch, stealthy_fetch, bulk_stealthy_fetch, screenshot, open_session, close_session, and list_sessions handlers backed by injectable static/browser seams, CSS/main-content extraction, session lifecycle, and no live LLM/network requirement for tests.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "integration",
               "source_refs": [
                 "references/Scrapling/scrapling/core/ai.py",
                 "references/Scrapling/docs/ai/mcp-server.md",
-                "references/Scrapling/docs/api-reference/mcp-server.md"
+                "references/Scrapling/docs/api-reference/mcp-server.md",
+                "references/Scrapling/tests/ai/test_ai_mcp.py"
               ],
               "ready_when": [
                 "Static CLI extract and fetcher APIs are stable enough for tool output fixtures."
@@ -1951,52 +2040,79 @@
               "write_scope": [
                 "integrations/mcp/",
                 "internal/cli/testdata/",
-                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md"
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-behavior-atoms.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.json",
+                "docs/content/building-goscrapling/architecture_plan/upstream-app-map.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/*.md"
               ],
               "test_commands": [
                 "go test ./... -run TestMCPServerTools -count=1"
               ],
               "acceptance": [
-                "Fake tool calls prove schemas, session lifecycle, bulk calls, screenshots through fake browser seam, and no live LLM/network dependency."
+                "Fake static tool calls prove get and bulk_get schemas, CSS selector extraction, main-content extraction, and structured response models without live network.",
+                "Fake browser tool calls prove fetch, bulk_fetch, stealthy_fetch, bulk_stealthy_fetch, and screenshot controls without launching a real browser.",
+                "Session fixtures prove open_session, list_sessions, close_session, typed session reuse, and error handling without live LLM or MCP transport dependencies."
               ],
               "done_signal": [
-                "MCP server tool tests pass."
-              ],
-              "blocked_by": [
-                "Stealth browser controls and fingerprint options"
+                "TestMCPServerTools passes with full repository validation."
               ]
             },
             {
               "name": "Install command, Docker image, and dependency packaging docs",
-              "status": "planned",
+              "status": "complete",
               "priority": "P3",
-              "contract": "Map Scrapling install/Docker utility surfaces into Go packaging docs and commands without silently installing browsers during normal use.",
-              "contract_status": "draft",
+              "contract": "Provide a non-mutating Go-native install command that reports goscrapling CLI, browser-runtime, and Docker packaging requirements without silently downloading browsers, plus docs that map the upstream Scrapling install/Docker behavior to this owned boundary.",
+              "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "cli",
               "source_refs": [
                 "references/Scrapling/scrapling/cli.py",
                 "references/Scrapling/Dockerfile",
-                "references/Scrapling/docs/cli/overview.md"
+                "references/Scrapling/docs/cli/overview.md",
+                "README.md",
+                "internal/cli/run.go",
+                "internal/cli/install_command.go",
+                "internal/cli/install_test.go",
+                "docs/content/building-goscrapling/architecture_plan/install-packaging.md"
               ],
               "ready_when": [
-                "Browser adapter dependency boundary is documented."
+                "Browser adapter dependency boundary is documented.",
+                "The command proof is hermetic and does not invoke package managers, browsers, Docker, or network downloads."
               ],
               "write_scope": [
-                "cmd/goscrapling/",
-                "docs/"
+                "internal/cli/run.go",
+                "internal/cli/install_command.go",
+                "internal/cli/install_test.go",
+                "README.md",
+                "docs/content/building-goscrapling/architecture_plan/install-packaging.md",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/research/parity-scorecard.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md"
               ],
               "test_commands": [
-                "go test ./... -run TestCLIInstallCommand -count=1"
+                "go test ./internal/cli -run TestCLIInstallCommand -count=1",
+                "go test ./internal/cli -count=1",
+                "go test ./... -count=1"
               ],
               "acceptance": [
-                "Command fixtures prove install/help behavior and docs explain browser/runtime dependencies without live downloads."
+                "goscrapling install and install --help describe installation, browser-runtime, and Docker packaging requirements without performing downloads.",
+                "goscrapling install --json returns deterministic structured dependency metadata with browser downloads marked false.",
+                "Docs explain the owned divergence from Scrapling install/Playwright behavior and provide local/Docker packaging guidance."
               ],
               "done_signal": [
-                "Install command tests pass."
+                "TestCLIInstallCommand passes and no test shells out to package managers, browsers, Docker, or network services."
               ],
-              "blocked_by": [
-                "Real browser adapter with JavaScript fixture"
+              "not_ready_when": [
+                "The slice would install Playwright/Chrome, build or publish containers, or inspect host-specific browser state as required behavior."
               ]
             },
             {
@@ -2200,6 +2316,102 @@
                 "go test ./... -count=1 passes after the package split.",
                 "progress validation and JSON validation pass.",
                 "git diff --check reports no whitespace errors."
+              ]
+            },
+            {
+              "name": "Shell curl parser helpers and fetcher conversion",
+              "status": "complete",
+              "priority": "P3",
+              "contract": "Port the bounded Scrapling shell curl helpers as scripted, hermetic goscrapling shell behavior: parse DevTools-style curl commands into request metadata and optionally execute them through the static fetcher against local fixtures.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "cli",
+              "source_refs": [
+                "references/Scrapling/scrapling/core/shell.py",
+                "references/Scrapling/scrapling/core/utils/_shell.py",
+                "internal/cli/shell_command.go",
+                "internal/cli/shell_test.go",
+                "fetchers/fetcher_options.go",
+                "README.md"
+              ],
+              "ready_when": [
+                "The shell remains scripted with -c; no interactive REPL is required.",
+                "Curl execution uses httptest/local fixtures only and does not depend on live web requests."
+              ],
+              "not_ready_when": [
+                "The implementation would require a full IPython-style REPL, browser fetchers, proxy rotation, or live network access."
+              ],
+              "write_scope": [
+                "internal/cli/shell_command.go",
+                "internal/cli/shell_test.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md",
+                "README.md",
+                "docs/research/parity-scorecard.md"
+              ],
+              "test_commands": [
+                "go test ./internal/cli -run TestCLIShellCurlHelpers -count=1",
+                "go test ./internal/cli -count=1",
+                "go test ./... -count=1"
+              ],
+              "acceptance": [
+                "uncurl scripted shell output exposes method, URL, headers, cookies, params, and body metadata parsed from DevTools-style curl commands.",
+                "curl2fetcher scripted shell execution uses the static fetcher against local httptest fixtures and updates page/response/pages shortcuts.",
+                "Unsupported curl flags or malformed commands return parse errors without live network side effects."
+              ],
+              "done_signal": [
+                "TestCLIShellCurlHelpers passes from local fixtures."
+              ]
+            },
+            {
+              "name": "Shell static method shortcuts beyond get",
+              "status": "planned",
+              "priority": "P3",
+              "contract": "Extend the scripted goscrapling shell shortcuts from get(url) to the remaining upstream static Fetcher methods post, put, and delete with local request-option fixtures.",
+              "contract_status": "fixture_ready",
+              "slice_size": "small",
+              "execution_owner": "cli",
+              "source_refs": [
+                "references/Scrapling/scrapling/core/shell.py",
+                "references/Scrapling/scrapling/core/_shell_signatures.py",
+                "internal/cli/shell_command.go",
+                "internal/cli/shell_test.go"
+              ],
+              "ready_when": [
+                "The shell remains scripted with -c; no interactive REPL is required.",
+                "Static method shortcut tests use httptest fixtures only."
+              ],
+              "not_ready_when": [
+                "The implementation would require browser fetchers, async sessions, full REPL support, or live network access."
+              ],
+              "write_scope": [
+                "internal/cli/shell_command.go",
+                "internal/cli/shell_test.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md"
+              ],
+              "test_commands": [
+                "go test ./internal/cli -run TestCLIShellHTTPMethodShortcuts -count=1",
+                "go test ./internal/cli -count=1",
+                "go test ./... -count=1"
+              ],
+              "acceptance": [
+                "post, put, and delete scripted shell shortcuts issue the matching HTTP methods to local httptest fixtures.",
+                "Request body and header options for method shortcuts are parsed narrowly enough to mirror existing extract command fixtures.",
+                "page, response, and pages shortcuts update after each method call."
+              ],
+              "done_signal": [
+                "TestCLIShellHTTPMethodShortcuts passes from local fixtures."
               ]
             }
           ]

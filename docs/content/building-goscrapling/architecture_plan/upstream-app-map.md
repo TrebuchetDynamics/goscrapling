@@ -15,8 +15,7 @@
 
 | Status | Count |
 |---|---:|
-| `partial` | 11 |
-| `planned` | 9 |
+| `partial` | 20 |
 | `excluded` | 3 |
 
 ## Entries
@@ -28,22 +27,22 @@
 | Parser, Selectors, Custom Types, And Translator | `partial` | `Parser and selector objects` | `Document, Element, Selection, selector helper types, and future translator helpers` | `Parse static HTML into queryable documents`, `Selector pseudo-elements, extraction helpers, and custom types`, `XPath selection and CSS-to-XPath translator parity`, `Traversal, filtering, and text search helpers`, `Selector generation helpers` | `manual_rewrite` | 5 |
 | Adaptive Storage And Relocation Helpers | `partial` | `Adaptive storage` | `core/storage Store, MemoryStore, FileStore, SQLiteStore, fingerprints, and relocation scoring` | `Save adaptive fingerprints by domain and identifier`, `Relocate adaptive elements with deterministic scoring`, `CSS adaptive selector fallback and auto-save modes`, `Adaptive fingerprint parity review and diagnostics`, `File-backed adaptive store with compatibility migration`, `SQLite adaptive store parity` | `manual_rewrite` | 2 |
 | Static Response And Fetchers | `partial` | `Static fetcher` | `Response, Fetcher, FetcherSession, static request options, and response conversion helpers` | `Response metadata and selector contract`, `Response body, text, bytes, and JSON helpers`, `Response cookies, history, meta, and captured XHR fields`, `Static Fetcher method surface over net/http`, `FetcherSession option merging and cookies`, `Redirect, timeout, retry, and error taxonomy`, `Static request options: params, forms, JSON, auth, verify, and cookies`, `Async and concurrent static fetcher API` | `manual_rewrite` | 4 |
-| Proxy Rotation, Impersonation, And Network Helper Constants | `planned` | `Proxy rotation` | `ProxyRotator, static proxy support, proxy error classification, and explicit impersonation boundaries` | `Static proxy support and proxy error classification`, `Proxy rotator strategies`, `Static browser impersonation, HTTP/3, and stealthy headers boundary`, `Spider static, dynamic, stealth, and proxy session adapters` | `manual_rewrite` | 2 |
+| Proxy Rotation, Impersonation, And Network Helper Constants | `partial` | `Proxy rotation` | `ProxyRotator, static proxy support, proxy error classification, and explicit impersonation boundaries` | `Static proxy support and proxy error classification`, `Proxy rotator strategies`, `Static browser impersonation, HTTP/3, and stealthy headers boundary`, `Spider static, dynamic, stealth, and proxy session adapters` | `manual_rewrite` | 2 |
 | Browser And Stealth Fetchers | `partial` | `Browser fetching` | `BrowserFetcher, ChromedpBrowserEngine, future browser sessions, page pools, context options, and stealth option structs` | `BrowserFetcher interface and chromedp/playwright adapter decision`, `Real browser adapter with JavaScript fixture`, `Browser sessions and page pool lifecycle`, `Browser wait conditions, page actions, downloads, screenshots, and XHR capture`, `Browser context options and resource blocking`, `Stealth browser controls and fingerprint options`, `Cloudflare challenge strategy boundary` | `manual_rewrite` | 12 |
 | Spider Core And Crawler Engine | `partial` | `Spider runtime` | `spiders package request/result/session/scheduler types, allowed-domain filtering, and concurrent crawler engine controls` | `Spider request, result, scheduler, and session contracts`, `Crawler engine concurrency, domain limits, and download delay`, `Allowed domains and offsite filtering`, `Blocked response detection and retry hooks`, `Spider lifecycle hooks, streaming, item hooks, and expanded stats`, `Spider static, dynamic, stealth, and proxy session adapters` | `manual_rewrite` | 6 |
-| Robots, Cache, Checkpoint, And Production Crawler Controls | `planned` | `Spider runtime` | `spiders package robots manager, response cache, checkpoint store, and crawler controls` | `Robots.txt manager and delay directives`, `Development response cache`, `Checkpoint pause and resume` | `probe_candidate` | 3 |
-| Link Extraction And Spider Templates | `planned` | `Spider runtime` | `spiders package LinkExtractor plus crawler and sitemap templates` | `LinkExtractor and crawl templates` | `probe_candidate` | 3 |
+| Robots, Cache, Checkpoint, And Production Crawler Controls | `partial` | `Spider runtime` | `spiders package robots manager, response cache, checkpoint store, and crawler controls` | `Robots.txt manager and delay directives`, `Development response cache`, `Checkpoint pause and resume` | `probe_candidate` | 3 |
+| Link Extraction And Spider Templates | `partial` | `Spider runtime` | `spiders package LinkExtractor plus crawler and sitemap templates` | `LinkExtractor and crawl templates` | `probe_candidate` | 3 |
 | CLI Extract And Shell | `partial` | `CLI shell and extract commands` | `cmd/goscrapling and internal/cli` | `CLI static extract GET command`, `CLI static extract method and request body expansion`, `CLI extract markdown, AI-targeted, and browser modes`, `CLI interactive shell command surface`, `Install command, Docker image, and dependency packaging docs` | `manual_rewrite` | 4 |
-| MCP And AI Tools | `planned` | `MCP and AI docs` | `integrations/mcp and future integration packages` | `MCP scraping tool server` | `manual_rewrite` | 1 |
+| MCP And AI Tools | `partial` | `MCP and AI docs` | `integrations/mcp and future integration packages` | `MCP scraping tool server` | `manual_rewrite` | 1 |
 | Upstream Parser And Adaptive Tests | `partial` | `Parser and selector objects` | `parser and adaptive test fixtures in root package` | `Parse static HTML into queryable documents`, `Selector pseudo-elements, extraction helpers, and custom types`, `XPath selection and CSS-to-XPath translator parity`, `Traversal, filtering, and text search helpers`, `Selector generation helpers`, `Relocate adaptive elements with deterministic scoring` | `not_applicable` | 8 |
 | Upstream Fetcher And Browser Tests | `partial` | `Static fetcher` | `fetcher, response, proxy, browser, and fake-browser fixture tests` | `Response metadata and selector contract`, `Response body, text, bytes, and JSON helpers`, `Static Fetcher method surface over net/http`, `FetcherSession option merging and cookies`, `Redirect, timeout, retry, and error taxonomy`, `Static proxy support and proxy error classification`, `Proxy rotator strategies`, `BrowserFetcher interface and chromedp/playwright adapter decision`, `Stealth browser controls and fingerprint options` | `not_applicable` | 22 |
 | Upstream Spider Tests | `partial` | `Spider runtime` | `spiders package fake-fetcher and scheduler fixtures` | `Spider request, result, scheduler, and session contracts`, `Crawler engine concurrency, domain limits, and download delay`, `Robots.txt manager and delay directives`, `Development response cache`, `Checkpoint pause and resume`, `LinkExtractor and crawl templates` | `not_applicable` | 14 |
 | Upstream CLI, Core, Storage, And AI Tests | `partial` | `CLI shell and extract commands` | `internal/cli, adaptive storage tests, and integrations/mcp fixtures` | `CLI static extract GET command`, `CLI static extract method and request body expansion`, `CLI interactive shell command surface`, `Save adaptive fingerprints by domain and identifier`, `File-backed adaptive store with compatibility migration`, `MCP scraping tool server` | `not_applicable` | 9 |
-| Upstream Parser And Adaptive Docs | `planned` | `Parser and selector objects` | `parser, core/storage, core/customtypes, root facade docs, examples, and API reference` | `Selector pseudo-elements, extraction helpers, and custom types`, `XPath selection and CSS-to-XPath translator parity`, `CSS adaptive selector fallback and auto-save modes`, `Public docs, examples, and API reference parity` | `not_applicable` | 7 |
-| Upstream Response, Fetching, Proxy, And Browser Docs | `planned` | `Static fetcher` | `Response, Fetcher, FetcherSession, ProxyRotator, and browser docs` | `Response cookies, history, meta, and captured XHR fields`, `Static request options: params, forms, JSON, auth, verify, and cookies`, `Proxy rotator strategies`, `Real browser adapter with JavaScript fixture`, `Stealth browser controls and fingerprint options`, `Public docs, examples, and API reference parity` | `not_applicable` | 7 |
-| Upstream Spider Docs | `planned` | `Spider runtime` | `spiders package docs, examples, and templates` | `Spider request, result, scheduler, and session contracts`, `Crawler engine concurrency, domain limits, and download delay`, `Robots.txt manager and delay directives`, `LinkExtractor and crawl templates`, `Spider static, dynamic, stealth, and proxy session adapters`, `Public docs, examples, and API reference parity` | `not_applicable` | 8 |
-| Upstream CLI, MCP, And AI Docs | `planned` | `CLI shell and extract commands` | `cmd/goscrapling, internal/cli, and integrations/mcp docs` | `CLI static extract GET command`, `CLI static extract method and request body expansion`, `CLI extract markdown, AI-targeted, and browser modes`, `CLI interactive shell command surface`, `MCP scraping tool server`, `Public docs, examples, and API reference parity` | `not_applicable` | 5 |
-| Upstream Public Docs, Tutorials, Donate Page, And Benchmarks | `planned` | `Install, Docker, packaging, examples, and benchmarks` | `README.md, docs, example tests, benchmarks, and generated scorecards` | `Public docs, examples, and API reference parity`, `Benchmarks and parity scorecard`, `Install command, Docker image, and dependency packaging docs` | `not_applicable` | 6 |
+| Upstream Parser And Adaptive Docs | `partial` | `Parser and selector objects` | `parser, core/storage, core/customtypes, root facade docs, examples, and API reference` | `Selector pseudo-elements, extraction helpers, and custom types`, `XPath selection and CSS-to-XPath translator parity`, `CSS adaptive selector fallback and auto-save modes`, `Public docs, examples, and API reference parity` | `not_applicable` | 7 |
+| Upstream Response, Fetching, Proxy, And Browser Docs | `partial` | `Static fetcher` | `Response, Fetcher, FetcherSession, ProxyRotator, and browser docs` | `Response cookies, history, meta, and captured XHR fields`, `Static request options: params, forms, JSON, auth, verify, and cookies`, `Proxy rotator strategies`, `Real browser adapter with JavaScript fixture`, `Stealth browser controls and fingerprint options`, `Public docs, examples, and API reference parity` | `not_applicable` | 7 |
+| Upstream Spider Docs | `partial` | `Spider runtime` | `spiders package docs, examples, and templates` | `Spider request, result, scheduler, and session contracts`, `Crawler engine concurrency, domain limits, and download delay`, `Robots.txt manager and delay directives`, `LinkExtractor and crawl templates`, `Spider static, dynamic, stealth, and proxy session adapters`, `Public docs, examples, and API reference parity` | `not_applicable` | 8 |
+| Upstream CLI, MCP, And AI Docs | `partial` | `CLI shell and extract commands` | `cmd/goscrapling, internal/cli, and integrations/mcp docs` | `CLI static extract GET command`, `CLI static extract method and request body expansion`, `CLI extract markdown, AI-targeted, and browser modes`, `CLI interactive shell command surface`, `MCP scraping tool server`, `Public docs, examples, and API reference parity` | `not_applicable` | 5 |
+| Upstream Public Docs, Tutorials, Donate Page, And Benchmarks | `partial` | `Install, Docker, packaging, examples, and benchmarks` | `README.md, docs, example tests, benchmarks, and generated scorecards` | `Public docs, examples, and API reference parity`, `Benchmarks and parity scorecard`, `Install command, Docker image, and dependency packaging docs` | `not_applicable` | 6 |
 | Translated README Files | `excluded` | `-` | `-` | - | `not_applicable` | 9 |
 | Docs Assets And Branding Images | `excluded` | `-` | `-` | - | `not_applicable` | 9 |
 
@@ -111,7 +110,7 @@
   - `references/Scrapling/scrapling/engines/toolbelt/proxy_rotation.py` (`source`)
 - Static reference paths: `docs/research/python-to-go-probes/py2many/go/engines__toolbelt__proxy_rotation.go.txt`, `docs/research/python-to-go-probes/py2many/summary.md`
 - Behavior atoms: Represent proxy rotation strategies and network error classifications as explicit fetcher/spider options, Keep browser impersonation and HTTP/3 behavior bounded by testable Go dependencies
-- Notes: The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
+- Notes: Spider static/browser proxy rotation is now covered through explicit session adapters that rotate per request and surface selected proxy metadata., The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
 
 ## Browser And Stealth Fetchers
 
@@ -131,7 +130,7 @@
   - `references/Scrapling/scrapling/fetchers/stealth_chrome.py` (`source`)
 - Static reference paths: `docs/research/python-to-go-probes/py2many/go/engines__toolbelt__navigation.go.txt`, `docs/research/python-to-go-probes/py2many/go/engines___browsers___validators.go.txt`, `docs/research/python-to-go-probes/py2many/summary.md`
 - Behavior atoms: Map browser fetcher lifecycle, page operations, waits, downloads, screenshots, XHR capture, context options, resource blocking, and stealth options to explicit Go adapters, Keep stealth and challenge handling operator-visible and test-backed
-- Notes: The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
+- Notes: Cloudflare/Turnstile challenge solving boundary is now covered: disabled by default, SolveCloudflare returns ErrUnsupportedBrowserChallenge before engine work, and CloudflareChallengeBoundary exposes the unsupported status., Explicit BrowserStealthOptions now cover deterministic browser-like headers, Google referer opt-in, WebRTC/WebGL launch controls, canvas-noise script injection, and unsupported challenge-solving errors; Cloudflare claim boundaries remain planned., The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
 
 ## Spider Core And Crawler Engine
 
@@ -144,6 +143,7 @@
   - `references/Scrapling/scrapling/spiders/session.py` (`source`)
   - `references/Scrapling/scrapling/spiders/spider.py` (`source`)
 - Behavior atoms: Model spider request/result/session/scheduler contracts and crawler engine execution semantics, Preserve concurrency, domain limits, download delays, lifecycle hooks, streaming, item hooks, stats, and session adapter boundaries
+- Notes: Spider static, browser, explicit stealth browser, and proxy-rotating session adapters are now covered with SID routing, typed per-request options, response meta merging, and SessionManager close semantics., Spider lifecycle hooks, streaming, item hooks, expanded stats, timing, per-session/status/byte counters, and ItemList export are now covered by fake crawler fixtures., Robots.txt manager/delay directives are now covered with cached parser lookup, SID-aware fetches, allow/deny matching, effective delay calculation, crawler filtering, and robots-disallowed stats., Blocked response detection and retry hooks are now covered with default status detection, custom hooks, retry scheduling, proxy metadata cleanup, and retry stats.
 
 ## Robots, Cache, Checkpoint, And Production Crawler Controls
 
@@ -154,7 +154,7 @@
   - `references/Scrapling/scrapling/spiders/robotstxt.py` (`source`)
 - Static reference paths: `docs/research/python-to-go-probes/py2many/go/spiders__robotstxt.go.txt`, `docs/research/python-to-go-probes/py2many/go/spiders__cache.go.txt`, `docs/research/python-to-go-probes/py2many/go/spiders__checkpoint.go.txt`, `docs/research/python-to-go-probes/py2many/summary.md`
 - Behavior atoms: Preserve robots.txt decisions, crawl-delay handling, development response cache behavior, and checkpoint pause/resume state
-- Notes: The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
+- Notes: Robots.txt manager/delay directives are now covered with local fixtures for allow/deny precedence, wildcard user agents, crawl-delay, request-rate, prefetch cache warming, crawler filtering, and stats., The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
 
 ## Link Extraction And Spider Templates
 
@@ -165,7 +165,7 @@
   - `references/Scrapling/scrapling/spiders/templates/sitemap.py` (`source`)
 - Static reference paths: `docs/research/python-to-go-probes/py2many/go/spiders__links.go.txt`, `docs/research/python-to-go-probes/py2many/go/spiders__templates__crawler.go.txt`, `docs/research/python-to-go-probes/py2many/go/spiders__templates__sitemap.go.txt`, `docs/research/python-to-go-probes/py2many/summary.md`
 - Behavior atoms: Extract and normalize links, then expose crawler and sitemap templates as higher-level spider building blocks
-- Notes: The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
+- Notes: LinkExtractor plus CrawlSpider and SitemapSpider helpers are now covered with fixture tests for filters, scopes, canonicalization, process hooks, sitemap indexes, robots Sitemap directives, alternate links, and rule dispatch., The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
 
 ## CLI Extract And Shell
 
@@ -186,7 +186,7 @@
   - `references/Scrapling/scrapling/core/ai.py` (`source`)
 - Static reference paths: `docs/research/python-to-go-probes/py2many/go/core__ai.go.txt`, `docs/research/python-to-go-probes/py2many/summary.md`
 - Behavior atoms: Expose deterministic MCP scraping tool schemas and no-live-LLM integration boundaries
-- Notes: The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
+- Notes: Deterministic MCP-style get/bulk_get/fetch/bulk_fetch/stealthy_fetch/bulk_stealthy_fetch/screenshot/open_session/close_session/list_sessions handlers are now covered with fake static/browser seams, schemas, CSS/main-content extraction, screenshot blocks, and session lifecycle tests., The current py2many artifacts are missing-tool/reference-only evidence and not generated Go implementation.
 
 ## Upstream Parser And Adaptive Tests
 
@@ -227,6 +227,7 @@
   - `references/Scrapling/tests/fetchers/test_response_handling.py` (`test`)
   - `references/Scrapling/tests/fetchers/test_utils.py` (`test`)
   - `references/Scrapling/tests/fetchers/test_validator.py` (`test`)
+- Notes: Local browser tests now include Cloudflare/Turnstile unsupported-boundary fixture coverage., Local browser tests now include explicit stealth control fixture coverage in addition to static, proxy, and browser contract tests.
 
 ## Upstream Spider Tests
 
@@ -246,6 +247,7 @@
   - `references/Scrapling/tests/spiders/test_sitemap.py` (`test`)
   - `references/Scrapling/tests/spiders/test_spider.py` (`test`)
   - `references/Scrapling/tests/spiders/test_templates.py` (`test`)
+- Notes: Local spider tests now include static/browser/stealth/proxy session adapter fixture coverage., Local spider tests now include LinkExtractor, CrawlSpider, and SitemapSpider template fixture coverage., Local spider tests now include lifecycle hooks, stream output, expanded stats, and ItemList export fixture coverage., Local spider tests now include robots.txt manager and crawler integration fixture coverage., Local spider tests now include checkpoint persistence and pause/resume fixture coverage., Local spider tests now include blocked response retry fixture coverage.
 
 ## Upstream CLI, Core, Storage, And AI Tests
 
@@ -260,6 +262,7 @@
   - `references/Scrapling/tests/core/__init__.py` (`test`)
   - `references/Scrapling/tests/core/test_shell_core.py` (`test`)
   - `references/Scrapling/tests/core/test_storage_core.py` (`test`)
+- Notes: Local integration tests now include MCP tool schema, static/browser fake seam, screenshot, and session lifecycle coverage.
 
 ## Upstream Parser And Adaptive Docs
 
@@ -272,6 +275,7 @@
   - `references/Scrapling/docs/parsing/adaptive.md` (`doc`)
   - `references/Scrapling/docs/parsing/main_classes.md` (`doc`)
   - `references/Scrapling/docs/parsing/selection.md` (`doc`)
+- Notes: Public examples and README status mapping cover parser/adaptive entry points; deeper upstream API-reference parity remains bounded by complete/parser rows and future delta audits.
 
 ## Upstream Response, Fetching, Proxy, And Browser Docs
 
@@ -284,6 +288,7 @@
   - `references/Scrapling/docs/fetching/dynamic.md` (`doc`)
   - `references/Scrapling/docs/fetching/static.md` (`doc`)
   - `references/Scrapling/docs/fetching/stealthy.md` (`doc`)
+- Notes: Response, static fetching, proxy, browser adapter, browser session, wait/action/capture, resource-option, stealth, and Cloudflare-boundary docs are represented by tested APIs.
 
 ## Upstream Spider Docs
 
@@ -297,6 +302,7 @@
   - `references/Scrapling/docs/spiders/proxy-blocking.md` (`doc`)
   - `references/Scrapling/docs/spiders/requests-responses.md` (`doc`)
   - `references/Scrapling/docs/spiders/sessions.md` (`doc`)
+- Notes: Spider request/result/session/scheduler, allowed-domain, concurrency, and cache behavior have tested Go APIs; robots, checkpointing, link extraction/templates, and session adapters remain planned.
 
 ## Upstream CLI, MCP, And AI Docs
 
@@ -307,6 +313,7 @@
   - `references/Scrapling/docs/cli/extract-commands.md` (`doc`)
   - `references/Scrapling/docs/cli/interactive-shell.md` (`doc`)
   - `references/Scrapling/docs/cli/overview.md` (`doc`)
+- Notes: MCP docs are now represented by deterministic Go tool schemas and fake static/browser/session fixtures; advanced CLI rows remain planned., Static extract and scripted shell behavior are fixture-backed; advanced extract modes and MCP server remain planned.
 
 ## Upstream Public Docs, Tutorials, Donate Page, And Benchmarks
 
@@ -318,6 +325,7 @@
   - `references/Scrapling/docs/overview.md` (`doc`)
   - `references/Scrapling/docs/tutorials/migrating_from_beautifulsoup.md` (`doc`)
   - `references/Scrapling/docs/tutorials/replacing_ai.md` (`doc`)
+- Notes: README status mapping, compiling public examples, hermetic benchmarks, and generated parity scorecard are covered; install command and Docker packaging docs remain planned.
 
 ## Translated README Files
 

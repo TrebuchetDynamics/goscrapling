@@ -49,7 +49,7 @@ the workbench.
 | Static fetcher | GET, POST, PUT, DELETE, sessions, headers, cookies, params, data, JSON, auth, verify, redirects, timeout, retry, explicit proxy options | Partial: impersonation, HTTP/3, and concurrent APIs remain planned |
 | Browser fetcher | Engine-neutral contract plus chromedp-backed JavaScript rendering | Partial: basic rendering only; no stealth, proxy rotation, or browser-pool lifecycle yet |
 | Spider | Fixture-backed scheduler, sessions, duplicate skipping, callbacks, follow requests, allowed domains, basic concurrency controls, development response cache | Partial: robots, checkpoints, blocked retries, exports, and templates remain planned |
-| CLI | `goscrapling extract get/post/put/delete` for static extraction plus scripted `shell -c` `get`, `page`, `response`, and `pages` shortcuts | Partial: advanced output modes, browser modes, full REPL, curl helpers, and richer shell expressions remain planned |
+| CLI | `goscrapling install`, static `extract get/post/put/delete`, fake-backed `extract fetch`/`stealthy-fetch` browser seams, Markdown/HTML/text outputs, AI-targeted cleanup, plus scripted `shell -c` `get`, `uncurl`, `curl2fetcher`, `page`, `response`, and `pages` shortcuts | Partial: additional shell method shortcuts, full REPL, richer shell expressions, and published packaging remain planned |
 | Tool integration | static Gormes `web_extract` adapter with selector evidence from local fixtures | Partial: MCP server and browser-backed tool calls remain planned |
 
 ## Parity Status Map
@@ -66,14 +66,14 @@ map, not a complete parity claim.
 | Static fetcher and response | Partial: GET/POST/PUT/DELETE, sessions, request options, response metadata/body helpers, redirects, cookies, retry, timeout, and explicit proxy options are fixture-backed; impersonation and HTTP/3 remain planned. |
 | Browser fetching | Partial: engine-neutral browser fetcher and chromedp rendering exist; stealth, browser pools, screenshots/downloads, XHR capture, and resource controls remain planned. |
 | Spider runtime | Partial: request/result/session/scheduler contracts, allowed-domain filtering, concurrency/domain-delay controls, and development response cache are fixture-backed; robots, checkpoints, retries, exports, and templates remain planned. |
-| CLI | Partial: static `extract` commands and scripted `shell -c` page shortcuts are fixture-backed; full REPL, curl helpers, browser modes, and advanced output modes remain planned. |
+| CLI | Partial: install guidance, static `extract` commands, Markdown/HTML/text outputs, AI-targeted cleanup, fake-backed browser-mode command wiring, scripted `shell -c` page shortcuts, and curl helper parsing/execution are fixture-backed; additional shell method shortcuts, full REPL, richer shell expressions, and published packaging remain planned. |
 | MCP and Gormes integration | Partial: static Gormes `web_extract` returns URL, title, content, status, content type, final URL, selector evidence, and engine/mode metadata from local fixtures; MCP and browser-backed tools remain planned. |
 | Migration guidance | Partial: README examples and status tables map the stable Go API to upstream Scrapling concepts; complete BeautifulSoup/Scrapy/AI migration guides remain planned. |
 | Translated README files, assets, stylesheets, and ReadTheDocs config | Excluded: reference and branding support material only, not Go runtime parity work. |
 
-Major planned surfaces still include deeper browser behavior, proxy rotation,
-production crawler controls, advanced CLI output, full REPL shell workflows,
-MCP server surfaces, and browser-backed Gormes/OpenClaw tool integration.
+Major planned surfaces still include future upstream deltas, published packaging,
+additional shell shortcuts, full REPL shell workflows, and deeper migration/API
+reference docs.
 
 ## Quick Start
 
@@ -91,6 +91,7 @@ Or work from this checkout:
 ```sh
 go test ./... -count=1
 go run ./cmd/goscrapling help
+go run ./cmd/goscrapling install
 ```
 
 ### First Fetch
@@ -191,10 +192,15 @@ go run ./cmd/goscrapling extract get https://example.com page.txt \
 go run ./cmd/goscrapling extract post https://example.com/search result.html \
   --json '{"q":"scraping"}' \
   -H "Accept: text/html"
+
+go run ./cmd/goscrapling extract fetch https://example.com/app rendered.md \
+  --network-idle --ai-targeted
 ```
 
-The CLI writes text for `.txt`, `.md`, or extensionless outputs, and HTML for
-`.html` or `.htm` outputs.
+The CLI writes text for `.txt` or extensionless outputs, Markdown for `.md`,
+and HTML for `.html` or `.htm` outputs. `goscrapling install` is
+non-mutating: it prints Go install, browser-runtime, and Docker packaging
+guidance instead of downloading browsers.
 
 ## Project Boundary
 

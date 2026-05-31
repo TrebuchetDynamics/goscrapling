@@ -119,10 +119,19 @@ func (m *SessionManager) Fetch(ctx context.Context, request Request) (Response, 
 	if err != nil {
 		return Response{}, err
 	}
+	meta := cloneMeta(request.Meta)
+	if rawResponse != nil {
+		for key, value := range rawResponse.Meta() {
+			if meta == nil {
+				meta = map[string]any{}
+			}
+			meta[key] = value
+		}
+	}
 	return Response{
 		Response: rawResponse,
 		Request:  request.clone(),
-		Meta:     cloneMeta(request.Meta),
+		Meta:     meta,
 	}, nil
 }
 

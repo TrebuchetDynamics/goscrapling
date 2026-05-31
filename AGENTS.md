@@ -32,13 +32,15 @@ scope, tests, acceptance, and a done signal.
 
 ## Repo-Local Workflow Skills
 
-Follow these repo-local skills as operating docs:
+Follow these repo-local Pi project skills as operating docs. They live under
+`.pi/skills/` so Pi discovers them at startup:
 
-- `docs/development-skills/goscrapling-skill-manager/SKILL.md`
-- `docs/development-skills/goscrapling-scrapling-parity/SKILL.md`
-- `docs/development-skills/goscrapling-planner/SKILL.md`
-- `docs/development-skills/goscrapling-builder/SKILL.md`
-- `docs/development-skills/goscrapling-tdd-slice/SKILL.md`
+- `.pi/skills/goscrapling-skill-manager/SKILL.md`
+- `.pi/skills/goscrapling-scrapling-parity/SKILL.md`
+- `.pi/skills/goscrapling-planner/SKILL.md`
+- `.pi/skills/goscrapling-builder/SKILL.md`
+- `.pi/skills/goscrapling-tdd-slice/SKILL.md`
+- `.pi/skills/scrapling-mirror/SKILL.md` (orchestrates mirror refresh and safe repeated slices; it must still use the narrower skills above for parity, planning, TDD, and builder work)
 
 The expected flow is:
 
