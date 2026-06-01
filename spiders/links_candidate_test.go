@@ -2,8 +2,27 @@ package spiders
 
 import (
 	"reflect"
+	"strings"
 	"testing"
+
+	"golang.org/x/net/html"
 )
+
+func TestCollectLinkAttributeCandidatesExposesDOMOrder(t *testing.T) {
+	root, err := html.Parse(strings.NewReader(`<main><a href="/one" data-url="/two"><span><area href="/three"></area></span></a><link href="/skip"></main>`))
+	if err != nil {
+		t.Fatalf("parse fixture: %v", err)
+	}
+	candidates := collectLinkAttributeCandidates(root, stringSet([]string{"a", "area"}), stringSet([]string{"href", "data-url"}))
+	want := []linkAttributeCandidate{
+		{tag: "a", attr: "href", raw: "/one"},
+		{tag: "a", attr: "data-url", raw: "/two"},
+		{tag: "area", attr: "href", raw: "/three"},
+	}
+	if !reflect.DeepEqual(candidates, want) {
+		t.Fatalf("candidates = %#v, want %#v", candidates, want)
+	}
+}
 
 func TestLinkExtractorPrepareCandidateExposesURLStages(t *testing.T) {
 	extractor, err := NewLinkExtractor(LinkExtractorOptions{

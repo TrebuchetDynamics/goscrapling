@@ -224,39 +224,51 @@ func (e *LinkExtractor) extractScope(baseURL, body string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	links := make([]string, 0)
-	var walk func(*html.Node) error
-	walk = func(node *html.Node) error {
+	candidates := collectLinkAttributeCandidates(root, e.tags, e.attrs)
+	links := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		link, ok, err := e.prepareURL(baseURL, candidate.raw)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			links = append(links, link)
+		}
+	}
+	return links, nil
+}
+
+type linkAttributeCandidate struct {
+	tag  string
+	attr string
+	raw  string
+}
+
+func collectLinkAttributeCandidates(root *html.Node, tags, attrs map[string]struct{}) []linkAttributeCandidate {
+	candidates := make([]linkAttributeCandidate, 0)
+	var walk func(*html.Node)
+	walk = func(node *html.Node) {
 		if node == nil {
-			return nil
+			return
 		}
 		if node.Type == html.ElementNode {
-			if _, ok := e.tags[strings.ToLower(node.Data)]; ok {
-				for _, attr := range node.Attr {
-					if _, ok := e.attrs[strings.ToLower(attr.Key)]; !ok {
+			tag := strings.ToLower(node.Data)
+			if _, ok := tags[tag]; ok {
+				for _, rawAttr := range node.Attr {
+					attr := strings.ToLower(rawAttr.Key)
+					if _, ok := attrs[attr]; !ok {
 						continue
 					}
-					link, ok, err := e.prepareURL(baseURL, attr.Val)
-					if err != nil {
-						return err
-					}
-					if ok {
-						links = append(links, link)
-					}
+					candidates = append(candidates, linkAttributeCandidate{tag: tag, attr: attr, raw: rawAttr.Val})
 				}
 			}
 		}
 		for child := node.FirstChild; child != nil; child = child.NextSibling {
-			if err := walk(child); err != nil {
-				return err
-			}
+			walk(child)
 		}
-		return nil
 	}
-	if err := walk(root); err != nil {
-		return nil, err
-	}
-	return links, nil
+	walk(root)
+	return candidates
 }
 
 type linkURLCandidate struct {
