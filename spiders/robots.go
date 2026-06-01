@@ -362,10 +362,25 @@ func robotsAgentMatchScore(agent, userAgent string) int {
 	if agent == "*" {
 		return 1
 	}
-	if strings.Contains(userAgent, agent) {
-		return len(agent) + 1
+	for _, token := range robotsUserAgentProductTokens(userAgent) {
+		if token == agent {
+			return len(agent) + 1
+		}
 	}
 	return -1
+}
+
+func robotsUserAgentProductTokens(userAgent string) []string {
+	fields := strings.Fields(strings.ToLower(strings.TrimSpace(userAgent)))
+	tokens := make([]string, 0, len(fields))
+	for _, field := range fields {
+		product, _, _ := strings.Cut(field, "/")
+		product = strings.Trim(product, "();,")
+		if product != "" {
+			tokens = append(tokens, product)
+		}
+	}
+	return tokens
 }
 
 func parseRobotsDelay(value string) (time.Duration, bool) {

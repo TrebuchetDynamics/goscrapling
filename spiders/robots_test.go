@@ -85,6 +85,23 @@ func TestRobotsTxtManager(t *testing.T) {
 		}
 	})
 
+	t.Run("user-agent matching honors product token prefixes", func(t *testing.T) {
+		parser := parseRobotsTxt(strings.Join([]string{
+			"User-agent: GoodBot",
+			"Disallow: /private",
+			"",
+			"User-agent: *",
+			"Allow: /",
+		}, "\n"))
+
+		if !parser.canFetch("https://example.com/private/report", "NotGoodBot/1.0") {
+			t.Fatal("substring user-agent match should not apply GoodBot policy to NotGoodBot")
+		}
+		if parser.canFetch("https://example.com/private/report", "GoodBot/1.0") {
+			t.Fatal("GoodBot product-token prefix should match GoodBot policy")
+		}
+	})
+
 	t.Run("parses allow deny and delay directives from local fixtures", func(t *testing.T) {
 		fetcher := newRobotsFixtureFetcher(t)
 		manager := NewRobotsTxtManager(fetcher.Fetch)
