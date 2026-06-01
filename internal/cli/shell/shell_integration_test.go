@@ -75,6 +75,78 @@ func TestCLIShellCurlHelpers(t *testing.T) {
 	}
 }
 
+func TestCLIShellHTTPMethodShortcuts(t *testing.T) {
+	var seen []struct {
+		method string
+		header string
+		body   string
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("read request body: %v", err)
+		}
+		seen = append(seen, struct {
+			method string
+			header string
+			body   string
+		}{method: r.Method, header: r.Header.Get("X-Shell"), body: string(body)})
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = fmt.Fprintf(w, `<html><body><span id="method">%s</span><pre id="body">%s</pre></body></html>`, r.Method, body)
+	}))
+	defer server.Close()
+
+	script := strings.Join([]string{
+		fmt.Sprintf(`post(%q, data="name=trail", headers={"X-Shell":"post"})`, server.URL+"/submit"),
+		`print(page.css("#method::text").get(""))`,
+		`print(page.css("#body::text").get(""))`,
+		fmt.Sprintf(`put(%q, json={"sku":"mug"}, headers={"X-Shell":"put"})`, server.URL+"/resource"),
+		`print(response.status)`,
+		`print(page.css("#method::text").get(""))`,
+		`print(page.css("#body::text").get(""))`,
+		fmt.Sprintf(`delete(%q, headers={"X-Shell":"delete"})`, server.URL+"/resource"),
+		`print(page.css("#method::text").get(""))`,
+		`print(len(pages))`,
+	}, "; ")
+
+	var stdout, stderr bytes.Buffer
+	err := cli.Run(&stdout, &stderr, []string{"shell", "-c", script})
+	if err != nil {
+		t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
+	}
+
+	want := strings.Join([]string{
+		"POST",
+		"name=trail",
+		"200",
+		"PUT",
+		`{"sku":"mug"}`,
+		"DELETE",
+		"3",
+		"",
+	}, "\n")
+	if got := stdout.String(); got != want {
+		t.Fatalf("stdout = %q, want %q", got, want)
+	}
+	if len(seen) != 3 {
+		t.Fatalf("seen requests = %#v, want three", seen)
+	}
+	wantSeen := []struct {
+		method string
+		header string
+		body   string
+	}{
+		{method: http.MethodPost, header: "post", body: "name=trail"},
+		{method: http.MethodPut, header: "put", body: `{"sku":"mug"}`},
+		{method: http.MethodDelete, header: "delete", body: ""},
+	}
+	for i := range wantSeen {
+		if seen[i] != wantSeen[i] {
+			t.Fatalf("seen[%d] = %#v, want %#v", i, seen[i], wantSeen[i])
+		}
+	}
+}
+
 func TestCLIShell(t *testing.T) {
 	t.Run("scripted shell updates page shortcuts and evaluates selectors", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

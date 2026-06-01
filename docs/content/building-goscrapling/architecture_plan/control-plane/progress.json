@@ -1800,8 +1800,10 @@
               "slice_size": "medium",
               "execution_owner": "integration",
               "source_refs": [
-                "cmd/goscrapling/full_e2e_test.go",
-                "cmd/goscrapling/main_test.go",
+                "cmd/goscrapling/e2e/crosslayer/cross_layer_e2e_test.go",
+                "cmd/goscrapling/e2e/fullproject/full_project_e2e_test.go",
+                "cmd/goscrapling/e2e/complex/complex_e2e_test.go",
+                "cmd/goscrapling/main.go",
                 "fetchers/fetcher_test.go",
                 "parser/adaptive_selector_test.go",
                 "spiders/spider_test.go",
@@ -1815,13 +1817,15 @@
                 "The proof requires live web access, credentials, a real browser, stealth behavior, proxy rotation, or unplanned production feature work."
               ],
               "write_scope": [
-                "cmd/goscrapling/cross_layer_e2e_test.go",
+                "cmd/goscrapling/e2e/crosslayer/cross_layer_e2e_test.go",
+                "cmd/goscrapling/e2e/complex/complex_e2e_test.go",
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
                 "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
-                "go test ./cmd/goscrapling -run TestGoscraplingCrossLayerLocalEndToEnd -count=1",
+                "go test ./cmd/goscrapling/e2e/crosslayer -run TestGoscraplingCrossLayerLocalEndToEnd -count=1",
+                "go test ./cmd/goscrapling/e2e/complex -run TestGoscraplingComplexStatefulEndToEnd -count=1",
                 "go test ./... -count=1",
                 "go run ./cmd/progress validate",
                 "jq empty docs/content/building-goscrapling/architecture_plan/progress.json",
@@ -1831,11 +1835,13 @@
                 "A local server fixture is fetched and parsed through public goscrapling APIs.",
                 "Adaptive selector save and relocate uses a temp persistent store.",
                 "A spider flow follows a local link and emits an item from the detail page.",
+                "The complex stateful E2E covers session cookies, basic auth POST, query params, concurrent detail fetching, adaptive relocation, multi-follow spider output, and CLI attribute extraction.",
                 "The goscrapling CLI binary writes selected fixture output to disk.",
                 "The Gormes browser extraction adapter returns rendered markdown from a fake browser engine."
               ],
               "done_signal": [
-                "go test ./cmd/goscrapling -run TestGoscraplingCrossLayerLocalEndToEnd -count=1 passed with hermetic fixtures.",
+                "go test ./cmd/goscrapling/e2e/crosslayer -run TestGoscraplingCrossLayerLocalEndToEnd -count=1 passed with hermetic fixtures.",
+                "go test ./cmd/goscrapling/e2e/complex -run TestGoscraplingComplexStatefulEndToEnd -count=1 passed with hermetic fixtures.",
                 "Full completion gate passed without live network dependencies."
               ]
             },
@@ -1904,8 +1910,9 @@
                 "references/Scrapling/docs/cli/interactive-shell.md",
                 "references/Scrapling/scrapling/core/shell.py",
                 "references/Scrapling/scrapling/core/_shell_signatures.py",
-                "internal/cli/shell_command.go",
-                "internal/cli/shell_test.go"
+                "internal/cli/shell/shell_command.go",
+                "internal/cli/shell/shell_integration_test.go",
+                "cmd/goscrapling/e2e/shell/shell_e2e_test.go"
               ],
               "ready_when": [
                 "Static CLI extract behavior is stable."
@@ -1924,13 +1931,16 @@
                 "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
-                "go test ./... -run TestCLIShell -count=1"
+                "go test ./... -run TestCLIShell -count=1",
+                "go test ./cmd/goscrapling/e2e/shell -run TestGoscraplingShellBinaryEndToEnd -count=1"
               ],
               "acceptance": [
-                "Scripted shell fixtures prove get(url), print(...), page/response shortcuts, pages history, CSS selector counts, and selected text extraction without live web access."
+                "Scripted shell fixtures prove get(url), print(...), page/response shortcuts, pages history, CSS selector counts, and selected text extraction without live web access.",
+                "Binary E2E proves goscrapling shell -c composes get, selectors, page history, and curl2fetcher against local HTTP fixtures."
               ],
               "done_signal": [
-                "TestCLIShell passes from local httptest fixtures."
+                "TestCLIShell passes from local httptest fixtures.",
+                "TestGoscraplingShellBinaryEndToEnd passes from hermetic binary fixtures."
               ]
             },
             {
@@ -2370,17 +2380,17 @@
             },
             {
               "name": "Shell static method shortcuts beyond get",
-              "status": "planned",
+              "status": "complete",
               "priority": "P3",
               "contract": "Extend the scripted goscrapling shell shortcuts from get(url) to the remaining upstream static Fetcher methods post, put, and delete with local request-option fixtures.",
-              "contract_status": "fixture_ready",
+              "contract_status": "validated",
               "slice_size": "small",
               "execution_owner": "cli",
               "source_refs": [
                 "references/Scrapling/scrapling/core/shell.py",
                 "references/Scrapling/scrapling/core/_shell_signatures.py",
-                "internal/cli/shell_command.go",
-                "internal/cli/shell_test.go"
+                "internal/cli/shell/shell_command.go",
+                "internal/cli/shell/shell_integration_test.go"
               ],
               "ready_when": [
                 "The shell remains scripted with -c; no interactive REPL is required.",
@@ -2390,8 +2400,8 @@
                 "The implementation would require browser fetchers, async sessions, full REPL support, or live network access."
               ],
               "write_scope": [
-                "internal/cli/shell_command.go",
-                "internal/cli/shell_test.go",
+                "internal/cli/shell/shell_command.go",
+                "internal/cli/shell/shell_integration_test.go",
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
@@ -2401,8 +2411,8 @@
                 "docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md"
               ],
               "test_commands": [
-                "go test ./internal/cli -run TestCLIShellHTTPMethodShortcuts -count=1",
-                "go test ./internal/cli -count=1",
+                "go test ./internal/cli/shell -run TestCLIShellHTTPMethodShortcuts -count=1",
+                "go test ./internal/cli/shell -count=1",
                 "go test ./... -count=1"
               ],
               "acceptance": [
@@ -2411,7 +2421,53 @@
                 "page, response, and pages shortcuts update after each method call."
               ],
               "done_signal": [
-                "TestCLIShellHTTPMethodShortcuts passes from local fixtures."
+                "go test ./internal/cli/shell -run TestCLIShellHTTPMethodShortcuts -count=1 passes from local fixtures."
+              ]
+            },
+            {
+              "name": "Shell scripted help and namespace listing",
+              "status": "planned",
+              "priority": "P3",
+              "contract": "Expose a bounded goscrapling shell help() shortcut that mirrors Scrapling's shell banner intent for the scripted Go shell by listing supported shortcuts, page variables, curl helpers, and the no-REPL boundary without touching the network.",
+              "contract_status": "fixture_ready",
+              "slice_size": "small",
+              "execution_owner": "cli",
+              "source_refs": [
+                "references/Scrapling/scrapling/core/shell.py",
+                "references/Scrapling/docs/cli/interactive-shell.md",
+                "internal/cli/shell/shell_command.go",
+                "internal/cli/shell/shell_integration_test.go"
+              ],
+              "ready_when": [
+                "The shell remains scripted with -c; no interactive REPL is required.",
+                "The help fixture asserts command output only and does not fetch any URL."
+              ],
+              "not_ready_when": [
+                "The implementation attempts a full interactive REPL, IPython-compatible introspection, browser helpers, or live network examples."
+              ],
+              "write_scope": [
+                "internal/cli/shell/shell_command.go",
+                "internal/cli/shell/shell_integration_test.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md"
+              ],
+              "test_commands": [
+                "go test ./internal/cli/shell -run TestCLIShellHelpShortcut -count=1",
+                "go test ./internal/cli/shell -count=1",
+                "go test ./... -count=1"
+              ],
+              "acceptance": [
+                "help() in shell -c prints the supported scripted shortcuts and variables without requiring a fetched page.",
+                "The output lists get, post, put, delete, page, response, pages, uncurl, and curl2fetcher.",
+                "The output explicitly says interactive REPL support is not implemented in goscrapling."
+              ],
+              "done_signal": [
+                "TestCLIShellHelpShortcut passes from command-output fixtures."
               ]
             }
           ]

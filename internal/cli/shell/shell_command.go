@@ -1,8 +1,10 @@
 package shell
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -16,7 +18,7 @@ import (
 const shellUsage = "usage: goscrapling shell -c <script> [--loglevel <level>]"
 
 var (
-	shellGetCall          = regexp.MustCompile(`^get\((.*)\)$`)
+	shellStaticMethodCall = regexp.MustCompile(`^(get|post|put|delete)\((.*)\)$`)
 	shellPrintCall        = regexp.MustCompile(`^print\((.*)\)$`)
 	shellLenCSSCall       = regexp.MustCompile(`^len\((page|response)\.css\((.*)\)\)$`)
 	shellCSSGetCall       = regexp.MustCompile(`^(page|response)\.css\((.*)\)\.get\((.*)\)$`)
@@ -34,6 +36,11 @@ type shellSession struct {
 	fetcher goscrapling.Fetcher
 	page    *goscrapling.Response
 	pages   []*goscrapling.Response
+}
+
+type shellCallOptions struct {
+	headers http.Header
+	body    string
 }
 
 func Run(stdout io.Writer, args []string) error {
@@ -77,12 +84,12 @@ func (s *shellSession) run(stdout io.Writer, script string) error {
 		if statement == "" {
 			continue
 		}
-		if match := shellGetCall.FindStringSubmatch(statement); match != nil {
-			url, err := parseShellStringArg(match[1])
+		if match := shellStaticMethodCall.FindStringSubmatch(statement); match != nil {
+			url, opts, err := parseShellMethodArgs(match[1], match[2])
 			if err != nil {
-				return parseError("get requires a quoted URL")
+				return err
 			}
-			if _, err := s.get(url); err != nil {
+			if _, err := s.staticMethod(match[1], url, opts); err != nil {
 				return err
 			}
 			continue
@@ -112,10 +119,28 @@ func (s *shellSession) run(stdout io.Writer, script string) error {
 	return nil
 }
 
-func (s *shellSession) get(rawURL string) (*goscrapling.Response, error) {
-	response, err := s.fetcher.Get(rawURL, goscrapling.RequestOptions{})
+func (s *shellSession) staticMethod(method string, rawURL string, callOpts shellCallOptions) (*goscrapling.Response, error) {
+	opts := goscrapling.RequestOptions{Headers: callOpts.headers}
+	if callOpts.body != "" {
+		opts.Body = strings.NewReader(callOpts.body)
+	}
+
+	var response *goscrapling.Response
+	var err error
+	switch method {
+	case "get":
+		response, err = s.fetcher.Get(rawURL, opts)
+	case "post":
+		response, err = s.fetcher.Post(rawURL, opts)
+	case "put":
+		response, err = s.fetcher.Put(rawURL, opts)
+	case "delete":
+		response, err = s.fetcher.Delete(rawURL, opts)
+	default:
+		return nil, parseError("unsupported shell method %q", method)
+	}
 	if err != nil {
-		return nil, fmt.Errorf("shell get %q: %w", rawURL, err)
+		return nil, fmt.Errorf("shell %s %q: %w", method, rawURL, err)
 	}
 	s.updatePage(response)
 	return response, nil
@@ -267,6 +292,130 @@ func parseShellUncurlArg(raw string) (curlcommand.Request, error) {
 		return curlcommand.Request{}, parseError("uncurl requires a quoted curl command")
 	}
 	return curlcommand.Parse(curlCommand)
+}
+
+func parseShellMethodArgs(method string, raw string) (string, shellCallOptions, error) {
+	parts := splitShellArguments(raw)
+	if len(parts) == 0 || strings.TrimSpace(parts[0]) == "" {
+		return "", shellCallOptions{}, parseError("%s requires a quoted URL", method)
+	}
+	url, err := parseShellStringArg(parts[0])
+	if err != nil {
+		return "", shellCallOptions{}, parseError("%s requires a quoted URL", method)
+	}
+	opts := shellCallOptions{headers: http.Header{}}
+	for _, part := range parts[1:] {
+		key, value, ok := strings.Cut(strings.TrimSpace(part), "=")
+		if !ok || strings.TrimSpace(key) == "" {
+			return "", shellCallOptions{}, parseError("%s option must be key=value", method)
+		}
+		key = strings.TrimSpace(key)
+		value = strings.TrimSpace(value)
+		switch key {
+		case "data":
+			body, err := parseShellStringArg(value)
+			if err != nil {
+				return "", shellCallOptions{}, parseError("data requires a quoted string")
+			}
+			opts.body = body
+			if opts.headers.Get("Content-Type") == "" {
+				opts.headers.Set("Content-Type", "application/x-www-form-urlencoded")
+			}
+		case "json":
+			if !json.Valid([]byte(value)) {
+				return "", shellCallOptions{}, parseError("json requires a valid JSON object or array")
+			}
+			opts.body = value
+			if opts.headers.Get("Content-Type") == "" {
+				opts.headers.Set("Content-Type", "application/json")
+			}
+		case "headers":
+			headers, err := parseShellHeaders(value)
+			if err != nil {
+				return "", shellCallOptions{}, err
+			}
+			for headerKey, values := range headers {
+				for _, headerValue := range values {
+					opts.headers.Add(headerKey, headerValue)
+				}
+			}
+		default:
+			return "", shellCallOptions{}, parseError("unsupported %s option %q", method, key)
+		}
+	}
+	return url, opts, nil
+}
+
+func parseShellHeaders(raw string) (http.Header, error) {
+	parsed := map[string]string{}
+	if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
+		return nil, parseError("headers requires a JSON object of string values")
+	}
+	headers := http.Header{}
+	for key, value := range parsed {
+		headers.Add(key, value)
+	}
+	return headers, nil
+}
+
+func splitShellArguments(raw string) []string {
+	var parts []string
+	var current strings.Builder
+	var quote rune
+	escaped := false
+	braceDepth := 0
+	bracketDepth := 0
+	for _, r := range raw {
+		if escaped {
+			current.WriteRune(r)
+			escaped = false
+			continue
+		}
+		if r == '\\' && quote != 0 {
+			current.WriteRune(r)
+			escaped = true
+			continue
+		}
+		if quote != 0 {
+			current.WriteRune(r)
+			if r == quote {
+				quote = 0
+			}
+			continue
+		}
+		switch r {
+		case '\'', '"':
+			quote = r
+			current.WriteRune(r)
+		case '{':
+			braceDepth++
+			current.WriteRune(r)
+		case '}':
+			if braceDepth > 0 {
+				braceDepth--
+			}
+			current.WriteRune(r)
+		case '[':
+			bracketDepth++
+			current.WriteRune(r)
+		case ']':
+			if bracketDepth > 0 {
+				bracketDepth--
+			}
+			current.WriteRune(r)
+		case ',':
+			if braceDepth == 0 && bracketDepth == 0 {
+				parts = append(parts, strings.TrimSpace(current.String()))
+				current.Reset()
+				continue
+			}
+			current.WriteRune(r)
+		default:
+			current.WriteRune(r)
+		}
+	}
+	parts = append(parts, strings.TrimSpace(current.String()))
+	return parts
 }
 
 func (s *shellSession) currentPage() (*goscrapling.Response, error) {
