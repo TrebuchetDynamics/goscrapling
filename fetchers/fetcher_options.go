@@ -10,14 +10,13 @@ import (
 	"net/url"
 	"sort"
 	"time"
+
+	"github.com/TrebuchetDynamics/goscrapling/fetchers/internal/auth"
 )
 
 var ErrRequestOptions = errors.New("request options")
 
-type BasicAuth struct {
-	Username string
-	Password string
-}
+type BasicAuth = auth.BasicAuth
 
 type RequestOptions struct {
 	Headers         http.Header
