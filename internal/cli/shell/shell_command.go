@@ -1,4 +1,4 @@
-package cli
+package shell
 
 import (
 	"fmt"
@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/TrebuchetDynamics/goscrapling"
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/arguments"
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/diagnostics"
 )
 
 const shellUsage = "usage: goscrapling shell -c <script> [--loglevel <level>]"
@@ -44,7 +46,7 @@ type shellCurlRequest struct {
 	Body    string
 }
 
-func runShell(stdout io.Writer, args []string) error {
+func Run(stdout io.Writer, args []string) error {
 	if len(args) == 0 || args[0] == "help" || args[0] == "--help" || args[0] == "-h" {
 		_, err := fmt.Fprintln(stdout, shellUsage)
 		return err
@@ -469,6 +471,18 @@ func parseShellStringArg(raw string) (string, error) {
 		return inner, nil
 	}
 	return "", fmt.Errorf("unquoted string")
+}
+
+func parseError(format string, args ...any) error {
+	return diagnostics.ParseError(format, args...)
+}
+
+func nextArg(args []string, index *int, name string) (string, bool) {
+	return arguments.NextValue(args, index, name)
+}
+
+func parseHeader(value string) (string, string, error) {
+	return arguments.ParseHeader(value)
 }
 
 func splitShellStatements(script string) []string {

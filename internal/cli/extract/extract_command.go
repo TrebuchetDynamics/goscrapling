@@ -1,4 +1,4 @@
-package cli
+package extract
 
 import (
 	"bytes"
@@ -16,6 +16,8 @@ import (
 
 	"github.com/TrebuchetDynamics/goscrapling"
 	"github.com/TrebuchetDynamics/goscrapling/engines/browser"
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/arguments"
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/diagnostics"
 	"golang.org/x/net/html"
 )
 
@@ -48,12 +50,12 @@ type browserExtractOptions struct {
 
 var fetchBrowserExtract = defaultFetchBrowserExtract
 
-func runExtract(stdout io.Writer, args []string) error {
+func Run(stdout io.Writer, args []string) error {
 	if len(args) == 0 {
 		return parseError("missing extract command")
 	}
 	if args[0] == "help" || args[0] == "--help" || args[0] == "-h" {
-		_, err := fmt.Fprintln(stdout, usage)
+		_, err := fmt.Fprintln(stdout, diagnostics.Usage)
 		return err
 	}
 
@@ -426,31 +428,20 @@ func parseBrowserExtractArgs(method string, args []string) (string, string, brow
 	return positionals[0], positionals[1], opts, nil
 }
 
+func parseError(format string, args ...any) error {
+	return diagnostics.ParseError(format, args...)
+}
+
 func nextArg(args []string, index *int, name string) (string, bool) {
-	if *index+1 >= len(args) || args[*index+1] == "" {
-		return "", false
-	}
-	*index = *index + 1
-	return args[*index], true
+	return arguments.NextValue(args, index, name)
 }
 
 func parseHeader(value string) (string, string, error) {
-	key, headerValue, ok := strings.Cut(value, ":")
-	key = strings.TrimSpace(key)
-	headerValue = strings.TrimSpace(headerValue)
-	if !ok || key == "" {
-		return "", "", parseError("headers must use %q format", "Key: Value")
-	}
-	return key, headerValue, nil
+	return arguments.ParseHeader(value)
 }
 
 func parseKeyValue(value string, name string) (string, string, error) {
-	key, paramValue, ok := strings.Cut(value, "=")
-	key = strings.TrimSpace(key)
-	if !ok || key == "" {
-		return "", "", parseError("%s must use %q format", name, "key=value")
-	}
-	return key, paramValue, nil
+	return arguments.ParseKeyValue(value, name)
 }
 
 func appendQueryParams(rawURL string, params url.Values) (string, error) {

@@ -1,9 +1,11 @@
-package cli
+package install
 
 import (
 	"encoding/json"
 	"fmt"
 	"io"
+
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/diagnostics"
 )
 
 const installUsage = "usage: goscrapling install [--force] [--json]\n\nPrint Go-native installation, browser runtime, and Docker packaging guidance. This command does not download browsers or install system packages."
@@ -17,7 +19,7 @@ type installReport struct {
 	Docker           []string `json:"docker"`
 }
 
-func runInstall(stdout io.Writer, args []string) error {
+func Run(stdout io.Writer, args []string) error {
 	var force bool
 	var jsonOutput bool
 	for _, arg := range args {
@@ -30,7 +32,7 @@ func runInstall(stdout io.Writer, args []string) error {
 		case "--json":
 			jsonOutput = true
 		default:
-			return parseError("unknown install option %q", arg)
+			return diagnostics.ParseError("unknown install option %q", arg)
 		}
 	}
 

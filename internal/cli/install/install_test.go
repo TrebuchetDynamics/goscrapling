@@ -1,4 +1,4 @@
-package cli
+package install
 
 import (
 	"bytes"
@@ -6,14 +6,16 @@ import (
 	"errors"
 	"strings"
 	"testing"
+
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/diagnostics"
 )
 
 func TestCLIInstallCommand(t *testing.T) {
 	t.Run("prints non-mutating install and packaging guidance", func(t *testing.T) {
-		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{"install", "--force"})
+		var stdout bytes.Buffer
+		err := Run(&stdout, []string{"--force"})
 		if err != nil {
-			t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
+			t.Fatalf("Run returned error: %v", err)
 		}
 		body := stdout.String()
 		for _, want := range []string{
@@ -35,10 +37,10 @@ func TestCLIInstallCommand(t *testing.T) {
 	})
 
 	t.Run("writes deterministic JSON metadata", func(t *testing.T) {
-		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{"install", "--json"})
+		var stdout bytes.Buffer
+		err := Run(&stdout, []string{"--json"})
 		if err != nil {
-			t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
+			t.Fatalf("Run returned error: %v", err)
 		}
 
 		var report struct {
@@ -65,8 +67,8 @@ func TestCLIInstallCommand(t *testing.T) {
 	})
 
 	t.Run("help and parse errors stay local", func(t *testing.T) {
-		var stdout, stderr bytes.Buffer
-		if err := Run(&stdout, &stderr, []string{"install", "--help"}); err != nil {
+		var stdout bytes.Buffer
+		if err := Run(&stdout, []string{"--help"}); err != nil {
 			t.Fatalf("install help returned error: %v", err)
 		}
 		if !strings.Contains(stdout.String(), "usage: goscrapling install") || !strings.Contains(stdout.String(), "does not download browsers") {
@@ -74,9 +76,8 @@ func TestCLIInstallCommand(t *testing.T) {
 		}
 
 		stdout.Reset()
-		stderr.Reset()
-		err := Run(&stdout, &stderr, []string{"install", "--download"})
-		if !errors.Is(err, ErrParse) {
+		err := Run(&stdout, []string{"--download"})
+		if !errors.Is(err, diagnostics.ErrParse) {
 			t.Fatalf("install --download error = %v, want ErrParse", err)
 		}
 	})

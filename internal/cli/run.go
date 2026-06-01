@@ -1,14 +1,18 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"io"
+
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/diagnostics"
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/extract"
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/install"
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/shell"
 )
 
-const usage = "usage: goscrapling {install [--force] [--json] | extract {get|post|put|delete|fetch|stealthy-fetch} <url> <output_file> [--css-selector <selector>] [-H <key: value>] [--timeout <seconds|milliseconds>] [--ai-targeted] [-p <key=value>] [--data <body>] [--json <json>] [--no-follow-redirects] [browser options] | shell -c <script> [--loglevel <level>]}"
+const usage = diagnostics.Usage
 
-var ErrParse = errors.New("parse error")
+var ErrParse = diagnostics.ErrParse
 
 func Run(stdout, stderr io.Writer, args []string) error {
 	if stdout == nil {
@@ -26,17 +30,16 @@ func Run(stdout, stderr io.Writer, args []string) error {
 	}
 	switch args[0] {
 	case "install":
-		return runInstall(stdout, args[1:])
+		return install.Run(stdout, args[1:])
 	case "extract":
-		return runExtract(stdout, args[1:])
+		return extract.Run(stdout, args[1:])
 	case "shell":
-		return runShell(stdout, args[1:])
+		return shell.Run(stdout, args[1:])
 	default:
 		return parseError("unknown command %q", args[0])
 	}
 }
 
 func parseError(format string, args ...any) error {
-	message := fmt.Sprintf(format, args...)
-	return fmt.Errorf("%w: %s\n%s", ErrParse, message, usage)
+	return diagnostics.ParseError(format, args...)
 }

@@ -1,4 +1,4 @@
-package cli
+package extract
 
 import (
 	"bytes"
@@ -15,6 +15,7 @@ import (
 
 	"github.com/TrebuchetDynamics/goscrapling"
 	"github.com/TrebuchetDynamics/goscrapling/engines/browser"
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli/diagnostics"
 )
 
 func TestCLIExtractGet(t *testing.T) {
@@ -32,8 +33,8 @@ func TestCLIExtractGet(t *testing.T) {
 
 		outputPath := filepath.Join(t.TempDir(), "products.txt")
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{
-			"extract", "get", server.URL + "/products", outputPath,
+		err := Run(&stdout, []string{
+			"get", server.URL + "/products", outputPath,
 			"--css-selector", ".product",
 			"-H", "X-Trace: cli-test",
 			"--timeout", "2",
@@ -67,7 +68,7 @@ func TestCLIExtractGet(t *testing.T) {
 
 		outputPath := filepath.Join(t.TempDir(), "page.html")
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{"extract", "get", server.URL, outputPath})
+		err := Run(&stdout, []string{"get", server.URL, outputPath})
 		if err != nil {
 			t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
 		}
@@ -102,8 +103,8 @@ func TestCLIExtractGet(t *testing.T) {
 
 		outputPath := filepath.Join(t.TempDir(), "redirect.txt")
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{
-			"extract", "get", server.URL + "/redirect", outputPath,
+		err := Run(&stdout, []string{
+			"get", server.URL + "/redirect", outputPath,
 			"--css-selector", ".notice",
 			"--no-follow-redirects",
 		})
@@ -125,13 +126,13 @@ func TestCLIExtractGet(t *testing.T) {
 
 	t.Run("returns parse errors for malformed headers", func(t *testing.T) {
 		outputPath := filepath.Join(t.TempDir(), "broken.txt")
-		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{
-			"extract", "get", "https://example.com", outputPath,
+		var stdout bytes.Buffer
+		err := Run(&stdout, []string{
+			"get", "https://example.com", outputPath,
 			"-H", "not-a-header",
 		})
 
-		if !errors.Is(err, ErrParse) {
+		if !errors.Is(err, diagnostics.ErrParse) {
 			t.Fatalf("error = %v, want ErrParse", err)
 		}
 		if _, statErr := os.Stat(outputPath); !errors.Is(statErr, os.ErrNotExist) {
@@ -157,8 +158,8 @@ func TestCLIExtractMethods(t *testing.T) {
 
 		outputPath := filepath.Join(t.TempDir(), "post.txt")
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{
-			"extract", "post", server.URL + "/submit", outputPath,
+		err := Run(&stdout, []string{
+			"post", server.URL + "/submit", outputPath,
 			"--data", "name=trail",
 			"-p", "page=1",
 			"-s", "#body",
@@ -192,8 +193,8 @@ func TestCLIExtractMethods(t *testing.T) {
 
 		outputPath := filepath.Join(t.TempDir(), "put.txt")
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{
-			"extract", "put", server.URL + "/resource", outputPath,
+		err := Run(&stdout, []string{
+			"put", server.URL + "/resource", outputPath,
 			"--json", `{"name":"mug"}`,
 			"--css-selector", "#json",
 		})
@@ -222,7 +223,7 @@ func TestCLIExtractMethods(t *testing.T) {
 
 		outputPath := filepath.Join(t.TempDir(), "delete.html")
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{"extract", "delete", server.URL + "/resource", outputPath})
+		err := Run(&stdout, []string{"delete", server.URL + "/resource", outputPath})
 		if err != nil {
 			t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
 		}
@@ -251,7 +252,7 @@ func TestCLIExtractAdvancedModes(t *testing.T) {
 
 		outputPath := filepath.Join(t.TempDir(), "article.md")
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{"extract", "get", server.URL, outputPath, "--ai-targeted"})
+		err := Run(&stdout, []string{"get", server.URL, outputPath, "--ai-targeted"})
 		if err != nil {
 			t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
 		}
@@ -285,8 +286,8 @@ func TestCLIExtractAdvancedModes(t *testing.T) {
 
 		outputPath := filepath.Join(t.TempDir(), "dynamic.md")
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{
-			"extract", "fetch", "https://example.test/app", outputPath,
+		err := Run(&stdout, []string{
+			"fetch", "https://example.test/app", outputPath,
 			"--no-headless",
 			"--disable-resources",
 			"--network-idle",
@@ -341,8 +342,8 @@ func TestCLIExtractAdvancedModes(t *testing.T) {
 
 		outputPath := filepath.Join(t.TempDir(), "stealth.txt")
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{
-			"extract", "stealthy-fetch", "https://example.test/protected", outputPath,
+		err := Run(&stdout, []string{
+			"stealthy-fetch", "https://example.test/protected", outputPath,
 			"--css-selector", "h2::text",
 			"--block-webrtc",
 			"--block-webgl",
