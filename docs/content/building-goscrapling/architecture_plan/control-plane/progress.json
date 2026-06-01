@@ -2472,10 +2472,10 @@
             },
             {
               "name": "Shell pages history expression shortcuts",
-              "status": "planned",
+              "status": "complete",
               "priority": "P3",
               "contract": "Expose bounded scripted goscrapling shell expressions for inspecting pages history entries so the Go shell covers Scrapling's documented pages[0]/pages[-1] history exploration without implementing a full REPL.",
-              "contract_status": "fixture_ready",
+              "contract_status": "validated",
               "slice_size": "small",
               "execution_owner": "cli",
               "source_refs": [
@@ -2513,7 +2513,53 @@
                 "Out-of-range pages indexes return a parse error without panics."
               ],
               "done_signal": [
-                "TestCLIShellPagesHistoryExpressions passes from local httptest fixtures."
+                "go test ./internal/cli/shell -run TestCLIShellPagesHistoryExpressions -count=1 passes from local httptest fixtures."
+              ]
+            },
+            {
+              "name": "Shell view command boundary",
+              "status": "planned",
+              "priority": "P3",
+              "contract": "Map Scrapling's shell view(page) helper into a bounded Go-native scripted shell behavior that avoids launching a browser during tests while making the visualization boundary explicit.",
+              "contract_status": "fixture_ready",
+              "slice_size": "small",
+              "execution_owner": "cli",
+              "source_refs": [
+                "references/Scrapling/scrapling/core/shell.py",
+                "references/Scrapling/docs/cli/interactive-shell.md",
+                "internal/cli/shell/shell_command.go",
+                "internal/cli/shell/shell_integration_test.go"
+              ],
+              "ready_when": [
+                "The shell remains scripted with -c; no interactive REPL is required.",
+                "The visualization fixture uses local httptest HTML and no live browser launch."
+              ],
+              "not_ready_when": [
+                "The implementation would open a real browser, depend on OS desktop integration, require live network access, or expand into a full REPL visualization system."
+              ],
+              "write_scope": [
+                "internal/cli/shell/shell_command.go",
+                "internal/cli/shell/shell_integration_test.go",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md"
+              ],
+              "test_commands": [
+                "go test ./internal/cli/shell -run TestCLIShellViewCommandBoundary -count=1",
+                "go test ./internal/cli/shell -count=1",
+                "go test ./... -count=1"
+              ],
+              "acceptance": [
+                "view(page) after a scripted fetch writes or reports a deterministic local visualization artifact without opening a browser.",
+                "view(response) is accepted as an alias for the current page.",
+                "view(page) before any fetch returns a parse error without panics or filesystem side effects."
+              ],
+              "done_signal": [
+                "TestCLIShellViewCommandBoundary passes from local fixtures."
               ]
             }
           ]

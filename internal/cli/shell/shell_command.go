@@ -26,6 +26,7 @@ var (
 	shellCurl2FetcherCall = regexp.MustCompile(`^curl2fetcher\((.*)\)$`)
 	shellHelpCall         = regexp.MustCompile(`^help\(\)$`)
 	shellUncurlFieldCall  = regexp.MustCompile(`^uncurl\((.*)\)\.(method|url|body)$`)
+	shellPagesFieldCall   = regexp.MustCompile(`^pages\[(-?\d+)\]\.(url|status)$`)
 	shellUncurlValueCall  = regexp.MustCompile(`^uncurl\((.*)\)\.(header|cookie|param)\((.*)\)$`)
 )
 
@@ -237,6 +238,19 @@ func (s *shellSession) eval(expr string) (string, error) {
 		return strconv.Itoa(page.StatusCode()), nil
 	case "len(pages)":
 		return strconv.Itoa(len(s.pages)), nil
+	}
+
+	if match := shellPagesFieldCall.FindStringSubmatch(expr); match != nil {
+		page, err := s.pageAt(match[1])
+		if err != nil {
+			return "", err
+		}
+		switch match[2] {
+		case "url":
+			return page.URL(), nil
+		case "status":
+			return strconv.Itoa(page.StatusCode()), nil
+		}
 	}
 
 	if match := shellLenCSSCall.FindStringSubmatch(expr); match != nil {
@@ -452,6 +466,20 @@ func (s *shellSession) currentPage() (*goscrapling.Response, error) {
 		return nil, parseError("page is not set; call get(url) first")
 	}
 	return s.page, nil
+}
+
+func (s *shellSession) pageAt(rawIndex string) (*goscrapling.Response, error) {
+	index, err := strconv.Atoi(rawIndex)
+	if err != nil {
+		return nil, parseError("pages index must be an integer")
+	}
+	if index < 0 {
+		index = len(s.pages) + index
+	}
+	if index < 0 || index >= len(s.pages) {
+		return nil, parseError("pages index %s out of range", rawIndex)
+	}
+	return s.pages[index], nil
 }
 
 func parseShellStringArg(raw string) (string, error) {

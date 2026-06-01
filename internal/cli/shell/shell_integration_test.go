@@ -173,6 +173,49 @@ func TestCLIShellHelpShortcut(t *testing.T) {
 	}
 }
 
+func TestCLIShellPagesHistoryExpressions(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = fmt.Fprintf(w, `<html><body><h1>%s</h1></body></html>`, r.URL.Path)
+	}))
+	defer server.Close()
+
+	statements := make([]string, 0, 9)
+	for _, path := range []string{"/one", "/two", "/three", "/four", "/five", "/six"} {
+		statements = append(statements, fmt.Sprintf("get(%q)", server.URL+path))
+	}
+	statements = append(statements,
+		"print(len(pages))",
+		"print(pages[0].url)",
+		"print(pages[-1].url)",
+		"print(pages[2].status)",
+	)
+
+	var stdout, stderr bytes.Buffer
+	err := cli.Run(&stdout, &stderr, []string{"shell", "-c", strings.Join(statements, "; ")})
+	if err != nil {
+		t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
+	}
+
+	want := strings.Join([]string{
+		"5",
+		server.URL + "/two",
+		server.URL + "/six",
+		"200",
+		"",
+	}, "\n")
+	if got := stdout.String(); got != want {
+		t.Fatalf("stdout = %q, want %q", got, want)
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	err = cli.Run(&stdout, &stderr, []string{"shell", "-c", fmt.Sprintf("get(%q); print(pages[3].url)", server.URL+"/one")})
+	if err == nil || !strings.Contains(err.Error(), "pages index 3 out of range") {
+		t.Fatalf("out-of-range error = %v, stdout: %s, stderr: %s", err, stdout.String(), stderr.String())
+	}
+}
+
 func TestCLIShell(t *testing.T) {
 	t.Run("scripted shell updates page shortcuts and evaluates selectors", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

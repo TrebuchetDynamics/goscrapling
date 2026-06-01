@@ -6,5 +6,5 @@ leverage rows to execute next.
 <!-- PROGRESS:START kind=next-slices -->
 | Phase | Slice | Owner | Size | Contract status | Why now |
 |---|---|---|---|---|---|
-| phase-5-cli-tooling / tool-surfaces | Shell pages history expression shortcuts | `cli` | `small` | `fixture_ready` | Fixture-ready row with complete handoff metadata. |
+| phase-5-cli-tooling / tool-surfaces | Shell view command boundary | `cli` | `small` | `fixture_ready` | Fixture-ready row with complete handoff metadata. |
 <!-- PROGRESS:END -->
