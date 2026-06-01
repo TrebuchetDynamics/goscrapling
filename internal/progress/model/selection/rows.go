@@ -2,6 +2,7 @@ package selection
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/TrebuchetDynamics/goscrapling/internal/progress/model/schema"
 )
@@ -97,9 +98,13 @@ func hasBuilderHandoff(item Item) bool {
 		len(item.SourceRefs) > 0 &&
 		len(item.ReadyWhen) > 0 &&
 		len(item.WriteScope) > 0 &&
-		(len(item.TestCommands) > 0 || item.NoTestRequired != "") &&
+		hasTestEvidence(item) &&
 		len(item.Acceptance) > 0 &&
 		len(item.DoneSignal) > 0
+}
+
+func hasTestEvidence(item Item) bool {
+	return len(item.TestCommands) > 0 || strings.TrimSpace(item.NoTestRequired) != ""
 }
 
 func sortRows(rows []Row) {

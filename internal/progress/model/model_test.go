@@ -61,6 +61,26 @@ func TestAgentQueueRowsFiltersAndSortsBuilderReadyRows(t *testing.T) {
 	}
 }
 
+func TestAgentQueueRowsRejectsWhitespaceOnlyNoTestReason(t *testing.T) {
+	progress := &Progress{Phases: map[string]Phase{
+		"phase": {Subphases: map[string]Subphase{
+			"subphase": {Items: []Item{
+				func() Item {
+					item := builderReadyRow("Whitespace no-test row", "P0", StatusPlanned)
+					item.TestCommands = nil
+					item.NoTestRequired = "   "
+					return item
+				}(),
+			}},
+		}},
+	}}
+
+	rows := AgentQueueRows(progress)
+	if len(rows) != 0 {
+		t.Fatalf("AgentQueueRows included whitespace-only no_test_required row: %#v", rows)
+	}
+}
+
 func TestStatsDerivesAggregateStatuses(t *testing.T) {
 	progress := &Progress{Phases: map[string]Phase{
 		"done": {Subphases: map[string]Subphase{
