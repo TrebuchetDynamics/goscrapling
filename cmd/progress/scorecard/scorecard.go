@@ -1,4 +1,4 @@
-package main
+package scorecard
 
 import (
 	"fmt"
@@ -26,11 +26,8 @@ type scorecardStats struct {
 	Planned    int
 }
 
-func writeScorecard(stdout io.Writer, root string) error {
-	p, err := loadValid(root)
-	if err != nil {
-		return err
-	}
+// Write regenerates the parity scorecard markdown for a validated progress ledger.
+func Write(stdout io.Writer, root string, p *progress.Progress) error {
 	benchmarks, err := discoverBenchmarkFixtures(filepath.Join(root, "benchmarks"))
 	if err != nil {
 		return err
