@@ -124,6 +124,21 @@ func TestLinkCandidatePipelineCanExposePreCanonicalFilterInput(t *testing.T) {
 	}
 }
 
+func TestLinkExtractorRejectsDeniedExtensionsWithPathParameters(t *testing.T) {
+	extractor, err := NewLinkExtractor(LinkExtractorOptions{})
+	if err != nil {
+		t.Fatalf("NewLinkExtractor returned error: %v", err)
+	}
+
+	result := extractor.prepareCandidateDiagnostic("https://example.com/index.html", "/reports/annual.pdf;download?cache=1")
+	if result.ok {
+		t.Fatalf("candidate unexpectedly survived: %#v", result.candidate)
+	}
+	if result.reason != linkDropFiltered {
+		t.Fatalf("drop reason = %q, want %q", result.reason, linkDropFiltered)
+	}
+}
+
 func TestLinkExtractorPrepareCandidateDiagnostics(t *testing.T) {
 	tests := []struct {
 		name   string

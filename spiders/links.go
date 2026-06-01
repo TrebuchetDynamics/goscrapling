@@ -545,14 +545,8 @@ func domainInList(host string, domains []string) bool {
 }
 
 func linkExtension(pathValue string) string {
-	_, last, ok := strings.Cut(strings.TrimLeft(pathValue, "/"), "/")
-	if ok {
-		parts := strings.Split(strings.Trim(pathValue, "/"), "/")
-		last = parts[len(parts)-1]
-	} else {
-		last = strings.Trim(pathValue, "/")
-	}
-	last = strings.ToLower(last)
+	last := linkLastPathSegment(pathValue)
+	last = strings.ToLower(stripLinkPathParameters(last))
 	if strings.HasSuffix(last, ".tar.gz") {
 		return "tar.gz"
 	}
@@ -561,6 +555,20 @@ func linkExtension(pathValue string) string {
 		return ""
 	}
 	return last[idx+1:]
+}
+
+func linkLastPathSegment(pathValue string) string {
+	trimmed := strings.Trim(pathValue, "/")
+	if trimmed == "" {
+		return ""
+	}
+	parts := strings.Split(trimmed, "/")
+	return parts[len(parts)-1]
+}
+
+func stripLinkPathParameters(segment string) string {
+	beforeParams, _, _ := strings.Cut(segment, ";")
+	return beforeParams
 }
 
 func sortedLinkMapKeys(values map[string]struct{}) []string {
