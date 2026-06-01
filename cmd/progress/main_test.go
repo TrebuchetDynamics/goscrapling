@@ -32,11 +32,14 @@ func TestRunWriteRegeneratesMarkedDocs(t *testing.T) {
 	)
 	surfaces := filepath.Join(root, "docs", "content", "building-goscrapling", "builder-loop", "surfaces")
 	files := map[string]string{
-		filepath.Join("handoff", "builder-loop-handoff.md"): "builder-loop-handoff",
-		filepath.Join("queue", "agent-queue.md"):           "agent-queue",
-		filepath.Join("queue", "next-slices.md"):           "next-slices",
-		filepath.Join("queue", "blocked-slices.md"):        "blocked-slices",
-		filepath.Join("cleanup", "umbrella-cleanup.md"):    "umbrella-cleanup",
+		filepath.Join("handoff", "builder-loop-handoff.md"):    "builder-loop-handoff",
+		filepath.Join("queue", "assignable", "agent-queue.md"): "agent-queue",
+		filepath.Join("queue", "assignable", "next-slices.md"): "next-slices",
+		filepath.Join("queue", "blocked", "blocked-slices.md"): "blocked-slices",
+		filepath.Join("queue", "agent-queue.md"):               "agent-queue",
+		filepath.Join("queue", "next-slices.md"):               "next-slices",
+		filepath.Join("queue", "blocked-slices.md"):            "blocked-slices",
+		filepath.Join("cleanup", "umbrella-cleanup.md"):        "umbrella-cleanup",
 	}
 	for name, kind := range files {
 		writeMarkerFile(t, filepath.Join(surfaces, name), kind)
@@ -48,15 +51,20 @@ func TestRunWriteRegeneratesMarkedDocs(t *testing.T) {
 		t.Fatalf("run write: %v\nstderr: %s", err, stderr.String())
 	}
 
-	agentQueue, err := os.ReadFile(filepath.Join(surfaces, "queue", "agent-queue.md"))
-	if err != nil {
-		t.Fatalf("read generated agent queue: %v", err)
-	}
-	if strings.Contains(string(agentQueue), "old content") {
-		t.Fatalf("agent queue still contains old content: %s", agentQueue)
-	}
-	if !strings.Contains(string(agentQueue), "- Phase:") {
-		t.Fatalf("agent queue missing generated row metadata: %s", agentQueue)
+	for _, path := range []string{
+		filepath.Join(surfaces, "queue", "assignable", "agent-queue.md"),
+		filepath.Join(surfaces, "queue", "agent-queue.md"),
+	} {
+		agentQueue, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read generated agent queue %s: %v", path, err)
+		}
+		if strings.Contains(string(agentQueue), "old content") {
+			t.Fatalf("agent queue still contains old content: %s", agentQueue)
+		}
+		if !strings.Contains(string(agentQueue), "- Phase:") {
+			t.Fatalf("agent queue missing generated row metadata: %s", agentQueue)
+		}
 	}
 }
 

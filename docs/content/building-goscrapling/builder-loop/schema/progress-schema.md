@@ -39,9 +39,10 @@ modeled after the Gormes port ledger, but smaller.
 ## Generated Surfaces
 
 - `builder-loop-handoff.md` shows shared skill handoff facts from `meta.builder_loop`.
-- `agent-queue.md` lists unblocked, non-umbrella contract rows with enough metadata for a TDD implementation pass.
-- `next-slices.md` ranks the same assignable rows in table form.
-- `blocked-slices.md` keeps dependency-blocked rows visible without making them assignable.
+- `queue/assignable/agent-queue.md` lists unblocked, non-umbrella contract rows with enough metadata for a TDD implementation pass.
+- `queue/assignable/next-slices.md` ranks the same assignable rows in table form.
+- `queue/blocked/blocked-slices.md` keeps dependency-blocked rows visible without making them assignable.
+- Root `queue/agent-queue.md`, `queue/next-slices.md`, and `queue/blocked-slices.md` are compatibility surfaces for existing links and write scopes.
 - `umbrella-cleanup.md` lists planned umbrella rows that must be split before builder work.
 
 ## Validation

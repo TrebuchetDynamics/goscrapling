@@ -98,6 +98,9 @@ func writeDocs(stdout io.Writer, root string) error {
 		body string
 	}{
 		{path: "docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md", kind: "builder-loop-handoff", body: progress.RenderBuilderLoopHandoff(p)},
+		{path: "docs/content/building-goscrapling/builder-loop/surfaces/queue/assignable/agent-queue.md", kind: "agent-queue", body: progress.RenderAgentQueue(p)},
+		{path: "docs/content/building-goscrapling/builder-loop/surfaces/queue/assignable/next-slices.md", kind: "next-slices", body: progress.RenderNextSlices(p)},
+		{path: "docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked/blocked-slices.md", kind: "blocked-slices", body: progress.RenderBlockedSlices(p)},
 		{path: "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md", kind: "agent-queue", body: progress.RenderAgentQueue(p)},
 		{path: "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md", kind: "next-slices", body: progress.RenderNextSlices(p)},
 		{path: "docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md", kind: "blocked-slices", body: progress.RenderBlockedSlices(p)},
