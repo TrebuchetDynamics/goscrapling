@@ -1,4 +1,4 @@
-package e2e_test
+package extract_test
 
 import (
 	"errors"
