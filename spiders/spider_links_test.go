@@ -103,6 +103,39 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 		if !reflect.DeepEqual(xpathLinks, []string{"https://example.com/xpath-keep"}) {
 			t.Fatalf("xpath links = %#v", xpathLinks)
 		}
+
+		combinedExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{
+			Allow:         []string{`scope-`},
+			RestrictCSS:   []string{"section.css-scope"},
+			RestrictXPath: []string{`//section[@class="xpath-scope"]`},
+		})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor combined returned error: %v", err)
+		}
+		combinedResponse := newTemplateResponse(t, "https://example.com/base/index.html", `<main><section class="css-scope"><a href="/scope-css">css</a></section><section class="xpath-scope"><a href="/scope-xpath">xpath</a></section></main>`, "text/html")
+		combinedLinks, err := combinedExtractor.Extract(combinedResponse)
+		if err != nil {
+			t.Fatalf("Extract combined returned error: %v", err)
+		}
+		if !reflect.DeepEqual(combinedLinks, []string{"https://example.com/scope-xpath", "https://example.com/scope-css"}) {
+			t.Fatalf("combined restricted links = %#v, want XPath scope before CSS scope", combinedLinks)
+		}
+
+		missingScopeExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{
+			Allow:       []string{`/fallback`},
+			RestrictCSS: []string{"aside.missing"},
+		})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor missing scope returned error: %v", err)
+		}
+		missingScopeResponse := newTemplateResponse(t, "https://example.com/base/index.html", `<main><a href="/fallback">fallback</a></main>`, "text/html")
+		missingScopeLinks, err := missingScopeExtractor.Extract(missingScopeResponse)
+		if err != nil {
+			t.Fatalf("Extract missing scope returned error: %v", err)
+		}
+		if !reflect.DeepEqual(missingScopeLinks, []string{"https://example.com/fallback"}) {
+			t.Fatalf("missing restricted scope links = %#v, want whole-response fallback", missingScopeLinks)
+		}
 	})
 
 	t.Run("crawl spider rules generate requests with callbacks priority and process hooks", func(t *testing.T) {

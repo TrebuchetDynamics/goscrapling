@@ -145,29 +145,37 @@ func (e *LinkExtractor) Matches(rawURL string) bool {
 }
 
 func (e *LinkExtractor) scopes(response Response) ([]string, error) {
+	wholeResponse := string(response.Body())
 	if len(e.restrictCSS) == 0 && len(e.restrictXPath) == 0 {
-		return []string{string(response.Body())}, nil
+		return []string{wholeResponse}, nil
 	}
-	scopes := make([]string, 0, len(e.restrictCSS)+len(e.restrictXPath))
-	for _, selector := range e.restrictCSS {
-		htmlText, err := response.CSS(selector).HTML()
-		if err != nil {
-			return nil, err
-		}
-		if htmlText != "" {
-			scopes = append(scopes, htmlText)
-		}
-	}
+
+	scopes := make([]string, 0, len(e.restrictXPath)+len(e.restrictCSS))
 	for _, expr := range e.restrictXPath {
 		htmlText, err := response.XPath(expr).HTML()
 		if err != nil {
 			return nil, err
 		}
-		if htmlText != "" {
-			scopes = append(scopes, htmlText)
+		scopes = appendNonEmptyScope(scopes, htmlText)
+	}
+	for _, selector := range e.restrictCSS {
+		htmlText, err := response.CSS(selector).HTML()
+		if err != nil {
+			return nil, err
 		}
+		scopes = appendNonEmptyScope(scopes, htmlText)
+	}
+	if len(scopes) == 0 {
+		return []string{wholeResponse}, nil
 	}
 	return scopes, nil
+}
+
+func appendNonEmptyScope(scopes []string, htmlText string) []string {
+	if htmlText == "" {
+		return scopes
+	}
+	return append(scopes, htmlText)
 }
 
 func (e *LinkExtractor) extractScope(baseURL, body string) ([]string, error) {
