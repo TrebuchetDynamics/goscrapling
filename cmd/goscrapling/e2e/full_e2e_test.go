@@ -1,4 +1,4 @@
-package main
+package e2e_test
 
 import (
 	"fmt"
@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/TrebuchetDynamics/goscrapling/cmd/goscrapling/internal/clitest"
 )
 
 type seenRequest struct {
@@ -74,7 +76,7 @@ func TestGoscraplingFullLocalEndToEnd(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	binary := buildGoscraplingBinary(t)
+	binary := clitest.BuildBinary(t)
 	outputDir := t.TempDir()
 
 	cases := []struct {
@@ -152,9 +154,9 @@ func TestGoscraplingFullLocalEndToEnd(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := runGoscraplingBinary(t, binary, tc.args...)
-			if result.err != nil {
-				t.Fatalf("goscrapling failed: %v\nstdout: %s\nstderr: %s", result.err, result.stdout, result.stderr)
+			result := clitest.RunBinary(t, binary, tc.args...)
+			if result.Err != nil {
+				t.Fatalf("goscrapling failed: %v\nstdout: %s\nstderr: %s", result.Err, result.Stdout, result.Stderr)
 			}
 			outputPath := filepath.Join(outputDir, tc.outputName)
 			body, err := os.ReadFile(outputPath)
@@ -164,11 +166,11 @@ func TestGoscraplingFullLocalEndToEnd(t *testing.T) {
 			if got := strings.TrimSpace(string(body)); got != tc.want {
 				t.Fatalf("output = %q, want %q", got, tc.want)
 			}
-			if !strings.Contains(result.stdout, "wrote "+outputPath) {
-				t.Fatalf("stdout missing output path: %q", result.stdout)
+			if !strings.Contains(result.Stdout, "wrote "+outputPath) {
+				t.Fatalf("stdout missing output path: %q", result.Stdout)
 			}
-			if result.stderr != "" {
-				t.Fatalf("stderr = %q, want empty", result.stderr)
+			if result.Stderr != "" {
+				t.Fatalf("stderr = %q, want empty", result.Stderr)
 			}
 		})
 	}

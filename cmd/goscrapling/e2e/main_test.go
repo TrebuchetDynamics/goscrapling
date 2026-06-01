@@ -1,8 +1,6 @@
-package main
+package e2e_test
 
 import (
-	"bytes"
-	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -12,7 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
+
+	"github.com/TrebuchetDynamics/goscrapling/cmd/goscrapling/internal/clitest"
 )
 
 func TestGoscraplingExtractGetEndToEnd(t *testing.T) {
@@ -27,16 +26,16 @@ func TestGoscraplingExtractGetEndToEnd(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	binary := buildGoscraplingBinary(t)
+	binary := clitest.BuildBinary(t)
 	outputPath := filepath.Join(t.TempDir(), "products.txt")
-	result := runGoscraplingBinary(t, binary,
+	result := clitest.RunBinary(t, binary,
 		"extract", "get", server.URL+"/products", outputPath,
 		"--css-selector", ".product",
 		"-H", "X-E2E: binary",
 		"--timeout", "2",
 	)
-	if result.err != nil {
-		t.Fatalf("goscrapling extract failed: %v\nstdout: %s\nstderr: %s", result.err, result.stdout, result.stderr)
+	if result.Err != nil {
+		t.Fatalf("goscrapling extract failed: %v\nstdout: %s\nstderr: %s", result.Err, result.Stdout, result.Stderr)
 	}
 
 	body, err := os.ReadFile(outputPath)
@@ -49,11 +48,11 @@ func TestGoscraplingExtractGetEndToEnd(t *testing.T) {
 	if seenHeader != "binary" {
 		t.Fatalf("X-E2E header = %q, want binary", seenHeader)
 	}
-	if !strings.Contains(result.stdout, "wrote "+outputPath) {
-		t.Fatalf("stdout missing output path: %q", result.stdout)
+	if !strings.Contains(result.Stdout, "wrote "+outputPath) {
+		t.Fatalf("stdout missing output path: %q", result.Stdout)
 	}
-	if result.stderr != "" {
-		t.Fatalf("stderr = %q, want empty", result.stderr)
+	if result.Stderr != "" {
+		t.Fatalf("stderr = %q, want empty", result.Stderr)
 	}
 }
 
@@ -77,16 +76,16 @@ func TestGoscraplingExtractPostJSONEndToEnd(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	binary := buildGoscraplingBinary(t)
+	binary := clitest.BuildBinary(t)
 	outputPath := filepath.Join(t.TempDir(), "payload.txt")
-	result := runGoscraplingBinary(t, binary,
+	result := clitest.RunBinary(t, binary,
 		"extract", "post", server.URL+"/submit", outputPath,
 		"--json", `{"name":"camp-mug"}`,
 		"--params", "page=2",
 		"--css-selector", "#payload",
 	)
-	if result.err != nil {
-		t.Fatalf("goscrapling extract post failed: %v\nstdout: %s\nstderr: %s", result.err, result.stdout, result.stderr)
+	if result.Err != nil {
+		t.Fatalf("goscrapling extract post failed: %v\nstdout: %s\nstderr: %s", result.Err, result.Stdout, result.Stderr)
 	}
 
 	body, err := os.ReadFile(outputPath)
@@ -99,66 +98,27 @@ func TestGoscraplingExtractPostJSONEndToEnd(t *testing.T) {
 }
 
 func TestGoscraplingParseErrorsExitTwoEndToEnd(t *testing.T) {
-	binary := buildGoscraplingBinary(t)
+	binary := clitest.BuildBinary(t)
 	outputPath := filepath.Join(t.TempDir(), "broken.txt")
-	result := runGoscraplingBinary(t, binary,
+	result := clitest.RunBinary(t, binary,
 		"extract", "get", "https://example.com", outputPath,
 		"-H", "not-a-header",
 	)
 
-	if result.err == nil {
+	if result.Err == nil {
 		t.Fatal("expected goscrapling parse error")
 	}
 	var exitErr *exec.ExitError
-	if !errors.As(result.err, &exitErr) {
-		t.Fatalf("error = %T %v, want *exec.ExitError", result.err, result.err)
+	if !errors.As(result.Err, &exitErr) {
+		t.Fatalf("error = %T %v, want *exec.ExitError", result.Err, result.Err)
 	}
 	if got := exitErr.ExitCode(); got != 2 {
-		t.Fatalf("exit code = %d, want 2\nstdout: %s\nstderr: %s", got, result.stdout, result.stderr)
+		t.Fatalf("exit code = %d, want 2\nstdout: %s\nstderr: %s", got, result.Stdout, result.Stderr)
 	}
-	if !strings.Contains(result.stderr, "parse error: headers must use") {
-		t.Fatalf("stderr missing parse message: %q", result.stderr)
+	if !strings.Contains(result.Stderr, "parse error: headers must use") {
+		t.Fatalf("stderr missing parse message: %q", result.Stderr)
 	}
 	if _, err := os.Stat(outputPath); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("output file exists after parse error: %v", err)
-	}
-}
-
-type commandResult struct {
-	stdout string
-	stderr string
-	err    error
-}
-
-func buildGoscraplingBinary(t *testing.T) string {
-	t.Helper()
-	binary := filepath.Join(t.TempDir(), "goscrapling")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	t.Cleanup(cancel)
-
-	cmd := exec.CommandContext(ctx, "go", "build", "-o", binary, ".")
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("build goscrapling binary: %v\nstdout: %s\nstderr: %s", err, stdout.String(), stderr.String())
-	}
-	return binary
-}
-
-func runGoscraplingBinary(t *testing.T, binary string, args ...string) commandResult {
-	t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	t.Cleanup(cancel)
-
-	cmd := exec.CommandContext(ctx, binary, args...)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err := cmd.Run()
-	return commandResult{
-		stdout: stdout.String(),
-		stderr: stderr.String(),
-		err:    err,
 	}
 }

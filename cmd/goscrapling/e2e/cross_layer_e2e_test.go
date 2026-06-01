@@ -1,4 +1,4 @@
-package main
+package e2e_test
 
 import (
 	"bytes"
@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/TrebuchetDynamics/goscrapling"
+	"github.com/TrebuchetDynamics/goscrapling/cmd/goscrapling/internal/clitest"
 	"github.com/TrebuchetDynamics/goscrapling/engines/browser"
 	"github.com/TrebuchetDynamics/goscrapling/integrations/gormes"
 	"github.com/TrebuchetDynamics/goscrapling/spiders"
@@ -128,15 +129,15 @@ func TestGoscraplingCrossLayerLocalEndToEnd(t *testing.T) {
 		t.Fatalf("spider items = %#v, want %#v", crawl.Items, wantItems)
 	}
 
-	binary := buildGoscraplingBinary(t)
+	binary := clitest.BuildBinary(t)
 	outputPath := filepath.Join(t.TempDir(), "cli-title.txt")
-	result := runGoscraplingBinary(t, binary,
+	result := clitest.RunBinary(t, binary,
 		"extract", "get", server.URL+"/catalog", outputPath,
 		"--css-selector", ".product h2::text",
 		"-H", "X-Cross-Layer: cli",
 	)
-	if result.err != nil {
-		t.Fatalf("cli extract: %v\nstdout: %s\nstderr: %s", result.err, result.stdout, result.stderr)
+	if result.Err != nil {
+		t.Fatalf("cli extract: %v\nstdout: %s\nstderr: %s", result.Err, result.Stdout, result.Stderr)
 	}
 	body, err := os.ReadFile(outputPath)
 	if err != nil {

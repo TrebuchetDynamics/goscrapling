@@ -1,4 +1,4 @@
-package main
+package live_test
 
 import (
 	"bytes"

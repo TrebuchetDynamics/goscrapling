@@ -1,4 +1,4 @@
-package main
+package live_test
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/TrebuchetDynamics/goscrapling/cmd/goscrapling/internal/clitest"
 )
 
 const (
@@ -23,7 +25,7 @@ func TestLivePracticeSitesEndToEnd(t *testing.T) {
 		t.Skip("set GOSCRAPLING_LIVE_E2E=1 to run live practice-site scrapes")
 	}
 
-	binary := buildGoscraplingBinary(t)
+	binary := clitest.BuildBinary(t)
 	outputDir := t.TempDir()
 	client := &http.Client{Timeout: 15 * time.Second}
 	userAgentHeader := "User-Agent: " + liveE2EUserAgentValue
@@ -207,9 +209,9 @@ func TestLivePracticeSitesEndToEnd(t *testing.T) {
 			args = append(args, "-H", userAgentHeader)
 			args = append(args, tt.args...)
 
-			result := runGoscraplingBinary(t, binary, args...)
-			if result.err != nil {
-				t.Fatalf("live scrape failed: %v\nstdout: %s\nstderr: %s", result.err, result.stdout, result.stderr)
+			result := clitest.RunBinary(t, binary, args...)
+			if result.Err != nil {
+				t.Fatalf("live scrape failed: %v\nstdout: %s\nstderr: %s", result.Err, result.Stdout, result.Stderr)
 			}
 
 			body, err := os.ReadFile(outputPath)
