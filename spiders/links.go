@@ -269,6 +269,25 @@ type preparedLinkCandidate struct {
 	url       string
 }
 
+type linkDropReason string
+
+const (
+	linkDropNone             linkDropReason = ""
+	linkDropEmptyRaw         linkDropReason = "empty_raw"
+	linkDropInvalidRaw       linkDropReason = "invalid_raw"
+	linkDropProcessRejected  linkDropReason = "process_rejected"
+	linkDropInvalidProcessed linkDropReason = "invalid_processed"
+	linkDropInvalidCanonical linkDropReason = "invalid_canonical"
+	linkDropFiltered         linkDropReason = "filtered"
+)
+
+type preparedLinkCandidateResult struct {
+	candidate preparedLinkCandidate
+	ok        bool
+	err       error
+	reason    linkDropReason
+}
+
 func newLinkURLCandidate(baseURL, raw string, strip bool) (linkURLCandidate, bool, error) {
 	if strip {
 		raw = strings.TrimSpace(raw)
@@ -313,27 +332,35 @@ func (e *LinkExtractor) prepareURL(baseURL, raw string) (string, bool, error) {
 }
 
 func (e *LinkExtractor) prepareCandidate(baseURL, raw string) (preparedLinkCandidate, bool, error) {
+	result := e.prepareCandidateDiagnostic(baseURL, raw)
+	return result.candidate, result.ok, result.err
+}
+
+func (e *LinkExtractor) prepareCandidateDiagnostic(baseURL, raw string) preparedLinkCandidateResult {
 	candidate, ok, err := newLinkURLCandidate(baseURL, raw, e.strip)
-	if !ok || err != nil {
-		return preparedLinkCandidate{}, ok, err
+	if err != nil {
+		return preparedLinkCandidateResult{err: err, reason: linkDropInvalidRaw}
+	}
+	if !ok {
+		return preparedLinkCandidateResult{reason: linkDropEmptyRaw}
 	}
 	prepared, ok, err := candidate.applyProcess(e.process)
 	if err != nil {
-		return preparedLinkCandidate{}, false, nil
+		return preparedLinkCandidateResult{reason: linkDropInvalidProcessed}
 	}
 	if !ok {
-		return preparedLinkCandidate{}, false, nil
+		return preparedLinkCandidateResult{reason: linkDropProcessRejected}
 	}
 	if e.canonicalize {
 		prepared, err = prepared.canonicalURL(e.keepFragment)
 		if err != nil {
-			return preparedLinkCandidate{}, false, nil
+			return preparedLinkCandidateResult{reason: linkDropInvalidCanonical}
 		}
 	}
 	if !e.urlPasses(prepared.url) {
-		return preparedLinkCandidate{}, false, nil
+		return preparedLinkCandidateResult{reason: linkDropFiltered}
 	}
-	return prepared, true, nil
+	return preparedLinkCandidateResult{candidate: prepared, ok: true, reason: linkDropNone}
 }
 
 func (e *LinkExtractor) urlPasses(rawURL string) bool {

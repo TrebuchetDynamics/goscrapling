@@ -1,6 +1,9 @@
 package spiders
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestLinkExtractorPrepareCandidateExposesURLStages(t *testing.T) {
 	extractor, err := NewLinkExtractor(LinkExtractorOptions{
@@ -30,5 +33,64 @@ func TestLinkExtractorPrepareCandidateExposesURLStages(t *testing.T) {
 	}
 	if candidate.url != "https://example.com/new?a=1&z=9" {
 		t.Fatalf("prepared URL = %q, want processed and canonicalized URL", candidate.url)
+	}
+}
+
+func TestLinkExtractorPrepareCandidateDiagnostics(t *testing.T) {
+	tests := []struct {
+		name   string
+		raw    string
+		opts   LinkExtractorOptions
+		reason linkDropReason
+	}{
+		{
+			name:   "empty raw",
+			raw:    "   ",
+			reason: linkDropEmptyRaw,
+		},
+		{
+			name: "process rejected",
+			raw:  "/drop",
+			opts: LinkExtractorOptions{Process: func(string) (string, bool) {
+				return "", false
+			}},
+			reason: linkDropProcessRejected,
+		},
+		{
+			name: "invalid processed URL",
+			raw:  "/bad",
+			opts: LinkExtractorOptions{Process: func(string) (string, bool) {
+				return "\n/bad", true
+			}},
+			reason: linkDropInvalidProcessed,
+		},
+		{
+			name:   "filtered extension",
+			raw:    "/report.pdf",
+			reason: linkDropFiltered,
+		},
+	}
+
+	gotReasons := make([]linkDropReason, 0, len(tests))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			extractor, err := NewLinkExtractor(tt.opts)
+			if err != nil {
+				t.Fatalf("NewLinkExtractor returned error: %v", err)
+			}
+			result := extractor.prepareCandidateDiagnostic("https://example.com/base/index.html", tt.raw)
+			if result.ok {
+				t.Fatalf("candidate unexpectedly survived: %#v", result.candidate)
+			}
+			if result.reason != tt.reason {
+				t.Fatalf("drop reason = %q, want %q", result.reason, tt.reason)
+			}
+			gotReasons = append(gotReasons, result.reason)
+		})
+	}
+
+	wantReasons := []linkDropReason{linkDropEmptyRaw, linkDropProcessRejected, linkDropInvalidProcessed, linkDropFiltered}
+	if !reflect.DeepEqual(gotReasons, wantReasons) {
+		t.Fatalf("drop reasons = %#v, want %#v", gotReasons, wantReasons)
 	}
 }
