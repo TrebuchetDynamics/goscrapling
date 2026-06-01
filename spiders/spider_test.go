@@ -64,6 +64,22 @@ func TestSpider(t *testing.T) {
 		}
 	})
 
+	t.Run("dont-filter requests do not poison later duplicate filtering", func(t *testing.T) {
+		scheduler := spiders.NewScheduler(spiders.SchedulerOptions{})
+		forced := spiders.Request{URL: "https://example.com/retry", DontFilter: true, Priority: 10}
+		normal := spiders.Request{URL: "https://example.com/retry", Priority: 1}
+
+		if ok, err := scheduler.Enqueue(forced); err != nil || !ok {
+			t.Fatalf("enqueue forced request ok=%v err=%v", ok, err)
+		}
+		if ok, err := scheduler.Enqueue(normal); err != nil || !ok {
+			t.Fatalf("normal request after dont-filter should still be queued, ok=%v err=%v", ok, err)
+		}
+		if got := scheduler.Len(); got != 2 {
+			t.Fatalf("scheduler length = %d, want 2", got)
+		}
+	})
+
 	t.Run("crawler routes sessions, follows requests, and collects results", func(t *testing.T) {
 		ctx := context.Background()
 		listSession := &fakeSession{

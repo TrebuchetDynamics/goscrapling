@@ -34,12 +34,9 @@ func (s *Scheduler) Enqueue(request Request) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if !request.DontFilter {
-		if _, ok := s.seen[fp]; ok {
-			return false, nil
-		}
+	if !s.acceptFingerprint(fp, request.DontFilter) {
+		return false, nil
 	}
-	s.seen[fp] = struct{}{}
 
 	s.counter++
 	heap.Push(&s.queue, scheduledRequest{
@@ -47,6 +44,17 @@ func (s *Scheduler) Enqueue(request Request) (bool, error) {
 		order:   s.counter,
 	})
 	return true, nil
+}
+
+func (s *Scheduler) acceptFingerprint(fp string, dontFilter bool) bool {
+	if dontFilter {
+		return true
+	}
+	if _, ok := s.seen[fp]; ok {
+		return false
+	}
+	s.seen[fp] = struct{}{}
+	return true
 }
 
 func (s *Scheduler) Dequeue() (Request, bool) {
