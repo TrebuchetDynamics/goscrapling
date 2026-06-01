@@ -1,4 +1,4 @@
-package model
+package schema
 
 func (p *Progress) Stats() Stats {
 	var stats Stats

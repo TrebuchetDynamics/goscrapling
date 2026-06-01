@@ -1,6 +1,22 @@
-package model
+package selection
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/TrebuchetDynamics/goscrapling/internal/progress/model/schema"
+)
+
+type Progress = schema.Progress
+type Phase = schema.Phase
+type Item = schema.Item
+type Row = schema.Row
+type Status = schema.Status
+
+const (
+	StatusComplete   = schema.StatusComplete
+	StatusInProgress = schema.StatusInProgress
+	StatusPlanned    = schema.StatusPlanned
+)
 
 func AgentQueueRows(p *Progress) []Row {
 	rows := make([]Row, 0)
@@ -51,9 +67,9 @@ func Rows(p *Progress) []Row {
 		return nil
 	}
 	rows := make([]Row, 0)
-	for _, phaseKey := range SortedPhaseKeys(p) {
+	for _, phaseKey := range schema.SortedPhaseKeys(p) {
 		phase := p.Phases[phaseKey]
-		for _, subphaseKey := range SortedSubphaseKeys(phase) {
+		for _, subphaseKey := range schema.SortedSubphaseKeys(phase) {
 			subphase := phase.Subphases[subphaseKey]
 			for _, item := range subphase.Items {
 				rows = append(rows, Row{PhaseKey: phaseKey, SubphaseKey: subphaseKey, Item: item})
@@ -150,22 +166,4 @@ func contractStatusRank(status string) int {
 	default:
 		return 4
 	}
-}
-
-func SortedPhaseKeys(p *Progress) []string {
-	keys := make([]string, 0, len(p.Phases))
-	for key := range p.Phases {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
-}
-
-func SortedSubphaseKeys(phase Phase) []string {
-	keys := make([]string, 0, len(phase.Subphases))
-	for key := range phase.Subphases {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
 }
