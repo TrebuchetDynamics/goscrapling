@@ -50,7 +50,7 @@ Extract package-private methods such as `enqueueStartRequests`, `startReadyTasks
 **Files:**
 - Modified: `spiders/crawler.go`
 - Created: `spiders/crawl_runtime.go`
-- Created: `docs/superpowers/plans/architecture-deepening/2026-05-20-spider-crawl-runtime-deepening.md`
+- Created: `docs/superpowers/plans/architecture-deepening/spider-runtime/2026-05-20-spider-crawl-runtime-deepening.md`
 
 - [ ] **Step 1: Run focused tests**
 
@@ -80,7 +80,7 @@ Expected: all commands exit 0.
 Run:
 
 ```sh
-git add spiders/crawler.go spiders/crawl_runtime.go docs/superpowers/plans/architecture-deepening/2026-05-20-spider-crawl-runtime-deepening.md
+git add spiders/crawler.go spiders/crawl_runtime.go docs/superpowers/plans/architecture-deepening/spider-runtime/2026-05-20-spider-crawl-runtime-deepening.md
 git commit -m "refactor: deepen spider crawl runtime"
 git push origin main
 ```
