@@ -59,9 +59,9 @@ func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, erro
 		return nil, err
 	}
 
-	attempts := retryAttempts(opts.Retries)
+	plan := retryPlanFromOptions(opts)
 	var lastErr error
-	for attempt := 1; attempt <= attempts; attempt++ {
+	for attempt := 1; attempt <= plan.attempts; attempt++ {
 		response, err := f.doAttempt(method, requestURL, body, opts)
 		if err == nil {
 			return response, nil
@@ -70,9 +70,8 @@ func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, erro
 		if !isRetriableFetcherError(err) {
 			return nil, err
 		}
-
-		if attempt < attempts && opts.RetryDelay > 0 {
-			time.Sleep(opts.RetryDelay)
+		if err := waitRetryDelay(opts.Context, plan.delay, attempt, plan.attempts); err != nil {
+			return nil, err
 		}
 	}
 
@@ -81,7 +80,7 @@ func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, erro
 			Kind:     FetcherErrorProxy,
 			Method:   method,
 			URL:      requestURL,
-			Attempts: attempts,
+			Attempts: plan.attempts,
 			Err:      lastErr,
 		}
 	}
@@ -89,7 +88,7 @@ func (f Fetcher) do(method, rawURL string, opts RequestOptions) (*Response, erro
 		Kind:     FetcherErrorRetryExhausted,
 		Method:   method,
 		URL:      requestURL,
-		Attempts: attempts,
+		Attempts: plan.attempts,
 		Err:      ErrRetryExhausted,
 	}
 }
@@ -179,11 +178,43 @@ func readRequestBody(body io.Reader) ([]byte, error) {
 	return io.ReadAll(body)
 }
 
+type retryPlan struct {
+	attempts int
+	delay    time.Duration
+}
+
+func retryPlanFromOptions(opts RequestOptions) retryPlan {
+	return retryPlan{attempts: retryAttempts(opts.Retries), delay: opts.RetryDelay}
+}
+
 func retryAttempts(retries int) int {
 	if retries > 0 {
 		return retries
 	}
 	return defaultRetryAttempts
+}
+
+func waitRetryDelay(ctx context.Context, delay time.Duration, attempt, attempts int) error {
+	if attempt >= attempts {
+		return nil
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if delay <= 0 {
+		return nil
+	}
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func clientWithRedirectPolicy(client *http.Client, opts RequestOptions, onRedirect func(*http.Response), proxy *proxyTracker) (*http.Client, error) {

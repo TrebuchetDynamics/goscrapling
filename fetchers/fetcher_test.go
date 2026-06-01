@@ -1,6 +1,7 @@
 package fetchers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -454,6 +455,29 @@ func TestFetcherRedirectTimeoutRetryErrors(t *testing.T) {
 	}
 	if fetchErr.Attempts != 2 {
 		t.Fatalf("expected 2 exhausted attempts, got %d", fetchErr.Attempts)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	firstFailure := make(chan struct{})
+	cancelingFetcher := Fetcher{Client: &http.Client{Transport: roundTripFunc(func(_ *http.Request) (*http.Response, error) {
+		select {
+		case <-firstFailure:
+		default:
+			close(firstFailure)
+		}
+		return nil, io.ErrUnexpectedEOF
+	})}}
+	go func() {
+		<-firstFailure
+		cancel()
+	}()
+	started := time.Now()
+	_, err = cancelingFetcher.Get("http://example.test/retry", RequestOptions{Context: ctx, Retries: 3, RetryDelay: 200 * time.Millisecond})
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected retry delay cancellation to return context.Canceled, got %v", err)
+	}
+	if elapsed := time.Since(started); elapsed > 150*time.Millisecond {
+		t.Fatalf("retry delay ignored context cancellation; elapsed %s", elapsed)
 	}
 }
 
