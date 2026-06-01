@@ -50,7 +50,7 @@ func ValidateCoverage(repoRoot string, m *schema.AppMap) error {
 	}
 	sort.Strings(mappedRefs)
 	for _, path := range mappedRefs {
-		if !IsInventoriedRef(path) {
+		if !isInventoriedRef(path) {
 			continue
 		}
 		if _, ok := discoveredSet[path]; !ok {
@@ -80,7 +80,7 @@ func inventoryRefs(repoRoot string) ([]string, error) {
 		if err != nil {
 			return err
 		}
-		if IsInventoriedRef(rel) {
+		if isInventoriedRef(rel) {
 			add(rel)
 		}
 		return nil
@@ -97,7 +97,7 @@ func exists(path string) bool {
 	return err == nil
 }
 
-func IsInventoriedRef(path string) bool {
+func isInventoriedRef(path string) bool {
 	path = filepath.ToSlash(path)
 	switch {
 	case path == "references/Scrapling/scrapling/py.typed":

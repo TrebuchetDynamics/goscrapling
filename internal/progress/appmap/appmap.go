@@ -1,35 +1,34 @@
 package appmap
 
-import "github.com/TrebuchetDynamics/goscrapling/internal/progress/model"
+import (
+	"github.com/TrebuchetDynamics/goscrapling/internal/progress/appmap/jsonfile"
+	"github.com/TrebuchetDynamics/goscrapling/internal/progress/appmap/markdown"
+	"github.com/TrebuchetDynamics/goscrapling/internal/progress/appmap/schema"
+	"github.com/TrebuchetDynamics/goscrapling/internal/progress/appmap/validation"
+	"github.com/TrebuchetDynamics/goscrapling/internal/progress/model"
+)
 
-type AppMap struct {
-	Meta    AppMapMeta    `json:"meta"`
-	Entries []AppMapEntry `json:"entries"`
+type AppMap = schema.AppMap
+type AppMapMeta = schema.AppMapMeta
+type AppMapEntry = schema.AppMapEntry
+type AppMapRef = schema.AppMapRef
+
+func LoadAppMap(path string) (*AppMap, error) {
+	return jsonfile.Load(path)
 }
 
-type AppMapMeta struct {
-	Version           string             `json:"version"`
-	Upstream          model.UpstreamMeta `json:"upstream,omitempty"`
-	GeneratedMarkdown string             `json:"generated_markdown,omitempty"`
-	Py2ManyProbeDir   string             `json:"py2many_probe_dir,omitempty"`
+func ValidateAppMap(m *AppMap) error {
+	return validation.Validate(m)
 }
 
-type AppMapEntry struct {
-	ID                     string      `json:"id"`
-	Title                  string      `json:"title"`
-	Upstream               []AppMapRef `json:"upstream"`
-	FeatureAnchor          string      `json:"feature_anchor,omitempty"`
-	BehaviorAtoms          []string    `json:"behavior_atoms,omitempty"`
-	GoTarget               string      `json:"go_target,omitempty"`
-	ProgressRows           []string    `json:"progress_rows,omitempty"`
-	CoverageStatus         string      `json:"coverage_status"`
-	TranslationSuitability string      `json:"translation_suitability"`
-	StaticReferencePaths   []string    `json:"static_reference_paths,omitempty"`
-	Notes                  []string    `json:"notes,omitempty"`
+func ValidateAppMapCoverage(repoRoot string, m *AppMap) error {
+	return validation.ValidateCoverage(repoRoot, m)
 }
 
-type AppMapRef struct {
-	Ref     string   `json:"ref"`
-	Kind    string   `json:"kind"`
-	Symbols []string `json:"symbols,omitempty"`
+func ValidateAppMapReferences(repoRoot string, m *AppMap, p *model.Progress) error {
+	return validation.ValidateReferences(repoRoot, m, p)
+}
+
+func RenderAppMapMarkdown(m *AppMap) string {
+	return markdown.Render(m)
 }

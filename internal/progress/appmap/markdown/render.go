@@ -1,27 +1,28 @@
-package appmap
+package markdown
 
 import (
 	"fmt"
 	"sort"
 	"strings"
 
+	"github.com/TrebuchetDynamics/goscrapling/internal/progress/appmap/schema"
 	"github.com/TrebuchetDynamics/goscrapling/internal/progress/formatting"
 )
 
-func RenderAppMapMarkdown(m *AppMap) string {
+func Render(m *schema.AppMap) string {
 	var b strings.Builder
 	b.WriteString("# Upstream Scrapling App Map\n\n")
 	if m == nil {
 		return b.String()
 	}
-	renderAppMapMetadata(&b, m.Meta)
-	renderAppMapSummary(&b, m.Entries)
-	renderAppMapTable(&b, sortedAppMapEntries(m.Entries))
-	renderAppMapDetails(&b, sortedAppMapEntries(m.Entries))
+	renderMetadata(&b, m.Meta)
+	renderSummary(&b, m.Entries)
+	renderTable(&b, sortedEntries(m.Entries))
+	renderDetails(&b, sortedEntries(m.Entries))
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }
 
-func renderAppMapMetadata(b *strings.Builder, meta AppMapMeta) {
+func renderMetadata(b *strings.Builder, meta schema.AppMapMeta) {
 	b.WriteString("## Source Metadata\n\n")
 	fmt.Fprintf(b, "- Version: `%s`\n", meta.Version)
 	if meta.Upstream.Name != "" {
@@ -48,7 +49,7 @@ func renderAppMapMetadata(b *strings.Builder, meta AppMapMeta) {
 	b.WriteString("\n")
 }
 
-func renderAppMapSummary(b *strings.Builder, entries []AppMapEntry) {
+func renderSummary(b *strings.Builder, entries []schema.AppMapEntry) {
 	counts := make(map[string]int)
 	for _, entry := range entries {
 		counts[entry.CoverageStatus]++
@@ -64,7 +65,7 @@ func renderAppMapSummary(b *strings.Builder, entries []AppMapEntry) {
 	b.WriteString("\n")
 }
 
-func renderAppMapTable(b *strings.Builder, entries []AppMapEntry) {
+func renderTable(b *strings.Builder, entries []schema.AppMapEntry) {
 	b.WriteString("## Entries\n\n")
 	b.WriteString("| Entry | Status | Feature anchor | Go target | Progress rows | Translation suitability | Upstream refs |\n")
 	b.WriteString("|---|---|---|---|---|---|---:|\n")
@@ -82,7 +83,7 @@ func renderAppMapTable(b *strings.Builder, entries []AppMapEntry) {
 	b.WriteString("\n")
 }
 
-func renderAppMapDetails(b *strings.Builder, entries []AppMapEntry) {
+func renderDetails(b *strings.Builder, entries []schema.AppMapEntry) {
 	for _, entry := range entries {
 		fmt.Fprintf(b, "## %s\n\n", entry.Title)
 		fmt.Fprintf(b, "- ID: `%s`\n", entry.ID)
@@ -109,8 +110,8 @@ func renderAppMapDetails(b *strings.Builder, entries []AppMapEntry) {
 	}
 }
 
-func sortedAppMapEntries(entries []AppMapEntry) []AppMapEntry {
-	out := append([]AppMapEntry(nil), entries...)
+func sortedEntries(entries []schema.AppMapEntry) []schema.AppMapEntry {
+	out := append([]schema.AppMapEntry(nil), entries...)
 	sort.SliceStable(out, func(i, j int) bool {
 		if out[i].ID == out[j].ID {
 			return out[i].Title < out[j].Title

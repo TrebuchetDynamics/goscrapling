@@ -1,4 +1,4 @@
-package appmap
+package validation
 
 import (
 	"errors"
@@ -7,10 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/TrebuchetDynamics/goscrapling/internal/progress/appmap/schema"
 	"github.com/TrebuchetDynamics/goscrapling/internal/progress/model"
 )
 
-func ValidateAppMapReferences(repoRoot string, m *AppMap, p *model.Progress) error {
+func ValidateReferences(repoRoot string, m *schema.AppMap, p *model.Progress) error {
 	progressRows := make(map[string]struct{})
 	for _, row := range model.Rows(p) {
 		if name := strings.TrimSpace(row.Item.Name); name != "" {
