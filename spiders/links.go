@@ -135,14 +135,15 @@ func (e *LinkExtractor) Matches(rawURL string) bool {
 	if e == nil {
 		return false
 	}
-	if e.canonicalize {
-		canonical, err := canonicalizeLinkURL(rawURL, e.keepFragment)
-		if err != nil {
-			return false
-		}
-		rawURL = canonical
+	result := e.prepareCandidateDiagnostic(matchCandidateBaseURL(rawURL, e.strip), rawURL)
+	return result.ok
+}
+
+func matchCandidateBaseURL(rawURL string, strip bool) string {
+	if strip {
+		return strings.TrimSpace(rawURL)
 	}
-	return e.urlPasses(rawURL)
+	return rawURL
 }
 
 func (e *LinkExtractor) scopes(response Response) ([]string, error) {

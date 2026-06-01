@@ -259,6 +259,27 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 		}
 	})
 
+	t.Run("sitemap spider rule matching honors link extractor process rejection", func(t *testing.T) {
+		allowNonDrafts, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{
+			Allow: []string{`/posts/`},
+			Process: func(raw string) (string, bool) {
+				return raw, !strings.Contains(raw, "/draft/")
+			},
+		})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor process rejecting rule returned error: %v", err)
+		}
+		sitemap := &spidertemplates.SitemapSpider{Rules: []spidertemplates.CrawlRule{{LinkExtractor: allowNonDrafts}}}
+		body := `<urlset><url><loc>https://example.com/posts/public</loc></url><url><loc>https://example.com/posts/draft/hidden</loc></url></urlset>`
+		outputs, err := sitemap.ParseSitemap(context.Background(), newTemplateResponse(t, "https://example.com/sitemap.xml", body, "application/xml"))
+		if err != nil {
+			t.Fatalf("ParseSitemap returned error: %v", err)
+		}
+		if got := requestURLs(outputs); !reflect.DeepEqual(got, []string{"https://example.com/posts/public"}) {
+			t.Fatalf("process-rejected sitemap requests = %#v, want only public post", got)
+		}
+	})
+
 	t.Run("sitemap spider follows indexes robots directives alternates and first matching rules", func(t *testing.T) {
 		follow, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{Allow: []string{`posts-sitemap`}})
 		if err != nil {
