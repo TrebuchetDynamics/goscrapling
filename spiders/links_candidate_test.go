@@ -36,6 +36,62 @@ func TestLinkExtractorPrepareCandidateExposesURLStages(t *testing.T) {
 	}
 }
 
+func TestLinkCandidatePipelineFiltersCanonicalizedURL(t *testing.T) {
+	var filtered string
+	config := linkCandidateConfig{
+		strip:        true,
+		process:      defaultLinkProcess,
+		canonicalize: true,
+		passes: func(rawURL string) bool {
+			filtered = rawURL
+			return true
+		},
+	}
+
+	result := config.prepare("https://Example.COM/base/index.html", " /keep/../file?b=2&a=1#drop ")
+	if result.err != nil {
+		t.Fatalf("prepare returned error: %v", result.err)
+	}
+	if !result.ok {
+		t.Fatalf("prepare dropped candidate with reason %q", result.reason)
+	}
+	want := "https://example.com/file?a=1&b=2"
+	if result.candidate.url != want {
+		t.Fatalf("prepared URL = %q, want %q", result.candidate.url, want)
+	}
+	if filtered != want {
+		t.Fatalf("filter saw %q, want canonical URL %q", filtered, want)
+	}
+}
+
+func TestLinkCandidatePipelineCanExposePreCanonicalFilterInput(t *testing.T) {
+	var filtered string
+	config := linkCandidateConfig{
+		strip:        true,
+		process:      defaultLinkProcess,
+		canonicalize: false,
+		passes: func(rawURL string) bool {
+			filtered = rawURL
+			return true
+		},
+	}
+
+	result := config.prepare("https://Example.COM/base/index.html", " /keep/../file?b=2&a=1#keep ")
+	if result.err != nil {
+		t.Fatalf("prepare returned error: %v", result.err)
+	}
+	if !result.ok {
+		t.Fatalf("prepare dropped candidate with reason %q", result.reason)
+	}
+	want := "https://Example.COM/file?b=2&a=1#keep"
+	if result.candidate.url != want {
+		t.Fatalf("prepared URL = %q, want %q", result.candidate.url, want)
+	}
+	if filtered != want {
+		t.Fatalf("filter saw %q, want uncanonicalized URL %q", filtered, want)
+	}
+}
+
 func TestLinkExtractorPrepareCandidateDiagnostics(t *testing.T) {
 	tests := []struct {
 		name   string

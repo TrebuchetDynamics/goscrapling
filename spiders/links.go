@@ -85,7 +85,7 @@ func NewLinkExtractor(opts LinkExtractorOptions) (*LinkExtractor, error) {
 	}
 	process := opts.Process
 	if process == nil {
-		process = func(value string) (string, bool) { return value, true }
+		process = defaultLinkProcess
 	}
 	return &LinkExtractor{
 		allow:          allow,
@@ -342,27 +342,51 @@ func (e *LinkExtractor) prepareCandidate(baseURL, raw string) (preparedLinkCandi
 }
 
 func (e *LinkExtractor) prepareCandidateDiagnostic(baseURL, raw string) preparedLinkCandidateResult {
-	candidate, ok, err := newLinkURLCandidate(baseURL, raw, e.strip)
+	return e.candidateConfig().prepare(baseURL, raw)
+}
+
+func defaultLinkProcess(value string) (string, bool) { return value, true }
+
+type linkCandidateConfig struct {
+	strip        bool
+	process      LinkProcessFunc
+	canonicalize bool
+	keepFragment bool
+	passes       func(string) bool
+}
+
+func (e *LinkExtractor) candidateConfig() linkCandidateConfig {
+	return linkCandidateConfig{
+		strip:        e.strip,
+		process:      e.process,
+		canonicalize: e.canonicalize,
+		keepFragment: e.keepFragment,
+		passes:       e.urlPasses,
+	}
+}
+
+func (config linkCandidateConfig) prepare(baseURL, raw string) preparedLinkCandidateResult {
+	candidate, ok, err := newLinkURLCandidate(baseURL, raw, config.strip)
 	if err != nil {
 		return droppedLinkCandidate(linkDropInvalidRaw)
 	}
 	if !ok {
 		return droppedLinkCandidate(linkDropEmptyRaw)
 	}
-	prepared, ok, err := candidate.applyProcess(e.process)
+	prepared, ok, err := candidate.applyProcess(config.process)
 	if err != nil {
 		return droppedLinkCandidate(linkDropInvalidProcessed)
 	}
 	if !ok {
 		return droppedLinkCandidate(linkDropProcessRejected)
 	}
-	if e.canonicalize {
-		prepared, err = prepared.canonicalURL(e.keepFragment)
+	if config.canonicalize {
+		prepared, err = prepared.canonicalURL(config.keepFragment)
 		if err != nil {
 			return droppedLinkCandidate(linkDropInvalidCanonical)
 		}
 	}
-	if !e.urlPasses(prepared.url) {
+	if !config.passes(prepared.url) {
 		return droppedLinkCandidate(linkDropFiltered)
 	}
 	return preparedLinkCandidateResult{candidate: prepared, ok: true, reason: linkDropNone}
