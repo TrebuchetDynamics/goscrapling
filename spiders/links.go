@@ -258,19 +258,49 @@ func (e *LinkExtractor) extractScope(baseURL, body string) ([]string, error) {
 	return links, nil
 }
 
-func (e *LinkExtractor) prepareURL(baseURL, raw string) (string, bool, error) {
-	if e.strip {
+type linkURLCandidate struct {
+	baseURL   string
+	raw       string
+	resolved  string
+	processed string
+}
+
+func newLinkURLCandidate(baseURL, raw string, strip bool) (linkURLCandidate, bool, error) {
+	if strip {
 		raw = strings.TrimSpace(raw)
 	}
 	if raw == "" {
-		return "", false, nil
+		return linkURLCandidate{}, false, nil
 	}
 	resolved, err := resolveURL(baseURL, raw)
 	if err != nil {
+		return linkURLCandidate{}, false, err
+	}
+	return linkURLCandidate{baseURL: baseURL, raw: raw, resolved: resolved}, true, nil
+}
+
+func (candidate linkURLCandidate) processedURL(process LinkProcessFunc) (string, bool, error) {
+	processed, ok := process(candidate.resolved)
+	if !ok || processed == "" {
+		return "", false, nil
+	}
+	resolved, err := resolveURL(candidate.baseURL, processed)
+	if err != nil {
 		return "", false, err
 	}
-	processed, ok := e.process(resolved)
-	if !ok || processed == "" {
+	return resolved, true, nil
+}
+
+func (e *LinkExtractor) prepareURL(baseURL, raw string) (string, bool, error) {
+	candidate, ok, err := newLinkURLCandidate(baseURL, raw, e.strip)
+	if !ok || err != nil {
+		return "", false, err
+	}
+	processed, ok, err := candidate.processedURL(e.process)
+	if err != nil {
+		return "", false, nil
+	}
+	if !ok {
 		return "", false, nil
 	}
 	if e.canonicalize {

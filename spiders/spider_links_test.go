@@ -168,6 +168,28 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 		}
 	})
 
+	t.Run("link extractor process hook can rewrite to relative URL", func(t *testing.T) {
+		processResponse := newTemplateResponse(t, "https://example.com/base/index.html", `<a href="/old">old</a>`, "text/html")
+		processExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{
+			Process: func(raw string) (string, bool) {
+				if raw == "https://example.com/old" {
+					return "../new?b=2&a=1#drop", true
+				}
+				return raw, true
+			},
+		})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor process rewrite returned error: %v", err)
+		}
+		links, err := processExtractor.Extract(processResponse)
+		if err != nil {
+			t.Fatalf("Extract process rewrite returned error: %v", err)
+		}
+		if !reflect.DeepEqual(links, []string{"https://example.com/new?a=1&b=2"}) {
+			t.Fatalf("process rewrite links = %#v, want relative rewrite resolved against page URL", links)
+		}
+	})
+
 	t.Run("crawl spider rules generate requests with callbacks priority and process hooks", func(t *testing.T) {
 		extractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{Allow: []string{`/post/`}, AllowDomains: []string{"example.com"}, DenyDomains: []string{"ads.example.com"}, RestrictCSS: []string{"main"}})
 		if err != nil {
