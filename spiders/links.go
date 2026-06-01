@@ -371,7 +371,7 @@ func canonicalizeLinkURL(rawURL string, keepFragment bool) (string, error) {
 		return "", err
 	}
 	parsed.Scheme = strings.ToLower(parsed.Scheme)
-	parsed.Host = strings.ToLower(parsed.Host)
+	normalizeParsedURLHost(parsed)
 	if parsed.Path != "" {
 		cleaned := path.Clean(parsed.Path)
 		if strings.HasSuffix(parsed.Path, "/") && !strings.HasSuffix(cleaned, "/") {

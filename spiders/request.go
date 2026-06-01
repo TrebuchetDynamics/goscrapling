@@ -75,7 +75,7 @@ func canonicalizeURL(rawURL string, keepFragments bool) (string, error) {
 		return "", err
 	}
 	parsed.Scheme = strings.ToLower(parsed.Scheme)
-	parsed.Host = strings.ToLower(parsed.Host)
+	normalizeParsedURLHost(parsed)
 	parsed.RawQuery = parsed.Query().Encode()
 	if !keepFragments {
 		parsed.Fragment = ""

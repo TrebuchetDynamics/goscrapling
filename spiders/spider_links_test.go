@@ -138,6 +138,21 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 		}
 	})
 
+	t.Run("link extractor canonicalizes hosts without lowercasing URL userinfo", func(t *testing.T) {
+		credentialsResponse := newTemplateResponse(t, "https://example.com/index.html", `<a href="https://User:Secret@Example.COM/path">credentials</a>`, "text/html")
+		credentialsExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor credentials returned error: %v", err)
+		}
+		credentialsLinks, err := credentialsExtractor.Extract(credentialsResponse)
+		if err != nil {
+			t.Fatalf("Extract credentials returned error: %v", err)
+		}
+		if !reflect.DeepEqual(credentialsLinks, []string{"https://User:Secret@example.com/path"}) {
+			t.Fatalf("credential link = %#v, want userinfo case preserved with normalized host", credentialsLinks)
+		}
+	})
+
 	t.Run("link extractor resolves candidates against document base href", func(t *testing.T) {
 		baseResponse := newTemplateResponse(t, "https://example.com/dir/page.html", `<html><head><base href="https://cdn.example.org/assets/"></head><body><a href="next">next</a></body></html>`, "text/html")
 		baseExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{})
