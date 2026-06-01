@@ -1,4 +1,4 @@
-package main
+package command_test
 
 import (
 	"bytes"
@@ -10,12 +10,14 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/TrebuchetDynamics/goscrapling/cmd/progress/command"
 )
 
 func TestRunValidate(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 
-	err := run(&stdout, &stderr, []string{"--repo-root", "../..", "validate"})
+	err := command.Run(&stdout, &stderr, []string{"--repo-root", "../../..", "validate"})
 	if err != nil {
 		t.Fatalf("run validate: %v\nstderr: %s", err, stderr.String())
 	}
@@ -27,7 +29,7 @@ func TestRunValidate(t *testing.T) {
 func TestRunWriteRegeneratesMarkedDocs(t *testing.T) {
 	root := t.TempDir()
 	copyFile(t,
-		filepath.Join("..", "..", "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
+		filepath.Join("..", "..", "..", "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
 		filepath.Join(root, "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
 	)
 	surfaces := filepath.Join(root, "docs", "content", "building-goscrapling", "builder-loop", "surfaces")
@@ -46,7 +48,7 @@ func TestRunWriteRegeneratesMarkedDocs(t *testing.T) {
 	}
 
 	var stdout, stderr bytes.Buffer
-	err := run(&stdout, &stderr, []string{"--repo-root", root, "write"})
+	err := command.Run(&stdout, &stderr, []string{"--repo-root", root, "write"})
 	if err != nil {
 		t.Fatalf("run write: %v\nstderr: %s", err, stderr.String())
 	}
@@ -73,7 +75,7 @@ func TestRunMapValidate(t *testing.T) {
 	writeMinimalAppMapFixture(t, root)
 
 	var stdout, stderr bytes.Buffer
-	err := run(&stdout, &stderr, []string{"--repo-root", root, "map-validate"})
+	err := command.Run(&stdout, &stderr, []string{"--repo-root", root, "map-validate"})
 	if err != nil {
 		t.Fatalf("run map-validate: %v\nstderr: %s", err, stderr.String())
 	}
@@ -96,7 +98,7 @@ func TestRunMapValidateRejectsUnknownProgressRow(t *testing.T) {
 	}
 
 	var stdout, stderr bytes.Buffer
-	err = run(&stdout, &stderr, []string{"--repo-root", root, "map-validate"})
+	err = command.Run(&stdout, &stderr, []string{"--repo-root", root, "map-validate"})
 	if err == nil {
 		t.Fatal("expected map-validate error")
 	}
@@ -110,7 +112,7 @@ func TestRunMapWriteRegeneratesMarkdown(t *testing.T) {
 	writeMinimalAppMapFixture(t, root)
 
 	var stdout, stderr bytes.Buffer
-	err := run(&stdout, &stderr, []string{"--repo-root", root, "map-write"})
+	err := command.Run(&stdout, &stderr, []string{"--repo-root", root, "map-write"})
 	if err != nil {
 		t.Fatalf("run map-write: %v\nstderr: %s", err, stderr.String())
 	}
@@ -127,7 +129,7 @@ func TestRunMapWriteRegeneratesMarkdown(t *testing.T) {
 func TestParityScorecard(t *testing.T) {
 	root := t.TempDir()
 	copyFile(t,
-		filepath.Join("..", "..", "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
+		filepath.Join("..", "..", "..", "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
 		filepath.Join(root, "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
 	)
 	benchmarkPath := filepath.Join(root, "benchmarks", "parity_bench_test.go")
@@ -147,7 +149,7 @@ func BenchmarkCLIExtractFixture(b *testing.B) {}
 	}
 
 	var stdout, stderr bytes.Buffer
-	err := run(&stdout, &stderr, []string{"--repo-root", root, "scorecard"})
+	err := command.Run(&stdout, &stderr, []string{"--repo-root", root, "scorecard"})
 	if err != nil {
 		t.Fatalf("run scorecard: %v\nstderr: %s", err, stderr.String())
 	}
@@ -251,7 +253,7 @@ func buildProgressBinary(t *testing.T) string {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	t.Cleanup(cancel)
 
-	cmd := exec.CommandContext(ctx, "go", "build", "-o", binary, ".")
+	cmd := exec.CommandContext(ctx, "go", "build", "-o", binary, "..")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
