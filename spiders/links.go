@@ -288,6 +288,10 @@ type preparedLinkCandidateResult struct {
 	reason    linkDropReason
 }
 
+func droppedLinkCandidate(reason linkDropReason) preparedLinkCandidateResult {
+	return preparedLinkCandidateResult{reason: reason}
+}
+
 func newLinkURLCandidate(baseURL, raw string, strip bool) (linkURLCandidate, bool, error) {
 	if strip {
 		raw = strings.TrimSpace(raw)
@@ -339,26 +343,26 @@ func (e *LinkExtractor) prepareCandidate(baseURL, raw string) (preparedLinkCandi
 func (e *LinkExtractor) prepareCandidateDiagnostic(baseURL, raw string) preparedLinkCandidateResult {
 	candidate, ok, err := newLinkURLCandidate(baseURL, raw, e.strip)
 	if err != nil {
-		return preparedLinkCandidateResult{err: err, reason: linkDropInvalidRaw}
+		return droppedLinkCandidate(linkDropInvalidRaw)
 	}
 	if !ok {
-		return preparedLinkCandidateResult{reason: linkDropEmptyRaw}
+		return droppedLinkCandidate(linkDropEmptyRaw)
 	}
 	prepared, ok, err := candidate.applyProcess(e.process)
 	if err != nil {
-		return preparedLinkCandidateResult{reason: linkDropInvalidProcessed}
+		return droppedLinkCandidate(linkDropInvalidProcessed)
 	}
 	if !ok {
-		return preparedLinkCandidateResult{reason: linkDropProcessRejected}
+		return droppedLinkCandidate(linkDropProcessRejected)
 	}
 	if e.canonicalize {
 		prepared, err = prepared.canonicalURL(e.keepFragment)
 		if err != nil {
-			return preparedLinkCandidateResult{reason: linkDropInvalidCanonical}
+			return droppedLinkCandidate(linkDropInvalidCanonical)
 		}
 	}
 	if !e.urlPasses(prepared.url) {
-		return preparedLinkCandidateResult{reason: linkDropFiltered}
+		return droppedLinkCandidate(linkDropFiltered)
 	}
 	return preparedLinkCandidateResult{candidate: prepared, ok: true, reason: linkDropNone}
 }

@@ -49,6 +49,11 @@ func TestLinkExtractorPrepareCandidateDiagnostics(t *testing.T) {
 			reason: linkDropEmptyRaw,
 		},
 		{
+			name:   "invalid raw URL",
+			raw:    "http://[::1",
+			reason: linkDropInvalidRaw,
+		},
+		{
 			name: "process rejected",
 			raw:  "/drop",
 			opts: LinkExtractorOptions{Process: func(string) (string, bool) {
@@ -82,6 +87,9 @@ func TestLinkExtractorPrepareCandidateDiagnostics(t *testing.T) {
 			if result.ok {
 				t.Fatalf("candidate unexpectedly survived: %#v", result.candidate)
 			}
+			if result.err != nil {
+				t.Fatalf("dropped candidate returned fatal error: %v", result.err)
+			}
 			if result.reason != tt.reason {
 				t.Fatalf("drop reason = %q, want %q", result.reason, tt.reason)
 			}
@@ -89,7 +97,7 @@ func TestLinkExtractorPrepareCandidateDiagnostics(t *testing.T) {
 		})
 	}
 
-	wantReasons := []linkDropReason{linkDropEmptyRaw, linkDropProcessRejected, linkDropInvalidProcessed, linkDropFiltered}
+	wantReasons := []linkDropReason{linkDropEmptyRaw, linkDropInvalidRaw, linkDropProcessRejected, linkDropInvalidProcessed, linkDropFiltered}
 	if !reflect.DeepEqual(gotReasons, wantReasons) {
 		t.Fatalf("drop reasons = %#v, want %#v", gotReasons, wantReasons)
 	}

@@ -190,6 +190,21 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 		}
 	})
 
+	t.Run("link extractor skips invalid raw candidates without aborting extraction", func(t *testing.T) {
+		invalidResponse := newTemplateResponse(t, "https://example.com/base/index.html", `<a href="http://[::1">bad</a><a href="/good">good</a>`, "text/html")
+		extractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor invalid raw returned error: %v", err)
+		}
+		links, err := extractor.Extract(invalidResponse)
+		if err != nil {
+			t.Fatalf("Extract should not abort after one invalid raw URL: %v", err)
+		}
+		if !reflect.DeepEqual(links, []string{"https://example.com/good"}) {
+			t.Fatalf("invalid raw links = %#v, want only good candidate", links)
+		}
+	})
+
 	t.Run("link extractor process hook failures are local to each candidate", func(t *testing.T) {
 		processResponse := newTemplateResponse(t, "https://example.com/base/index.html", `<a href="/bad">bad</a><a href="/good">good</a>`, "text/html")
 		processExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{
