@@ -61,6 +61,19 @@ func TestSpiderCheckpoint(t *testing.T) {
 		}
 	})
 
+	t.Run("restore infers missing seen fingerprints from pending requests", func(t *testing.T) {
+		restored := NewScheduler(SchedulerOptions{})
+		restored.Restore(SchedulerSnapshot{Requests: []Request{{URL: "https://example.com/pending"}}})
+
+		queued, err := restored.Enqueue(Request{URL: "https://example.com/pending"})
+		if err != nil {
+			t.Fatalf("Enqueue returned error: %v", err)
+		}
+		if queued {
+			t.Fatal("restored pending request was not treated as seen")
+		}
+	})
+
 	t.Run("crawler pause saves canceled in-flight work and later resumes it", func(t *testing.T) {
 		dir := t.TempDir()
 		ctx, cancel := context.WithCancel(context.Background())

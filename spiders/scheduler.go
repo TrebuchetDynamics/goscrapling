@@ -95,16 +95,34 @@ func (s *Scheduler) Restore(snapshot SchedulerSnapshot) {
 		return
 	}
 	s.queue = nil
-	s.seen = make(map[string]struct{}, len(snapshot.Seen))
-	for _, fp := range snapshot.Seen {
-		s.seen[fp] = struct{}{}
-	}
+	s.seen = restoredSeenFingerprints(snapshot, s.options)
 	s.counter = 0
 	heap.Init(&s.queue)
 	for _, request := range snapshot.Requests {
 		s.counter++
 		heap.Push(&s.queue, scheduledRequest{request: request.clone(), order: s.counter})
 	}
+}
+
+func restoredSeenFingerprints(snapshot SchedulerSnapshot, opts SchedulerOptions) map[string]struct{} {
+	seen := make(map[string]struct{}, len(snapshot.Seen)+len(snapshot.Requests))
+	for _, fp := range snapshot.Seen {
+		seen[fp] = struct{}{}
+	}
+	for _, request := range snapshot.Requests {
+		if request.DontFilter {
+			continue
+		}
+		fp, err := request.Fingerprint(FingerprintOptions{
+			IncludeHeaders: opts.IncludeHeaders,
+			KeepFragments:  opts.KeepFragments,
+		})
+		if err != nil {
+			continue
+		}
+		seen[fp] = struct{}{}
+	}
+	return seen
 }
 
 type scheduledRequest struct {
