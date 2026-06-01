@@ -212,6 +212,7 @@ type StreamResult struct {
 }
 
 type crawlerTaskResult struct {
+	taskID           int
 	request          Request
 	response         Response
 	outputs          []Output

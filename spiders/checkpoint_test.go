@@ -61,6 +61,62 @@ func TestSpiderCheckpoint(t *testing.T) {
 		}
 	})
 
+	t.Run("crawler pause saves canceled in-flight work and later resumes it", func(t *testing.T) {
+		dir := t.TempDir()
+		ctx, cancel := context.WithCancel(context.Background())
+		firstSession := &cancelAwareCheckpointSession{}
+		firstSessions := NewSessionManager()
+		if err := firstSessions.Add("default", firstSession, SessionOptions{Default: true}); err != nil {
+			t.Fatalf("add first session: %v", err)
+		}
+		firstCrawler := Crawler{
+			Sessions:           firstSessions,
+			CheckpointDir:      dir,
+			ConcurrentRequests: 2,
+			DefaultCallback: func(_ context.Context, response Response) ([]Output, error) {
+				if strings.HasSuffix(response.Request.URL, "/first") {
+					cancel()
+				}
+				return []Output{Item(map[string]any{"url": response.Request.URL})}, nil
+			},
+		}
+		paused, err := firstCrawler.Run(ctx, []Request{
+			{URL: "https://example.com/first", Priority: 10},
+			{URL: "https://example.com/second", Priority: 5},
+			{URL: "https://example.com/third", Priority: 1},
+		})
+		if err != nil {
+			t.Fatalf("paused Run returned error: %v", err)
+		}
+		if !paused.Paused || paused.Stats.Requests != 1 {
+			t.Fatalf("paused result = %#v", paused)
+		}
+
+		secondSession := &checkpointSession{}
+		secondSessions := NewSessionManager()
+		if err := secondSessions.Add("default", secondSession, SessionOptions{Default: true}); err != nil {
+			t.Fatalf("add second session: %v", err)
+		}
+		secondCrawler := Crawler{
+			Sessions:           secondSessions,
+			CheckpointDir:      dir,
+			ConcurrentRequests: 1,
+			DefaultCallback: func(_ context.Context, response Response) ([]Output, error) {
+				return []Output{Item(map[string]any{"url": response.Request.URL})}, nil
+			},
+		}
+		resumed, err := secondCrawler.Run(context.Background(), []Request{{URL: "https://example.com/first", Priority: 10}})
+		if err != nil {
+			t.Fatalf("resumed Run returned error: %v", err)
+		}
+		if resumed.Paused {
+			t.Fatalf("resumed result should not be paused: %#v", resumed)
+		}
+		if got := requestURLs(secondSession.requests); !reflect.DeepEqual(got, []string{"https://example.com/second", "https://example.com/third"}) {
+			t.Fatalf("resumed requests = %#v", got)
+		}
+	})
+
 	t.Run("crawler pause saves pending work and later resumes without replaying completed starts", func(t *testing.T) {
 		dir := t.TempDir()
 		ctx, cancel := context.WithCancel(context.Background())
@@ -128,10 +184,30 @@ type checkpointSession struct {
 	requests []Request
 }
 
+type cancelAwareCheckpointSession struct {
+	mu       sync.Mutex
+	requests []Request
+}
+
 func (s *checkpointSession) Fetch(_ context.Context, request Request) (*goscrapling.Response, error) {
 	s.mu.Lock()
 	s.requests = append(s.requests, request.clone())
 	s.mu.Unlock()
+	return checkpointResponse(request)
+}
+
+func (s *cancelAwareCheckpointSession) Fetch(ctx context.Context, request Request) (*goscrapling.Response, error) {
+	s.mu.Lock()
+	s.requests = append(s.requests, request.clone())
+	s.mu.Unlock()
+	if strings.HasSuffix(request.URL, "/second") {
+		<-ctx.Done()
+		return nil, ctx.Err()
+	}
+	return checkpointResponse(request)
+}
+
+func checkpointResponse(request Request) (*goscrapling.Response, error) {
 	return goscrapling.NewResponse(strings.NewReader(request.URL), goscrapling.ResponseOptions{
 		URL:        request.URL,
 		StatusCode: http.StatusOK,

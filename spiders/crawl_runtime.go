@@ -19,6 +19,8 @@ type crawlRuntime struct {
 	result             Result
 	itemStream         chan<- map[string]any
 	active             int
+	activeRequests     map[int]Request
+	nextTaskID         int
 	stopErr            error
 	taskResults        chan crawlerTaskResult
 }
@@ -62,7 +64,8 @@ func newCrawlRuntime(ctx context.Context, crawler Crawler) *crawlRuntime {
 			StatusCodes:                 make(map[int]int),
 			DomainResponseBytes:         make(map[string]int),
 		}},
-		taskResults: make(chan crawlerTaskResult),
+		activeRequests: make(map[int]Request),
+		taskResults:    make(chan crawlerTaskResult),
 	}
 }
 
@@ -93,7 +96,7 @@ func (r *crawlRuntime) run(start []Request) (Result, error) {
 			if r.stopErr != nil {
 				if r.checkpoint != nil && errors.Is(r.stopErr, r.ctx.Err()) {
 					r.result.Paused = true
-					if err := r.checkpoint.Save(r.scheduler.Snapshot()); err != nil {
+					if err := r.checkpoint.Save(r.pauseSnapshot()); err != nil {
 						return r.finish(err)
 					}
 					return r.finish(nil)
@@ -163,6 +166,22 @@ func (r *crawlRuntime) restoreOrEnqueueStartRequests(start []Request) (bool, err
 	return false, nil
 }
 
+func (r *crawlRuntime) pauseSnapshot() SchedulerSnapshot {
+	snapshot := r.scheduler.Snapshot()
+	if len(r.activeRequests) == 0 {
+		return snapshot
+	}
+	active := make([]Request, 0, len(r.activeRequests))
+	for taskID := 1; taskID <= r.nextTaskID; taskID++ {
+		request, ok := r.activeRequests[taskID]
+		if ok {
+			active = append(active, request.clone())
+		}
+	}
+	snapshot.Requests = append(active, snapshot.Requests...)
+	return snapshot
+}
+
 func (r *crawlRuntime) startReadyTasks() {
 	if err := r.ctx.Err(); err != nil {
 		r.stop(err)
@@ -174,8 +193,13 @@ func (r *crawlRuntime) startReadyTasks() {
 			break
 		}
 		r.active++
+		r.nextTaskID++
+		taskID := r.nextTaskID
+		r.activeRequests[taskID] = request.clone()
 		go func() {
-			r.taskResults <- r.crawler.processRequest(r.ctx, request, r.domainLimiters, r.sleep)
+			result := r.crawler.processRequest(r.ctx, request, r.domainLimiters, r.sleep)
+			result.taskID = taskID
+			r.taskResults <- result
 		}()
 	}
 }
@@ -197,9 +221,13 @@ func (r *crawlRuntime) doneChannel() <-chan struct{} {
 func (r *crawlRuntime) handleTaskResult(task crawlerTaskResult) {
 	r.active--
 	if task.err != nil {
+		if r.ctx.Err() == nil || !errors.Is(task.err, r.ctx.Err()) {
+			delete(r.activeRequests, task.taskID)
+		}
 		r.handleTaskError(task.request, task.err)
 		return
 	}
+	delete(r.activeRequests, task.taskID)
 
 	if task.robotsDisallowed {
 		r.result.Stats.RobotsDisallowed++
