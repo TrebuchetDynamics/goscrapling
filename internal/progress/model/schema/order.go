@@ -1,21 +1,11 @@
 package schema
 
-import "sort"
+import "github.com/TrebuchetDynamics/goscrapling/internal/progress/model/schema/ordering"
 
 func SortedPhaseKeys(p *Progress) []string {
-	keys := make([]string, 0, len(p.Phases))
-	for key := range p.Phases {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
+	return ordering.Keys(p.Phases)
 }
 
 func SortedSubphaseKeys(phase Phase) []string {
-	keys := make([]string, 0, len(phase.Subphases))
-	for key := range phase.Subphases {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
+	return ordering.Keys(phase.Subphases)
 }
