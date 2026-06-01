@@ -93,6 +93,25 @@ func TestParseHonorsExplicitGetWithBody(t *testing.T) {
 	}
 }
 
+func TestParseHonorsExplicitMethodWithGetData(t *testing.T) {
+	request, err := Parse(`curl -X POST -G 'https://example.com/search?existing=1' --data 'q=kit'`)
+	if err != nil {
+		t.Fatalf("Parse returned error: %v", err)
+	}
+
+	if request.Method != "post" {
+		t.Fatalf("Method = %q, want explicit -X POST preserved while -G moves data to query params", request.Method)
+	}
+	if request.Body != "" {
+		t.Fatalf("Body = %q, want no body when -G moves data to query params", request.Body)
+	}
+	for key, want := range map[string]string{"existing": "1", "q": "kit"} {
+		if got := request.Params.Get(key); got != want {
+			t.Fatalf("Params.Get(%q) = %q, want %q (all params: %v)", key, got, want, request.Params)
+		}
+	}
+}
+
 func TestParsePreservesRepeatedDataValues(t *testing.T) {
 	t.Run("get data becomes query params without dropping earlier fields", func(t *testing.T) {
 		request, err := Parse(`curl -G 'https://example.com/search?existing=1' --data 'q=kit' --data-raw 'page=2'`)

@@ -125,27 +125,51 @@ func (d *curlData) add(value curlWord) {
 }
 
 func (d curlData) applyTo(request *Request, explicitMethod bool) error {
+	payload, err := d.payloadFor(request.Method, explicitMethod)
+	if err != nil {
+		return err
+	}
+	request.Method = payload.method
+	request.Body = payload.body
+	for key, parsedValues := range payload.params {
+		for _, value := range parsedValues {
+			request.Params.Add(key, value)
+		}
+	}
+	return nil
+}
+
+type curlPayload struct {
+	method string
+	body   string
+	params url.Values
+}
+
+func (d curlData) payloadFor(currentMethod string, explicitMethod bool) (curlPayload, error) {
+	payload := curlPayload{method: currentMethod, params: url.Values{}}
 	if len(d.parts) == 0 {
-		return nil
+		return payload, nil
 	}
 	body := strings.Join(d.parts, "&")
 	if d.forceQueryParams {
-		request.Method = "get"
 		values, err := url.ParseQuery(body)
 		if err != nil {
-			return parseError("curl -G data must be query encoded")
+			return curlPayload{}, parseError("curl -G data must be query encoded")
 		}
-		for key, parsedValues := range values {
-			for _, value := range parsedValues {
-				request.Params.Add(key, value)
-			}
-		}
-		request.Body = ""
-		return nil
+		payload.method = methodWithGetData(currentMethod, explicitMethod)
+		payload.params = values
+		return payload, nil
 	}
-	request.Body = body
-	request.Method = methodWithBodyData(request.Method, explicitMethod)
-	return nil
+	payload.body = body
+	payload.method = methodWithBodyData(currentMethod, explicitMethod)
+	return payload, nil
+}
+
+func methodWithGetData(currentMethod string, explicitMethod bool) string {
+	if explicitMethod {
+		return currentMethod
+	}
+	return "get"
 }
 
 func methodWithBodyData(currentMethod string, explicitMethod bool) string {
