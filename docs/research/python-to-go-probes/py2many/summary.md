@@ -14,6 +14,11 @@ Policy:
 - Generated output must not be copied into production Go packages.
 - Parity still requires progress rows and Go tests.
 
+## Layout
+
+- Go stdout captures stay at `go/*.go.txt` because the upstream app map uses those paths as stable static-reference evidence.
+- Conversion diagnostics are grouped by upstream Scrapling responsibility under `go/conversion-diagnostics/` and must remain reference-only evidence, not production inputs.
+
 ## Inputs
 
 | Input | Output | Result |
