@@ -138,6 +138,21 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 		}
 	})
 
+	t.Run("link extractor resolves candidates against document base href", func(t *testing.T) {
+		baseResponse := newTemplateResponse(t, "https://example.com/dir/page.html", `<html><head><base href="https://cdn.example.org/assets/"></head><body><a href="next">next</a></body></html>`, "text/html")
+		baseExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor base returned error: %v", err)
+		}
+		baseLinks, err := baseExtractor.Extract(baseResponse)
+		if err != nil {
+			t.Fatalf("Extract base returned error: %v", err)
+		}
+		if !reflect.DeepEqual(baseLinks, []string{"https://cdn.example.org/assets/next"}) {
+			t.Fatalf("base links = %#v, want document base href resolved links", baseLinks)
+		}
+	})
+
 	t.Run("crawl spider rules generate requests with callbacks priority and process hooks", func(t *testing.T) {
 		extractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{Allow: []string{`/post/`}, AllowDomains: []string{"example.com"}, DenyDomains: []string{"ads.example.com"}, RestrictCSS: []string{"main"}})
 		if err != nil {

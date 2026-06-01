@@ -112,10 +112,11 @@ func (e *LinkExtractor) Extract(response Response) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	baseURL := linkDocumentBaseURL(response.URL(), string(response.Body()))
 	seen := map[string]struct{}{}
 	links := make([]string, 0)
 	for _, scope := range scopes {
-		extracted, err := e.extractScope(response.URL(), scope)
+		extracted, err := e.extractScope(baseURL, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -176,6 +177,45 @@ func appendNonEmptyScope(scopes []string, htmlText string) []string {
 		return scopes
 	}
 	return append(scopes, htmlText)
+}
+
+func linkDocumentBaseURL(responseURL, body string) string {
+	root, err := html.Parse(strings.NewReader(body))
+	if err != nil {
+		return responseURL
+	}
+	rawBase := firstBaseHref(root)
+	if rawBase == "" {
+		return responseURL
+	}
+	resolved, err := resolveURL(responseURL, strings.TrimSpace(rawBase))
+	if err != nil {
+		return responseURL
+	}
+	return resolved
+}
+
+func firstBaseHref(root *html.Node) string {
+	var walk func(*html.Node) string
+	walk = func(node *html.Node) string {
+		if node == nil {
+			return ""
+		}
+		if node.Type == html.ElementNode && strings.EqualFold(node.Data, "base") {
+			for _, attr := range node.Attr {
+				if strings.EqualFold(attr.Key, "href") {
+					return attr.Val
+				}
+			}
+		}
+		for child := node.FirstChild; child != nil; child = child.NextSibling {
+			if value := walk(child); value != "" {
+				return value
+			}
+		}
+		return ""
+	}
+	return walk(root)
 }
 
 func (e *LinkExtractor) extractScope(baseURL, body string) ([]string, error) {
