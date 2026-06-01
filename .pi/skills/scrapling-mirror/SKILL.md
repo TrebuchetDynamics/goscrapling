@@ -73,7 +73,7 @@ permission to edit unrelated dirty files.
    - run `go run ./cmd/progress map-write` and `go run ./cmd/progress write`
      when generated surfaces change.
 4. Pick the next slice from canonical evidence:
-   - prefer `docs/content/building-goscrapling/builder-loop/next-slices.md` and
+   - prefer `docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md` and
      `agent-queue.md`;
    - only take rows that are planned or in_progress, non-umbrella, unblocked,
      and have source refs, write scope, test commands, acceptance, and done

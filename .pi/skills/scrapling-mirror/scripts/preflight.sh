@@ -53,7 +53,7 @@ printf 'diff check: '
 git diff --check && echo ok
 
 echo
-if [ -f docs/content/building-goscrapling/builder-loop/next-slices.md ]; then
+if [ -f docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md ]; then
   echo "## next slices"
-  sed -n '1,80p' docs/content/building-goscrapling/builder-loop/next-slices.md
+  sed -n '1,80p' docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md
 fi
