@@ -37,6 +37,7 @@ func Parse(command string) (Request, error) {
 	}
 	var rawURL string
 	var data curlData
+	explicitMethod := false
 	for i := 0; i < len(tokens); i++ {
 		token := tokens[i]
 		switch token.text {
@@ -46,6 +47,7 @@ func Parse(command string) (Request, error) {
 				return Request{}, parseError("%s requires a value", token.text)
 			}
 			request.Method = strings.ToLower(value.text)
+			explicitMethod = true
 		case "-H", "--header":
 			value, ok := nextToken(tokens, &i, token.text)
 			if !ok {
@@ -107,7 +109,7 @@ func Parse(command string) (Request, error) {
 	}
 	parsed.RawQuery = ""
 	request.URL = parsed.String()
-	if err := data.applyTo(&request); err != nil {
+	if err := data.applyTo(&request, explicitMethod); err != nil {
 		return Request{}, err
 	}
 	return request, nil
@@ -122,7 +124,7 @@ func (d *curlData) add(value curlWord) {
 	d.parts = append(d.parts, value.text)
 }
 
-func (d curlData) applyTo(request *Request) error {
+func (d curlData) applyTo(request *Request, explicitMethod bool) error {
 	if len(d.parts) == 0 {
 		return nil
 	}
@@ -142,10 +144,18 @@ func (d curlData) applyTo(request *Request) error {
 		return nil
 	}
 	request.Body = body
-	if request.Method == "get" {
-		request.Method = "post"
-	}
+	request.Method = methodWithBodyData(request.Method, explicitMethod)
 	return nil
+}
+
+func methodWithBodyData(currentMethod string, explicitMethod bool) string {
+	if explicitMethod {
+		return currentMethod
+	}
+	if currentMethod == "get" {
+		return "post"
+	}
+	return currentMethod
 }
 
 func nextToken(tokens []curlWord, index *int, name string) (curlWord, bool) {

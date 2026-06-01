@@ -2,6 +2,27 @@ package curlcommand
 
 import "testing"
 
+func TestMethodWithBodyDataMakesDefaultPromotionExplicit(t *testing.T) {
+	cases := []struct {
+		name           string
+		currentMethod  string
+		explicitMethod bool
+		want           string
+	}{
+		{name: "default get data promotes to post", currentMethod: "get", want: "post"},
+		{name: "explicit get data stays get", currentMethod: "get", explicitMethod: true, want: "get"},
+		{name: "explicit delete data stays delete", currentMethod: "delete", explicitMethod: true, want: "delete"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := methodWithBodyData(tc.currentMethod, tc.explicitMethod); got != tc.want {
+				t.Fatalf("methodWithBodyData(%q, %v) = %q, want %q", tc.currentMethod, tc.explicitMethod, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestParsePreservesDollarPrefixedDataValues(t *testing.T) {
 	request, err := Parse(`curl 'https://example.com/form' --data '$amount=10' --data-raw $'line=one'`)
 	if err != nil {
@@ -10,6 +31,23 @@ func TestParsePreservesDollarPrefixedDataValues(t *testing.T) {
 
 	if request.Body != "$amount=10&line=one" {
 		t.Fatalf("Body = %q, want literal dollars preserved unless they mark ANSI-C quoting", request.Body)
+	}
+}
+
+func TestParseHonorsExplicitGetWithBody(t *testing.T) {
+	request, err := Parse(`curl -X GET 'https://example.com/search' --data 'q=kit'`)
+	if err != nil {
+		t.Fatalf("Parse returned error: %v", err)
+	}
+
+	if request.Method != "get" {
+		t.Fatalf("Method = %q, want explicit -X GET to stay get", request.Method)
+	}
+	if request.Body != "q=kit" {
+		t.Fatalf("Body = %q, want data retained as request body without -G", request.Body)
+	}
+	if got := request.Params.Get("q"); got != "" {
+		t.Fatalf("Params.Get(%q) = %q, want explicit GET body not converted to query params", "q", got)
 	}
 }
 
