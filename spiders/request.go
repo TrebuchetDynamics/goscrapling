@@ -84,19 +84,29 @@ func canonicalizeURL(rawURL string, keepFragments bool) (string, error) {
 }
 
 func stableHeaders(headers http.Header) [][2]string {
-	keys := make([]string, 0, len(headers))
-	for key := range headers {
+	normalized := normalizedHeaderValues(headers)
+	keys := make([]string, 0, len(normalized))
+	for key := range normalized {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 
 	output := make([][2]string, 0, len(keys))
 	for _, key := range keys {
-		values := append([]string(nil), headers.Values(key)...)
+		values := normalized[key]
 		sort.Strings(values)
 		for _, value := range values {
-			output = append(output, [2]string{strings.ToLower(key), value})
+			output = append(output, [2]string{key, value})
 		}
+	}
+	return output
+}
+
+func normalizedHeaderValues(headers http.Header) map[string][]string {
+	output := make(map[string][]string, len(headers))
+	for key, values := range headers {
+		normalizedKey := strings.ToLower(key)
+		output[normalizedKey] = append(output[normalizedKey], values...)
 	}
 	return output
 }
