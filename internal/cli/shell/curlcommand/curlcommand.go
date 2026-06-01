@@ -36,7 +36,7 @@ func Parse(command string) (Request, error) {
 		Params:  url.Values{},
 	}
 	var rawURL string
-	var bodyForParams bool
+	var data curlData
 	for i := 0; i < len(tokens); i++ {
 		token := tokens[i]
 		switch token {
@@ -71,13 +71,9 @@ func Parse(command string) (Request, error) {
 			if !ok {
 				return Request{}, parseError("%s requires a value", token)
 			}
-			request.Body = strings.TrimPrefix(value, "$")
-			if request.Method == "get" {
-				request.Method = "post"
-			}
+			data.add(value)
 		case "-G", "--get":
-			request.Method = "get"
-			bodyForParams = true
+			data.forceQueryParams = true
 		case "--url":
 			value, ok := nextToken(tokens, &i, token)
 			if !ok {
@@ -111,10 +107,31 @@ func Parse(command string) (Request, error) {
 	}
 	parsed.RawQuery = ""
 	request.URL = parsed.String()
-	if bodyForParams && request.Body != "" {
-		values, err := url.ParseQuery(request.Body)
+	if err := data.applyTo(&request); err != nil {
+		return Request{}, err
+	}
+	return request, nil
+}
+
+type curlData struct {
+	parts            []string
+	forceQueryParams bool
+}
+
+func (d *curlData) add(value string) {
+	d.parts = append(d.parts, strings.TrimPrefix(value, "$"))
+}
+
+func (d curlData) applyTo(request *Request) error {
+	if len(d.parts) == 0 {
+		return nil
+	}
+	body := strings.Join(d.parts, "&")
+	if d.forceQueryParams {
+		request.Method = "get"
+		values, err := url.ParseQuery(body)
 		if err != nil {
-			return Request{}, parseError("curl -G data must be query encoded")
+			return parseError("curl -G data must be query encoded")
 		}
 		for key, parsedValues := range values {
 			for _, value := range parsedValues {
@@ -122,8 +139,13 @@ func Parse(command string) (Request, error) {
 			}
 		}
 		request.Body = ""
+		return nil
 	}
-	return request, nil
+	request.Body = body
+	if request.Method == "get" {
+		request.Method = "post"
+	}
+	return nil
 }
 
 func nextToken(tokens []string, index *int, name string) (string, bool) {
