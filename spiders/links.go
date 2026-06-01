@@ -259,10 +259,14 @@ func (e *LinkExtractor) extractScope(baseURL, body string) ([]string, error) {
 }
 
 type linkURLCandidate struct {
-	baseURL   string
-	raw       string
-	resolved  string
-	processed string
+	baseURL  string
+	raw      string
+	resolved string
+}
+
+type preparedLinkCandidate struct {
+	candidate linkURLCandidate
+	url       string
 }
 
 func newLinkURLCandidate(baseURL, raw string, strip bool) (linkURLCandidate, bool, error) {
@@ -279,40 +283,57 @@ func newLinkURLCandidate(baseURL, raw string, strip bool) (linkURLCandidate, boo
 	return linkURLCandidate{baseURL: baseURL, raw: raw, resolved: resolved}, true, nil
 }
 
-func (candidate linkURLCandidate) processedURL(process LinkProcessFunc) (string, bool, error) {
+func (candidate linkURLCandidate) applyProcess(process LinkProcessFunc) (preparedLinkCandidate, bool, error) {
 	processed, ok := process(candidate.resolved)
 	if !ok || processed == "" {
-		return "", false, nil
+		return preparedLinkCandidate{}, false, nil
 	}
 	resolved, err := resolveURL(candidate.baseURL, processed)
 	if err != nil {
-		return "", false, err
+		return preparedLinkCandidate{}, false, err
 	}
-	return resolved, true, nil
+	return preparedLinkCandidate{candidate: candidate, url: resolved}, true, nil
+}
+
+func (candidate preparedLinkCandidate) canonicalURL(keepFragment bool) (preparedLinkCandidate, error) {
+	canonical, err := canonicalizeLinkURL(candidate.url, keepFragment)
+	if err != nil {
+		return preparedLinkCandidate{}, err
+	}
+	candidate.url = canonical
+	return candidate, nil
 }
 
 func (e *LinkExtractor) prepareURL(baseURL, raw string) (string, bool, error) {
+	candidate, ok, err := e.prepareCandidate(baseURL, raw)
+	if !ok || err != nil {
+		return "", ok, err
+	}
+	return candidate.url, true, nil
+}
+
+func (e *LinkExtractor) prepareCandidate(baseURL, raw string) (preparedLinkCandidate, bool, error) {
 	candidate, ok, err := newLinkURLCandidate(baseURL, raw, e.strip)
 	if !ok || err != nil {
-		return "", false, err
+		return preparedLinkCandidate{}, ok, err
 	}
-	processed, ok, err := candidate.processedURL(e.process)
+	prepared, ok, err := candidate.applyProcess(e.process)
 	if err != nil {
-		return "", false, nil
+		return preparedLinkCandidate{}, false, nil
 	}
 	if !ok {
-		return "", false, nil
+		return preparedLinkCandidate{}, false, nil
 	}
 	if e.canonicalize {
-		processed, err = canonicalizeLinkURL(processed, e.keepFragment)
+		prepared, err = prepared.canonicalURL(e.keepFragment)
 		if err != nil {
-			return "", false, nil
+			return preparedLinkCandidate{}, false, nil
 		}
 	}
-	if !e.urlPasses(processed) {
-		return "", false, nil
+	if !e.urlPasses(prepared.url) {
+		return preparedLinkCandidate{}, false, nil
 	}
-	return processed, true, nil
+	return prepared, true, nil
 }
 
 func (e *LinkExtractor) urlPasses(rawURL string) bool {

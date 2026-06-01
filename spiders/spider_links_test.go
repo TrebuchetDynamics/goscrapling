@@ -190,6 +190,28 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 		}
 	})
 
+	t.Run("link extractor process hook failures are local to each candidate", func(t *testing.T) {
+		processResponse := newTemplateResponse(t, "https://example.com/base/index.html", `<a href="/bad">bad</a><a href="/good">good</a>`, "text/html")
+		processExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{
+			Process: func(raw string) (string, bool) {
+				if raw == "https://example.com/bad" {
+					return "\n/bad", true
+				}
+				return raw, true
+			},
+		})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor process failure returned error: %v", err)
+		}
+		links, err := processExtractor.Extract(processResponse)
+		if err != nil {
+			t.Fatalf("Extract should not abort after one bad processed URL: %v", err)
+		}
+		if !reflect.DeepEqual(links, []string{"https://example.com/good"}) {
+			t.Fatalf("process failure links = %#v, want only good candidate", links)
+		}
+	})
+
 	t.Run("crawl spider rules generate requests with callbacks priority and process hooks", func(t *testing.T) {
 		extractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{Allow: []string{`/post/`}, AllowDomains: []string{"example.com"}, DenyDomains: []string{"ads.example.com"}, RestrictCSS: []string{"main"}})
 		if err != nil {
