@@ -187,7 +187,7 @@ func splitWords(command string) ([]curlWord, error) {
 	escaped := false
 	for _, r := range command {
 		if escaped {
-			current.WriteRune(r)
+			appendEscapedCurlRune(&current, r)
 			escaped = false
 			continue
 		}
@@ -228,6 +228,17 @@ func splitWords(command string) ([]curlWord, error) {
 		words = append(words, curlWord{text: current.String()})
 	}
 	return words, nil
+}
+
+func appendEscapedCurlRune(current *strings.Builder, r rune) {
+	if isShellLineContinuationRune(r) {
+		return
+	}
+	current.WriteRune(r)
+}
+
+func isShellLineContinuationRune(r rune) bool {
+	return r == '\n' || r == '\r'
 }
 
 func trimBuilderSuffix(builder *strings.Builder, suffix string) {

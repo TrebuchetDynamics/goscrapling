@@ -34,6 +34,23 @@ func TestParsePreservesDollarPrefixedDataValues(t *testing.T) {
 	}
 }
 
+func TestParseSkipsShellLineContinuations(t *testing.T) {
+	request, err := Parse("curl 'https://example.com/search' \\\n\t-H 'X-Trace: copied' \\\n\t--data-raw 'q=kit'")
+	if err != nil {
+		t.Fatalf("Parse returned error: %v", err)
+	}
+
+	if request.URL != "https://example.com/search" {
+		t.Fatalf("URL = %q, want copied curl URL without line-continuation artifacts", request.URL)
+	}
+	if got := request.Headers.Get("X-Trace"); got != "copied" {
+		t.Fatalf("Headers.Get(%q) = %q, want %q", "X-Trace", got, "copied")
+	}
+	if request.Body != "q=kit" {
+		t.Fatalf("Body = %q, want data after shell line continuations", request.Body)
+	}
+}
+
 func TestParseHonorsExplicitGetWithBody(t *testing.T) {
 	request, err := Parse(`curl -X GET 'https://example.com/search' --data 'q=kit'`)
 	if err != nil {
