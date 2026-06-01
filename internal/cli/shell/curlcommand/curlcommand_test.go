@@ -45,6 +45,20 @@ func TestParsePreservesBackslashesInsideSingleQuotedValues(t *testing.T) {
 	}
 }
 
+func TestParseDecodesAnsiCQuotedEscapes(t *testing.T) {
+	request, err := Parse(`curl 'https://example.com/form' --data-raw $'line=one\ntwo' -H $'X-Trace: copied\tvalue'`)
+	if err != nil {
+		t.Fatalf("Parse returned error: %v", err)
+	}
+
+	if request.Body != "line=one\ntwo" {
+		t.Fatalf("Body = %q, want ANSI-C quoted newline decoded", request.Body)
+	}
+	if got := request.Headers.Get("X-Trace"); got != "copied\tvalue" {
+		t.Fatalf("Headers.Get(%q) = %q, want decoded tab", "X-Trace", got)
+	}
+}
+
 func TestParseSkipsShellLineContinuations(t *testing.T) {
 	request, err := Parse("curl 'https://example.com/search' \\\n\t-H 'X-Trace: copied' \\\n\t--data-raw 'q=kit'")
 	if err != nil {

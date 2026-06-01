@@ -239,15 +239,24 @@ type curlWord struct {
 	text string
 }
 
+type curlQuoteMode int
+
+const (
+	curlQuoteNone curlQuoteMode = iota
+	curlQuoteSingle
+	curlQuoteDouble
+	curlQuoteAnsiC
+)
+
 func splitWords(command string) ([]curlWord, error) {
 	var words []curlWord
 	var current strings.Builder
-	var quote rune
+	quote := curlQuoteNone
 	inWord := false
 	escaped := false
 	for _, r := range command {
 		if escaped {
-			if appendEscapedCurlRune(&current, r) {
+			if appendEscapedCurlRune(&current, r, quote) {
 				inWord = true
 			}
 			escaped = false
@@ -257,9 +266,9 @@ func splitWords(command string) ([]curlWord, error) {
 			escaped = true
 			continue
 		}
-		if quote != 0 {
-			if r == quote {
-				quote = 0
+		if quote != curlQuoteNone {
+			if quoteCloses(quote, r) {
+				quote = curlQuoteNone
 			} else {
 				current.WriteRune(r)
 				inWord = true
@@ -267,11 +276,11 @@ func splitWords(command string) ([]curlWord, error) {
 			continue
 		}
 		switch r {
-		case '\'', '"':
-			if r == '\'' && strings.HasSuffix(current.String(), "$") {
-				trimBuilderSuffix(&current, "$")
-			}
-			quote = r
+		case '\'':
+			quote = startSingleQuote(&current)
+			inWord = true
+		case '"':
+			quote = curlQuoteDouble
 			inWord = true
 		case ' ', '\t', '\n', '\r':
 			if inWord {
@@ -288,7 +297,7 @@ func splitWords(command string) ([]curlWord, error) {
 		current.WriteRune('\\')
 		inWord = true
 	}
-	if quote != 0 {
+	if quote != curlQuoteNone {
 		return nil, fmt.Errorf("unterminated quote")
 	}
 	if inWord {
@@ -297,19 +306,63 @@ func splitWords(command string) ([]curlWord, error) {
 	return words, nil
 }
 
-func shouldStartCurlEscape(quote rune, r rune) bool {
+func startSingleQuote(current *strings.Builder) curlQuoteMode {
+	if strings.HasSuffix(current.String(), "$") {
+		trimBuilderSuffix(current, "$")
+		return curlQuoteAnsiC
+	}
+	return curlQuoteSingle
+}
+
+func quoteCloses(quote curlQuoteMode, r rune) bool {
+	switch quote {
+	case curlQuoteSingle, curlQuoteAnsiC:
+		return r == '\''
+	case curlQuoteDouble:
+		return r == '"'
+	default:
+		return false
+	}
+}
+
+func shouldStartCurlEscape(quote curlQuoteMode, r rune) bool {
 	if r != '\\' {
 		return false
 	}
-	return quote != '\''
+	return quote != curlQuoteSingle
 }
 
-func appendEscapedCurlRune(current *strings.Builder, r rune) bool {
+func appendEscapedCurlRune(current *strings.Builder, r rune, quote curlQuoteMode) bool {
 	if isShellLineContinuationRune(r) {
 		return false
 	}
+	if quote == curlQuoteAnsiC {
+		current.WriteRune(decodeAnsiCEscape(r))
+		return true
+	}
 	current.WriteRune(r)
 	return true
+}
+
+func decodeAnsiCEscape(r rune) rune {
+	switch r {
+	case 'a':
+		return '\a'
+	case 'b':
+		return '\b'
+	case 'f':
+		return '\f'
+	case 'n':
+		return '\n'
+	case 'r':
+		return '\r'
+	case 't':
+		return '\t'
+	case 'v':
+		return '\v'
+	default:
+		return r
+	}
 }
 
 func isShellLineContinuationRune(r rune) bool {
