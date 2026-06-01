@@ -242,8 +242,7 @@ func (e *LinkExtractor) urlPasses(rawURL string) bool {
 	if err != nil {
 		return false
 	}
-	scheme := strings.ToLower(parsed.Scheme)
-	if scheme != "http" && scheme != "https" && scheme != "file" {
+	if !linkHasSupportedLocator(parsed) {
 		return false
 	}
 	if ext := linkExtension(parsed.Path); ext != "" {
@@ -267,6 +266,18 @@ func (e *LinkExtractor) urlPasses(rawURL string) bool {
 		}
 	}
 	return true
+}
+
+func linkHasSupportedLocator(parsed *url.URL) bool {
+	scheme := strings.ToLower(parsed.Scheme)
+	switch scheme {
+	case "http", "https":
+		return parsed.Host != ""
+	case "file":
+		return true
+	default:
+		return false
+	}
 }
 
 func compileLinkPatterns(patterns []string) ([]*regexp.Regexp, error) {

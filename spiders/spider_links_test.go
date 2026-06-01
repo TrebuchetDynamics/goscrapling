@@ -57,6 +57,22 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 			t.Fatal("Matches should reject ignored extension")
 		}
 
+		opaqueExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor opaque returned error: %v", err)
+		}
+		opaqueResponse := newTemplateResponse(t, "https://example.com/base/index.html", `<main><a href="http:relative">bad</a><a href="/keep">good</a></main>`, "text/html")
+		opaqueLinks, err := opaqueExtractor.Extract(opaqueResponse)
+		if err != nil {
+			t.Fatalf("Extract opaque HTTP candidate returned error: %v", err)
+		}
+		if !reflect.DeepEqual(opaqueLinks, []string{"https://example.com/keep"}) {
+			t.Fatalf("opaque HTTP candidate links = %#v, want only valid host-backed HTTP URL", opaqueLinks)
+		}
+		if opaqueExtractor.Matches("http:relative") {
+			t.Fatal("Matches should reject opaque HTTP URLs without a host")
+		}
+
 		fragmentExtractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{
 			Allow:        []string{`/keep`},
 			RestrictCSS:  []string{"main"},
