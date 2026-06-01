@@ -29,16 +29,26 @@ func ValidateCoverage(repoRoot string, m *schema.AppMap) error {
 	for _, path := range discovered {
 		discoveredSet[path] = struct{}{}
 	}
+	var errs []error
 	if m != nil {
 		for _, entry := range m.Entries {
 			for _, ref := range entry.Upstream {
-				if trimmed := strings.TrimSpace(ref.Ref); trimmed != "" {
-					mapped[filepath.ToSlash(trimmed)] = struct{}{}
+				path, supported, err := cleanMappedUpstreamRef(ref.Ref)
+				if err != nil {
+					errs = append(errs, fmt.Errorf("app map: entry %q: %w", entry.ID, err))
+					continue
 				}
+				if path == "" {
+					continue
+				}
+				if !supported {
+					errs = append(errs, fmt.Errorf("app map: entry %q: unsupported upstream ref %s", entry.ID, path))
+					continue
+				}
+				mapped[path] = struct{}{}
 			}
 		}
 	}
-	var errs []error
 	for _, path := range discovered {
 		if _, ok := mapped[path]; !ok {
 			errs = append(errs, fmt.Errorf("app map: unmapped upstream ref %s", path))
@@ -95,6 +105,22 @@ func inventoryRefs(repoRoot string) ([]string, error) {
 func exists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+func cleanMappedUpstreamRef(path string) (string, bool, error) {
+	trimmed := strings.TrimSpace(path)
+	if trimmed == "" {
+		return "", false, nil
+	}
+	if filepath.IsAbs(trimmed) {
+		return "", false, fmt.Errorf("absolute upstream ref path %s", filepath.ToSlash(trimmed))
+	}
+	cleaned := filepath.Clean(filepath.FromSlash(trimmed))
+	if cleaned == ".." || strings.HasPrefix(cleaned, ".."+string(filepath.Separator)) {
+		return filepath.ToSlash(cleaned), false, fmt.Errorf("upstream ref escapes repo root %s", filepath.ToSlash(cleaned))
+	}
+	relPath := filepath.ToSlash(cleaned)
+	return relPath, isInventoriedRef(relPath), nil
 }
 
 func isInventoriedRef(path string) bool {
