@@ -6,6 +6,45 @@ goscrapling follows Go module tags for releases. The project is still a partial
 Go-native Scrapling-style feature port; release notes must not claim complete
 Scrapling parity until the progress ledger and tests prove it.
 
+## v0.1.2 - 2026-06-01
+
+Patch release for the `v0.1` line, focused on shipping the latest hermetic
+Scrapling-parity surfaces through a stable Go module tag.
+
+### Added
+
+- Scripted CLI shell support for static `get/post/put/delete` shortcuts,
+  `help()`, `pages` history inspection, curl conversion helpers, and bounded
+  `view(page)`/`view(response)` artifact writing without launching a browser in
+  tests.
+- Browser, Gormes, and MCP fixture-backed surfaces for rendered markdown,
+  semantic trees, browser sessions, wait/action/capture controls, and
+  deterministic tool handlers.
+- Spider runtime fixtures for robots, cache, checkpointing, blocked retries,
+  lifecycle/stat/export behavior, link extraction, crawl/sitemap templates, and
+  session adapter seams.
+- Refreshed progress ledgers, upstream app-map evidence, builder queues,
+  benchmark fixtures, and parity scorecard generation after package/topology
+  refactors.
+
+### Known gaps
+
+- goscrapling remains a partial Scrapling-style port.
+- Full Python/IPython REPL compatibility, arbitrary shell expressions, live
+  browser deployment assumptions, and any challenge-solving or anti-bot bypass
+  behavior remain outside this release.
+
+### Validation for release candidate
+
+Release candidate validation should run from a clean checkout:
+
+```sh
+go test ./... -count=1
+go run ./cmd/progress validate
+jq empty docs/content/building-goscrapling/architecture_plan/progress.json
+git diff --check
+```
+
 ## v0.1.1 - 2026-05-20
 
 Maintenance release after `v0.1.0`, focused on internal architecture deepening for future Scrapling-parity work. No new complete Scrapling surface is claimed in this release.

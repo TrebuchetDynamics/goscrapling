@@ -249,6 +249,8 @@ architecture and decisions, not copied source.
 ## Documentation
 
 - [Changelog](CHANGELOG.md)
+- [v0.1.2 Release Notes](docs/releases/v0.1.2.md)
+- [v0.1.1 Release Notes](docs/releases/v0.1.1.md)
 - [v0.1.0 Release Notes](docs/releases/v0.1.0.md)
 - [Portfolio and Gormes Fit](docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md)
 - [Scrapling Architecture Map](docs/research/scrapling-architecture-map.md)
