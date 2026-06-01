@@ -147,7 +147,7 @@ Expected: all commands exit 0.
 Run:
 
 ```sh
-git add docs/superpowers/specs/2026-05-20-cross-layer-e2e-design.md docs/superpowers/plans/2026-05-20-cross-layer-e2e.md docs/content/building-goscrapling/architecture_plan/progress.json docs/content/building-goscrapling/builder-loop/agent-queue.md docs/content/building-goscrapling/builder-loop/next-slices.md cmd/goscrapling/cross_layer_e2e_test.go
+git add docs/superpowers/specs/validation/2026-05-20-cross-layer-e2e-design.md docs/superpowers/plans/2026-05-20-cross-layer-e2e.md docs/content/building-goscrapling/architecture_plan/progress.json docs/content/building-goscrapling/builder-loop/agent-queue.md docs/content/building-goscrapling/builder-loop/next-slices.md cmd/goscrapling/cross_layer_e2e_test.go
 git commit -m "test: add cross-layer e2e harness"
 git push origin main
 ```

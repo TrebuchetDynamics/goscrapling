@@ -254,5 +254,5 @@ architecture and decisions, not copied source.
 - [Scrapling Architecture Map](docs/research/scrapling-architecture-map.md)
 - [Scrapling Parity Matrix](docs/research/scrapling-parity-matrix.md)
 - [Progress Schema](docs/content/building-goscrapling/builder-loop/progress-schema.md)
-- [Adaptive Parser MVP Design](docs/superpowers/specs/2026-05-13-goscrapling-adaptive-parser-design.md)
-- [True Port Design](docs/superpowers/specs/2026-05-13-goscrapling-true-port-design.md)
+- [Adaptive Parser MVP Design](docs/superpowers/specs/parser-foundation/2026-05-13-goscrapling-adaptive-parser-design.md)
+- [True Port Design](docs/superpowers/specs/port-architecture/2026-05-13-goscrapling-true-port-design.md)

@@ -419,7 +419,7 @@ Add a `docs`-owned complete row under `phase-5-cli-tooling` / `tool-surfaces`:
   "execution_owner": "docs",
   "source_refs": [
     "references/Scrapling",
-    "docs/superpowers/specs/2026-05-14-goscrapling-upstream-app-map-design.md",
+    "docs/superpowers/specs/control-plane/2026-05-14-goscrapling-upstream-app-map-design.md",
     "https://github.com/py2many/py2many"
   ],
   "ready_when": [

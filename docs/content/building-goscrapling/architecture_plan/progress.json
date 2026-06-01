@@ -2279,7 +2279,7 @@
                 "references/Scrapling/scrapling/engines/_browsers",
                 "references/Scrapling/scrapling/fetchers",
                 "references/Scrapling/scrapling/spiders",
-                "docs/superpowers/specs/2026-05-15-goscrapling-scrapling-taxonomy-design.md"
+                "docs/superpowers/specs/port-architecture/2026-05-15-goscrapling-scrapling-taxonomy-design.md"
               ],
               "ready_when": [
                 "Current parser, fetcher, response, browser, storage, and spider tests pass in the flat package layout.",
@@ -2297,7 +2297,7 @@
                 "cmd/goscrapling/",
                 "internal/cli/",
                 "docs/content/building-goscrapling/architecture_plan/",
-                "docs/superpowers/specs/2026-05-15-goscrapling-scrapling-taxonomy-design.md",
+                "docs/superpowers/specs/port-architecture/2026-05-15-goscrapling-scrapling-taxonomy-design.md",
                 "core/translator/"
               ],
               "test_commands": [
