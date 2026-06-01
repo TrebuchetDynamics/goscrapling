@@ -147,8 +147,7 @@ func normalizeAllowedDomains(domains []string) []string {
 	}
 	normalized := make([]string, 0, len(domains))
 	for _, domain := range domains {
-		domain = strings.ToLower(strings.TrimSpace(domain))
-		domain = strings.TrimSuffix(domain, ".")
+		domain = normalizeDomainHost(strings.TrimSpace(domain))
 		if domain == "" {
 			continue
 		}
@@ -165,7 +164,7 @@ func isDomainAllowed(rawURL string, allowedDomains []string) bool {
 	if err != nil {
 		return false
 	}
-	host := strings.ToLower(strings.TrimSuffix(parsed.Hostname(), "."))
+	host := normalizeDomainHost(parsed.Hostname())
 	if host == "" {
 		return false
 	}
@@ -200,7 +199,11 @@ func crawlerDomain(rawURL string) string {
 	if err != nil {
 		return ""
 	}
-	return strings.ToLower(strings.TrimSuffix(parsed.Host, "."))
+	return normalizeDomainHost(parsed.Hostname())
+}
+
+func normalizeDomainHost(host string) string {
+	return strings.ToLower(strings.TrimSuffix(host, "."))
 }
 
 type StreamResult struct {

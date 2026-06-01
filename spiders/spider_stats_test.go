@@ -14,6 +14,19 @@ import (
 	"github.com/TrebuchetDynamics/goscrapling"
 )
 
+func TestCrawlerDomainNormalizesHostForStatsAndLimiters(t *testing.T) {
+	cases := map[string]string{
+		"https://example.com/path":       "example.com",
+		"https://EXAMPLE.com:443/path":   "example.com",
+		"https://blog.example.com./path": "blog.example.com",
+	}
+	for rawURL, want := range cases {
+		if got := crawlerDomain(rawURL); got != want {
+			t.Fatalf("crawlerDomain(%q) = %q, want %q", rawURL, got, want)
+		}
+	}
+}
+
 func TestSpiderLifecycleStatsAndStream(t *testing.T) {
 	session := &lifecycleSession{responses: map[string]lifecycleResponse{
 		"https://example.com/list":   {status: http.StatusOK, body: "list-body"},
