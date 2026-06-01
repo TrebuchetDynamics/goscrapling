@@ -34,6 +34,17 @@ func TestParsePreservesDollarPrefixedDataValues(t *testing.T) {
 	}
 }
 
+func TestParsePreservesBackslashesInsideSingleQuotedValues(t *testing.T) {
+	request, err := Parse(`curl 'https://example.com/form' --data 'path=C:\Temp\kit'`)
+	if err != nil {
+		t.Fatalf("Parse returned error: %v", err)
+	}
+
+	if request.Body != `path=C:\Temp\kit` {
+		t.Fatalf("Body = %q, want single-quoted curl value to preserve literal backslashes", request.Body)
+	}
+}
+
 func TestParseSkipsShellLineContinuations(t *testing.T) {
 	request, err := Parse("curl 'https://example.com/search' \\\n\t-H 'X-Trace: copied' \\\n\t--data-raw 'q=kit'")
 	if err != nil {

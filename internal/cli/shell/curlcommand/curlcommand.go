@@ -191,7 +191,7 @@ func splitWords(command string) ([]curlWord, error) {
 			escaped = false
 			continue
 		}
-		if r == '\\' {
+		if shouldStartCurlEscape(quote, r) {
 			escaped = true
 			continue
 		}
@@ -228,6 +228,13 @@ func splitWords(command string) ([]curlWord, error) {
 		words = append(words, curlWord{text: current.String()})
 	}
 	return words, nil
+}
+
+func shouldStartCurlEscape(quote rune, r rune) bool {
+	if r != '\\' {
+		return false
+	}
+	return quote != '\''
 }
 
 func appendEscapedCurlRune(current *strings.Builder, r rune) {
