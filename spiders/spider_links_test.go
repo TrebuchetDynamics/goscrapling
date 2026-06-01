@@ -259,6 +259,27 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 		}
 	})
 
+	t.Run("crawl spider rule dispatch matches relative URLs against response URL", func(t *testing.T) {
+		extractor, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{Allow: []string{`/post/`}})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor relative dispatch returned error: %v", err)
+		}
+		callback := func(context.Context, spiders.Response) ([]spiders.Output, error) { return nil, nil }
+		request, err := spidertemplates.DispatchByRules(response, "/post/relative?b=2&a=1#drop", []spidertemplates.CrawlRule{{LinkExtractor: extractor, Callback: callback}}, nil)
+		if err != nil {
+			t.Fatalf("DispatchByRules returned error: %v", err)
+		}
+		if request == nil {
+			t.Fatal("DispatchByRules did not match relative URL")
+		}
+		if request.URL != "https://example.com/post/relative?a=1&b=2" {
+			t.Fatalf("relative dispatch URL = %q", request.URL)
+		}
+		if request.Callback == nil {
+			t.Fatal("relative dispatch request should carry matching rule callback")
+		}
+	})
+
 	t.Run("sitemap spider rule matching honors link extractor process rejection", func(t *testing.T) {
 		allowNonDrafts, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{
 			Allow: []string{`/posts/`},

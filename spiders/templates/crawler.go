@@ -65,7 +65,7 @@ func DispatchByRules(response spiders.Response, rawURL string, rules []CrawlRule
 		if rule.LinkExtractor == nil {
 			continue
 		}
-		matchedURL, ok := rule.LinkExtractor.MatchURL(rawURL)
+		matchedURL, ok := rule.LinkExtractor.MatchURLFrom(response.URL(), rawURL)
 		if !ok {
 			continue
 		}
