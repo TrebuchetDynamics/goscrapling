@@ -24,6 +24,7 @@ var (
 	shellCSSGetCall       = regexp.MustCompile(`^(page|response)\.css\((.*)\)\.get\((.*)\)$`)
 	shellCSSTextCall      = regexp.MustCompile(`^(page|response)\.css\((.*)\)\.text\(\)$`)
 	shellCurl2FetcherCall = regexp.MustCompile(`^curl2fetcher\((.*)\)$`)
+	shellHelpCall         = regexp.MustCompile(`^help\(\)$`)
 	shellUncurlFieldCall  = regexp.MustCompile(`^uncurl\((.*)\)\.(method|url|body)$`)
 	shellUncurlValueCall  = regexp.MustCompile(`^uncurl\((.*)\)\.(header|cookie|param)\((.*)\)$`)
 )
@@ -114,9 +115,37 @@ func (s *shellSession) run(stdout io.Writer, script string) error {
 			}
 			continue
 		}
+		if shellHelpCall.MatchString(statement) {
+			if _, err := fmt.Fprint(stdout, shellHelpText()); err != nil {
+				return err
+			}
+			continue
+		}
 		return parseError("unsupported shell statement %q", statement)
 	}
 	return nil
+}
+
+func shellHelpText() string {
+	return `-> Available goscrapling shell objects:
+   - Fetcher-style static request shortcuts
+   - Response selector helpers on page and response
+
+-> Useful shortcuts:
+   - get                            Shortcut for static GET
+   - post                           Shortcut for static POST
+   - put                            Shortcut for static PUT
+   - delete                         Shortcut for static DELETE
+
+-> Useful commands:
+   - page / response                The response object of the last page fetched
+   - pages                          The last 5 response objects fetched
+   - uncurl('curl_command')         Convert a DevTools-style curl command to request metadata
+   - curl2fetcher('curl_command')   Convert a curl command and execute it with the static fetcher
+   - help()                         Show this help message
+
+Note: interactive REPL is not implemented in goscrapling; use shell -c with scripted statements.
+`
 }
 
 func (s *shellSession) staticMethod(method string, rawURL string, callOpts shellCallOptions) (*goscrapling.Response, error) {

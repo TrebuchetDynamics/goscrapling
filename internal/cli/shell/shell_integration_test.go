@@ -147,6 +147,32 @@ func TestCLIShellHTTPMethodShortcuts(t *testing.T) {
 	}
 }
 
+func TestCLIShellHelpShortcut(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	err := cli.Run(&stdout, &stderr, []string{"shell", "-c", "help()"})
+	if err != nil {
+		t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
+	}
+
+	output := stdout.String()
+	for _, want := range []string{
+		"Available goscrapling shell objects",
+		"get",
+		"post",
+		"put",
+		"delete",
+		"page / response",
+		"pages",
+		"uncurl",
+		"curl2fetcher",
+		"interactive REPL is not implemented",
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("help output missing %q:\n%s", want, output)
+		}
+	}
+}
+
 func TestCLIShell(t *testing.T) {
 	t.Run("scripted shell updates page shortcuts and evaluates selectors", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
