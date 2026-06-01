@@ -363,11 +363,15 @@ func robotsAgentMatchScore(agent, userAgent string) int {
 		return 1
 	}
 	for _, token := range robotsUserAgentProductTokens(userAgent) {
-		if token == agent {
+		if robotsAgentMatchesToken(agent, token) {
 			return len(agent) + 1
 		}
 	}
 	return -1
+}
+
+func robotsAgentMatchesToken(agent, token string) bool {
+	return strings.HasPrefix(token, agent)
 }
 
 func robotsUserAgentProductTokens(userAgent string) []string {

@@ -100,6 +100,9 @@ func TestRobotsTxtManager(t *testing.T) {
 		if parser.canFetch("https://example.com/private/report", "GoodBot/1.0") {
 			t.Fatal("GoodBot product-token prefix should match GoodBot policy")
 		}
+		if parser.canFetch("https://example.com/private/report", "GoodBot-Mobile/1.0") {
+			t.Fatal("longer product-token prefix should still match GoodBot policy")
+		}
 	})
 
 	t.Run("parses allow deny and delay directives from local fixtures", func(t *testing.T) {
