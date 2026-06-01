@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/TrebuchetDynamics/goscrapling/fetchers/internal/auth"
 )
 
 type ProxyOptions struct {
@@ -119,10 +121,7 @@ func cloneProxyOptions(opts ProxyOptions) ProxyOptions {
 	cloned := ProxyOptions{
 		URL: opts.URL,
 	}
-	if opts.Auth != nil {
-		auth := *opts.Auth
-		cloned.Auth = &auth
-	}
+	cloned.Auth = auth.Clone(opts.Auth)
 	if len(opts.URLs) > 0 {
 		cloned.URLs = make(map[string]string, len(opts.URLs))
 		for scheme, proxyURL := range opts.URLs {
