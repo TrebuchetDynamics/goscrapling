@@ -269,6 +269,15 @@ func (p *robotsTxtParser) delayDirectives(userAgent string) RobotsDelayDirective
 }
 
 func (p *robotsTxtParser) groupFor(userAgent string) *robotsGroup {
+	matches := p.matchingGroups(userAgent)
+	if len(matches) == 0 {
+		return nil
+	}
+	merged := mergeRobotsGroups(matches)
+	return &merged
+}
+
+func (p *robotsTxtParser) matchingGroups(userAgent string) []robotsGroup {
 	if p == nil {
 		return nil
 	}
@@ -276,21 +285,66 @@ func (p *robotsTxtParser) groupFor(userAgent string) *robotsGroup {
 	if ua == "" {
 		ua = "*"
 	}
-	bestIndex := -1
 	bestScore := -1
-	for i, group := range p.groups {
-		for _, agent := range group.agents {
-			score := robotsAgentMatchScore(agent, ua)
-			if score > bestScore {
-				bestScore = score
-				bestIndex = i
-			}
+	matches := make([]robotsGroup, 0, 1)
+	for _, group := range p.groups {
+		groupScore := robotsGroupMatchScore(group, ua)
+		if groupScore < 0 || groupScore < bestScore {
+			continue
+		}
+		if groupScore > bestScore {
+			bestScore = groupScore
+			matches = matches[:0]
+		}
+		matches = append(matches, group)
+	}
+	return matches
+}
+
+func robotsGroupMatchScore(group robotsGroup, userAgent string) int {
+	bestScore := -1
+	for _, agent := range group.agents {
+		if score := robotsAgentMatchScore(agent, userAgent); score > bestScore {
+			bestScore = score
 		}
 	}
-	if bestIndex == -1 {
+	return bestScore
+}
+
+func mergeRobotsGroups(groups []robotsGroup) robotsGroup {
+	var merged robotsGroup
+	for _, group := range groups {
+		merged.agents = append(merged.agents, group.agents...)
+		merged.rules = append(merged.rules, group.rules...)
+		if group.crawlDelay > merged.crawlDelay {
+			merged.crawlDelay = group.crawlDelay
+		}
+		merged.requestRate = slowerRobotsRequestRate(merged.requestRate, group.requestRate)
+	}
+	return merged
+}
+
+func slowerRobotsRequestRate(left, right *RobotsRequestRate) *RobotsRequestRate {
+	if left == nil {
+		return cloneRobotsRequestRate(right)
+	}
+	if right == nil {
+		return cloneRobotsRequestRate(left)
+	}
+	leftDelay := left.Period / time.Duration(left.Requests)
+	rightDelay := right.Period / time.Duration(right.Requests)
+	if rightDelay > leftDelay {
+		return cloneRobotsRequestRate(right)
+	}
+	return cloneRobotsRequestRate(left)
+}
+
+func cloneRobotsRequestRate(rate *RobotsRequestRate) *RobotsRequestRate {
+	if rate == nil {
 		return nil
 	}
-	return &p.groups[bestIndex]
+	cloned := *rate
+	return &cloned
 }
 
 func robotsAgentMatchScore(agent, userAgent string) int {

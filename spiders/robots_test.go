@@ -17,6 +17,30 @@ import (
 )
 
 func TestRobotsTxtManager(t *testing.T) {
+	t.Run("merges duplicate matching user-agent groups", func(t *testing.T) {
+		parser := parseRobotsTxt(strings.Join([]string{
+			"User-agent: GoodBot",
+			"Disallow: /private",
+			"",
+			"User-agent: OtherBot",
+			"Disallow: /other",
+			"",
+			"User-agent: GoodBot",
+			"Allow: /private/public",
+			"Crawl-delay: 2",
+		}, "\n"))
+
+		if parser.canFetch("https://example.com/private/report", "GoodBot/1.0") {
+			t.Fatal("merged GoodBot groups should deny /private")
+		}
+		if !parser.canFetch("https://example.com/private/public/index", "GoodBot/1.0") {
+			t.Fatal("merged GoodBot groups should allow longer /private/public rule")
+		}
+		if got := parser.delayDirectives("GoodBot/1.0").CrawlDelay; got != 2*time.Second {
+			t.Fatalf("merged GoodBot crawl delay = %s, want 2s", got)
+		}
+	})
+
 	t.Run("parses allow deny and delay directives from local fixtures", func(t *testing.T) {
 		fetcher := newRobotsFixtureFetcher(t)
 		manager := NewRobotsTxtManager(fetcher.Fetch)
