@@ -132,11 +132,20 @@ func (e *LinkExtractor) Extract(response Response) ([]string, error) {
 }
 
 func (e *LinkExtractor) Matches(rawURL string) bool {
+	_, ok := e.MatchURL(rawURL)
+	return ok
+}
+
+// MatchURL returns the processed, canonical URL that made rawURL match.
+func (e *LinkExtractor) MatchURL(rawURL string) (string, bool) {
 	if e == nil {
-		return false
+		return "", false
 	}
 	result := e.prepareCandidateDiagnostic(matchCandidateBaseURL(rawURL, e.strip), rawURL)
-	return result.ok
+	if !result.ok {
+		return "", false
+	}
+	return result.candidate.url, true
 }
 
 func matchCandidateBaseURL(rawURL string, strip bool) string {

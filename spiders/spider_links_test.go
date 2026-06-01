@@ -280,6 +280,30 @@ func TestSpiderLinkExtractorAndTemplates(t *testing.T) {
 		}
 	})
 
+	t.Run("sitemap spider rule dispatch follows link extractor processed URL", func(t *testing.T) {
+		rewrite, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{
+			Allow: []string{`/new`},
+			Process: func(raw string) (string, bool) {
+				if raw == "https://example.com/posts/old?b=2&a=1#drop" {
+					return "../new?z=9&a=1#drop", true
+				}
+				return raw, true
+			},
+		})
+		if err != nil {
+			t.Fatalf("NewLinkExtractor rewrite rule returned error: %v", err)
+		}
+		sitemap := &spidertemplates.SitemapSpider{Rules: []spidertemplates.CrawlRule{{LinkExtractor: rewrite}}}
+		body := `<urlset><url><loc>https://example.com/posts/old?b=2&amp;a=1#drop</loc></url></urlset>`
+		outputs, err := sitemap.ParseSitemap(context.Background(), newTemplateResponse(t, "https://example.com/sitemaps/posts.xml", body, "application/xml"))
+		if err != nil {
+			t.Fatalf("ParseSitemap returned error: %v", err)
+		}
+		if got := requestURLs(outputs); !reflect.DeepEqual(got, []string{"https://example.com/new?a=1&z=9"}) {
+			t.Fatalf("processed sitemap requests = %#v, want rewritten canonical URL", got)
+		}
+	})
+
 	t.Run("sitemap spider follows indexes robots directives alternates and first matching rules", func(t *testing.T) {
 		follow, err := spiders.NewLinkExtractor(spiders.LinkExtractorOptions{Allow: []string{`posts-sitemap`}})
 		if err != nil {

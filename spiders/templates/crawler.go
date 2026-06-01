@@ -62,10 +62,14 @@ func DispatchByRules(response spiders.Response, rawURL string, rules []CrawlRule
 		return &request, nil
 	}
 	for _, rule := range rules {
-		if rule.LinkExtractor == nil || !rule.LinkExtractor.Matches(rawURL) {
+		if rule.LinkExtractor == nil {
 			continue
 		}
-		request, err := response.Follow(rawURL, spiders.FollowOptions{Callback: rule.Callback})
+		matchedURL, ok := rule.LinkExtractor.MatchURL(rawURL)
+		if !ok {
+			continue
+		}
+		request, err := response.Follow(matchedURL, spiders.FollowOptions{Callback: rule.Callback})
 		if err != nil {
 			return nil, err
 		}
