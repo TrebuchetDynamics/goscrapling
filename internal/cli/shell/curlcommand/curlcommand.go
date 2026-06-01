@@ -159,7 +159,7 @@ func methodWithBodyData(currentMethod string, explicitMethod bool) string {
 }
 
 func nextToken(tokens []curlWord, index *int, name string) (curlWord, bool) {
-	if *index+1 >= len(tokens) || tokens[*index+1].text == "" {
+	if *index+1 >= len(tokens) {
 		return curlWord{}, false
 	}
 	*index = *index + 1
@@ -184,10 +184,13 @@ func splitWords(command string) ([]curlWord, error) {
 	var words []curlWord
 	var current strings.Builder
 	var quote rune
+	inWord := false
 	escaped := false
 	for _, r := range command {
 		if escaped {
-			appendEscapedCurlRune(&current, r)
+			if appendEscapedCurlRune(&current, r) {
+				inWord = true
+			}
 			escaped = false
 			continue
 		}
@@ -200,6 +203,7 @@ func splitWords(command string) ([]curlWord, error) {
 				quote = 0
 			} else {
 				current.WriteRune(r)
+				inWord = true
 			}
 			continue
 		}
@@ -209,22 +213,26 @@ func splitWords(command string) ([]curlWord, error) {
 				trimBuilderSuffix(&current, "$")
 			}
 			quote = r
+			inWord = true
 		case ' ', '\t', '\n', '\r':
-			if current.Len() > 0 {
+			if inWord {
 				words = append(words, curlWord{text: current.String()})
 				current.Reset()
+				inWord = false
 			}
 		default:
 			current.WriteRune(r)
+			inWord = true
 		}
 	}
 	if escaped {
 		current.WriteRune('\\')
+		inWord = true
 	}
 	if quote != 0 {
 		return nil, fmt.Errorf("unterminated quote")
 	}
-	if current.Len() > 0 {
+	if inWord {
 		words = append(words, curlWord{text: current.String()})
 	}
 	return words, nil
@@ -237,11 +245,12 @@ func shouldStartCurlEscape(quote rune, r rune) bool {
 	return quote != '\''
 }
 
-func appendEscapedCurlRune(current *strings.Builder, r rune) {
+func appendEscapedCurlRune(current *strings.Builder, r rune) bool {
 	if isShellLineContinuationRune(r) {
-		return
+		return false
 	}
 	current.WriteRune(r)
+	return true
 }
 
 func isShellLineContinuationRune(r rune) bool {

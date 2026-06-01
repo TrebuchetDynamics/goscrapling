@@ -62,6 +62,20 @@ func TestParseSkipsShellLineContinuations(t *testing.T) {
 	}
 }
 
+func TestParsePreservesEmptyQuotedDataValue(t *testing.T) {
+	request, err := Parse(`curl 'https://example.com/form' --data ''`)
+	if err != nil {
+		t.Fatalf("Parse returned error: %v", err)
+	}
+
+	if request.Method != "post" {
+		t.Fatalf("Method = %q, want post", request.Method)
+	}
+	if request.Body != "" {
+		t.Fatalf("Body = %q, want empty quoted data preserved as an explicit empty body", request.Body)
+	}
+}
+
 func TestParseHonorsExplicitGetWithBody(t *testing.T) {
 	request, err := Parse(`curl -X GET 'https://example.com/search' --data 'q=kit'`)
 	if err != nil {
