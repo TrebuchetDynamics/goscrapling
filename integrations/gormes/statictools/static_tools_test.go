@@ -1,4 +1,4 @@
-package gormes
+package statictools
 
 import (
 	"context"
