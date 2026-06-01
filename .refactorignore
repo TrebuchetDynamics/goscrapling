@@ -1,0 +1,7 @@
+# auto-folder-refactor smart ignores
+references/Scrapling/
+Scrapling/
+testdata/
+docs/content/building-goscrapling/architecture_plan/parity/coverage/
+internal/cli/extract/testdata/
+internal/cli/testdata/
