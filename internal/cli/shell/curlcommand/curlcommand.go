@@ -40,18 +40,19 @@ func Parse(command string) (Request, error) {
 	explicitMethod := false
 	for i := 0; i < len(tokens); i++ {
 		token := tokens[i]
-		switch token.text {
+		option, inlineValue, hasInlineValue := splitInlineLongOption(token.text)
+		switch option {
 		case "-X", "--request":
-			value, ok := nextToken(tokens, &i, token.text)
+			value, ok := optionValue(tokens, &i, inlineValue, hasInlineValue)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token.text)
+				return Request{}, parseError("%s requires a value", option)
 			}
 			request.Method = strings.ToLower(value.text)
 			explicitMethod = true
 		case "-H", "--header":
-			value, ok := nextToken(tokens, &i, token.text)
+			value, ok := optionValue(tokens, &i, inlineValue, hasInlineValue)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token.text)
+				return Request{}, parseError("%s requires a value", option)
 			}
 			key, headerValue, err := arguments.ParseHeader(value.text)
 			if err != nil {
@@ -63,23 +64,23 @@ func Parse(command string) (Request, error) {
 				request.Headers.Add(key, headerValue)
 			}
 		case "-b", "--cookie":
-			value, ok := nextToken(tokens, &i, token.text)
+			value, ok := optionValue(tokens, &i, inlineValue, hasInlineValue)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token.text)
+				return Request{}, parseError("%s requires a value", option)
 			}
 			mergeCookies(request.Cookies, value.text)
 		case "-d", "--data", "--data-raw", "--data-binary":
-			value, ok := nextToken(tokens, &i, token.text)
+			value, ok := optionValue(tokens, &i, inlineValue, hasInlineValue)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token.text)
+				return Request{}, parseError("%s requires a value", option)
 			}
 			data.add(value)
 		case "-G", "--get":
 			data.forceQueryParams = true
 		case "--url":
-			value, ok := nextToken(tokens, &i, token.text)
+			value, ok := optionValue(tokens, &i, inlineValue, hasInlineValue)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token.text)
+				return Request{}, parseError("%s requires a value", option)
 			}
 			rawURL = value.text
 		case "--compressed", "-i", "--include", "-s", "--silent", "-v", "--verbose", "-k", "--insecure":
@@ -182,7 +183,25 @@ func methodWithBodyData(currentMethod string, explicitMethod bool) string {
 	return currentMethod
 }
 
-func nextToken(tokens []curlWord, index *int, name string) (curlWord, bool) {
+func splitInlineLongOption(text string) (option string, value curlWord, hasValue bool) {
+	if !strings.HasPrefix(text, "--") {
+		return text, curlWord{}, false
+	}
+	option, rawValue, ok := strings.Cut(text, "=")
+	if !ok {
+		return text, curlWord{}, false
+	}
+	return option, curlWord{text: rawValue}, true
+}
+
+func optionValue(tokens []curlWord, index *int, inlineValue curlWord, hasInlineValue bool) (curlWord, bool) {
+	if hasInlineValue {
+		return inlineValue, true
+	}
+	return nextToken(tokens, index)
+}
+
+func nextToken(tokens []curlWord, index *int) (curlWord, bool) {
 	if *index+1 >= len(tokens) {
 		return curlWord{}, false
 	}

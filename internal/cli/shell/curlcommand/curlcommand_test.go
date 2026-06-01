@@ -112,6 +112,26 @@ func TestParseHonorsExplicitMethodWithGetData(t *testing.T) {
 	}
 }
 
+func TestParseAcceptsLongOptionsWithEqualsValues(t *testing.T) {
+	request, err := Parse(`curl --url=https://example.com/form --header='X-Trace: copied' --cookie='session=abc; theme=dark' --data-raw='q=kit'`)
+	if err != nil {
+		t.Fatalf("Parse returned error: %v", err)
+	}
+
+	if request.URL != "https://example.com/form" {
+		t.Fatalf("URL = %q, want normalized --url value", request.URL)
+	}
+	if got := request.Headers.Get("X-Trace"); got != "copied" {
+		t.Fatalf("Headers.Get(%q) = %q, want %q", "X-Trace", got, "copied")
+	}
+	if got := request.Cookies["session"]; got != "abc" {
+		t.Fatalf("Cookies[%q] = %q, want %q (all cookies: %v)", "session", got, "abc", request.Cookies)
+	}
+	if request.Method != "post" || request.Body != "q=kit" {
+		t.Fatalf("Method/body = %q/%q, want post/q=kit", request.Method, request.Body)
+	}
+}
+
 func TestParsePreservesRepeatedDataValues(t *testing.T) {
 	t.Run("get data becomes query params without dropping earlier fields", func(t *testing.T) {
 		request, err := Parse(`curl -G 'https://example.com/search?existing=1' --data 'q=kit' --data-raw 'page=2'`)
