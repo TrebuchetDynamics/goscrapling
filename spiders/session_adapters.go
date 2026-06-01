@@ -253,7 +253,7 @@ func mergeSpiderBrowserOptions(base, override browser.BrowserOptions) browser.Br
 		merged.UserAgent = override.UserAgent
 	}
 	if len(override.Cookies) > 0 {
-		merged.Cookies = append([]*http.Cookie(nil), override.Cookies...)
+		merged.Cookies = cloneHTTPCookies(override.Cookies)
 	}
 	if override.Locale != "" {
 		merged.Locale = override.Locale
@@ -347,9 +347,7 @@ func mergeSpiderStealthOptions(base, override browser.BrowserStealthOptions) bro
 
 func cloneSpiderBrowserOptions(opts browser.BrowserOptions) browser.BrowserOptions {
 	opts.Headers = opts.Headers.Clone()
-	if len(opts.Cookies) > 0 {
-		opts.Cookies = append([]*http.Cookie(nil), opts.Cookies...)
-	}
+	opts.Cookies = cloneHTTPCookies(opts.Cookies)
 	opts.BlockedDomains = append([]string(nil), opts.BlockedDomains...)
 	opts.Actions = append([]browser.BrowserAction(nil), opts.Actions...)
 	opts.ExtraFlags = append([]string(nil), opts.ExtraFlags...)
@@ -437,6 +435,21 @@ func mergeHTTPHeaders(base, override http.Header) http.Header {
 		}
 	}
 	return merged
+}
+
+func cloneHTTPCookies(cookies []*http.Cookie) []*http.Cookie {
+	if len(cookies) == 0 {
+		return nil
+	}
+	cloned := make([]*http.Cookie, 0, len(cookies))
+	for _, cookie := range cookies {
+		if cookie == nil {
+			continue
+		}
+		copy := *cookie
+		cloned = append(cloned, &copy)
+	}
+	return cloned
 }
 
 func cloneStringMap(values map[string]string) map[string]string {
