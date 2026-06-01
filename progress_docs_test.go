@@ -39,7 +39,7 @@ func TestUpstreamCoverageLedgerClassifiesScraplingSourceClasses(t *testing.T) {
 	if _, err := os.Stat(root); err != nil {
 		t.Skipf("Scrapling checkout not present: %v", err)
 	}
-	body, err := os.ReadFile(filepath.Join("docs", "content", "building-goscrapling", "architecture_plan", "parity", "upstream-coverage-ledger.md"))
+	body, err := os.ReadFile(filepath.Join("docs", "content", "building-goscrapling", "architecture_plan", "upstream-coverage-ledger.md"))
 	if err != nil {
 		t.Fatalf("read coverage ledger: %v", err)
 	}

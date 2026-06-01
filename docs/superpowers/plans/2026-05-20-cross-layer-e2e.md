@@ -14,8 +14,8 @@
 
 **Files:**
 - Modify: `docs/content/building-goscrapling/architecture_plan/progress.json`
-- Generated after validation: `docs/content/building-goscrapling/builder-loop/agent-queue.md`
-- Generated after validation: `docs/content/building-goscrapling/builder-loop/next-slices.md`
+- Generated after validation: `docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md`
+- Generated after validation: `docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md`
 
 - [ ] **Step 1: Insert the row under `phase-5-cli-tooling/tool-surfaces`**
 
@@ -48,8 +48,8 @@ Add this item after `Full CLI E2E validation harness`:
   "write_scope": [
     "cmd/goscrapling/cross_layer_e2e_test.go",
     "docs/content/building-goscrapling/architecture_plan/progress.json",
-    "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-    "docs/content/building-goscrapling/builder-loop/next-slices.md"
+    "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+    "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
   ],
   "test_commands": [
     "go test ./cmd/goscrapling -run TestGoscraplingCrossLayerLocalEndToEnd -count=1",
@@ -114,8 +114,8 @@ Expected before any implementation fix: if the test exposes a missing compositio
 
 **Files:**
 - Modify: `docs/content/building-goscrapling/architecture_plan/progress.json`
-- Generated: `docs/content/building-goscrapling/builder-loop/agent-queue.md`
-- Generated: `docs/content/building-goscrapling/builder-loop/next-slices.md`
+- Generated: `docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md`
+- Generated: `docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md`
 
 - [ ] **Step 1: If focused E2E passes, mark row complete**
 
@@ -147,7 +147,7 @@ Expected: all commands exit 0.
 Run:
 
 ```sh
-git add docs/superpowers/specs/validation/2026-05-20-cross-layer-e2e-design.md docs/superpowers/plans/2026-05-20-cross-layer-e2e.md docs/content/building-goscrapling/architecture_plan/progress.json docs/content/building-goscrapling/builder-loop/agent-queue.md docs/content/building-goscrapling/builder-loop/next-slices.md cmd/goscrapling/cross_layer_e2e_test.go
+git add docs/superpowers/specs/validation/2026-05-20-cross-layer-e2e-design.md docs/superpowers/plans/2026-05-20-cross-layer-e2e.md docs/content/building-goscrapling/architecture_plan/progress.json docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md cmd/goscrapling/cross_layer_e2e_test.go
 git commit -m "test: add cross-layer e2e harness"
 git push origin main
 ```

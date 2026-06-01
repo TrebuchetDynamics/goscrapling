@@ -21,14 +21,14 @@
 - Create `cmd/progress/main_test.go`: CLI tests using temp repos and markered docs.
 - Modify `docs/content/building-goscrapling/architecture_plan/progress.json`: add `agent_queue`, split Phase 1 rows, keep future rows row-backed.
 - Create generated docs:
-  - `docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md`
-  - `docs/content/building-goscrapling/builder-loop/agent-queue.md`
-  - `docs/content/building-goscrapling/builder-loop/next-slices.md`
-  - `docs/content/building-goscrapling/builder-loop/blocked-slices.md`
-  - `docs/content/building-goscrapling/builder-loop/umbrella-cleanup.md`
+  - `docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md`
+  - `docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md`
+  - `docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md`
+  - `docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md`
+  - `docs/content/building-goscrapling/builder-loop/surfaces/cleanup/umbrella-cleanup.md`
 - Create `docs/content/building-goscrapling/architecture_plan/scrapling-behavior-atoms.md`.
 - Create `docs/content/building-goscrapling/architecture_plan/boundaries.md`.
-- Modify `docs/content/building-goscrapling/builder-loop/progress-schema.md`.
+- Modify `docs/content/building-goscrapling/builder-loop/schema/progress-schema.md`.
 - Modify `progress_docs_test.go`: strengthen upstream coverage checks and call `internal/progress` validation.
 - Modify `README.md` and `AGENTS.md`: mention `go run ./cmd/progress validate/write`.
 
@@ -202,11 +202,11 @@ docs/content/building-goscrapling/architecture_plan/progress.json
 `write` rewrites these files:
 
 ```text
-docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md
-docs/content/building-goscrapling/builder-loop/agent-queue.md
-docs/content/building-goscrapling/builder-loop/next-slices.md
-docs/content/building-goscrapling/builder-loop/blocked-slices.md
-docs/content/building-goscrapling/builder-loop/umbrella-cleanup.md
+docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md
+docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md
+docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md
+docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md
+docs/content/building-goscrapling/builder-loop/surfaces/cleanup/umbrella-cleanup.md
 ```
 
 - [ ] **Step 4: Run focused test and confirm GREEN**
@@ -230,12 +230,12 @@ git commit -m "feat: add progress control cli"
 
 **Files:**
 - Modify: `docs/content/building-goscrapling/architecture_plan/progress.json`
-- Create: `docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md`
-- Create: `docs/content/building-goscrapling/builder-loop/agent-queue.md`
-- Create: `docs/content/building-goscrapling/builder-loop/next-slices.md`
-- Create: `docs/content/building-goscrapling/builder-loop/blocked-slices.md`
-- Create: `docs/content/building-goscrapling/builder-loop/umbrella-cleanup.md`
-- Modify: `docs/content/building-goscrapling/builder-loop/progress-schema.md`
+- Create: `docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md`
+- Create: `docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md`
+- Create: `docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md`
+- Create: `docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md`
+- Create: `docs/content/building-goscrapling/builder-loop/surfaces/cleanup/umbrella-cleanup.md`
+- Modify: `docs/content/building-goscrapling/builder-loop/schema/progress-schema.md`
 
 - [ ] **Step 1: Add markered docs**
 

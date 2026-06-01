@@ -13,8 +13,8 @@
       "entrypoint": ".pi/skills/goscrapling-skill-manager/SKILL.md",
       "plan": "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
       "coverage_ledger": "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
-      "agent_queue": "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-      "progress_schema": "docs/content/building-goscrapling/builder-loop/progress-schema.md",
+      "agent_queue": "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+      "progress_schema": "docs/content/building-goscrapling/builder-loop/schema/progress-schema.md",
       "candidate_source": "docs/content/building-goscrapling/architecture_plan/progress.json",
       "unit_test": "go test ./... -count=1",
       "candidate_policy": [
@@ -689,9 +689,9 @@
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestStaticFetcherIdentityOptions -count=1",
@@ -781,9 +781,9 @@
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
                 "docs/research/scrapling-parity-matrix.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestConcurrentFetcher -count=1",
@@ -1072,9 +1072,9 @@
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestBrowserSessionPool -count=1",
@@ -1120,9 +1120,9 @@
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestBrowserActionsAndCapture -count=1",
@@ -1172,9 +1172,9 @@
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
                 "docs/content/building-goscrapling/architecture_plan/boundaries.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/blocked-slices.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestBrowserContextOptions -count=1",
@@ -1456,8 +1456,8 @@
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestSpiderResponseCache -count=1"
@@ -1817,8 +1817,8 @@
               "write_scope": [
                 "cmd/goscrapling/cross_layer_e2e_test.go",
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
                 "go test ./cmd/goscrapling -run TestGoscraplingCrossLayerLocalEndToEnd -count=1",
@@ -1872,9 +1872,9 @@
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md",
-                "docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md",
                 "docs/research/parity-scorecard.md"
               ],
               "test_commands": [
@@ -1920,8 +1920,8 @@
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestCLIShell -count=1"
@@ -1962,8 +1962,8 @@
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/strategy/portfolio-and-gormes-fit.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
               ],
               "test_commands": [
                 "go test ./... -run TestGormesIntegration -count=1"
@@ -2094,9 +2094,9 @@
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
                 "docs/research/scrapling-parity-matrix.md",
                 "docs/research/parity-scorecard.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md",
-                "docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md"
               ],
               "test_commands": [
                 "go test ./internal/cli -run TestCLIInstallCommand -count=1",
@@ -2348,9 +2348,9 @@
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
                 "docs/research/scrapling-parity-matrix.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md",
-                "docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md",
                 "README.md",
                 "docs/research/parity-scorecard.md"
               ],
@@ -2396,9 +2396,9 @@
                 "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
                 "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
                 "docs/research/scrapling-parity-matrix.md",
-                "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-                "docs/content/building-goscrapling/builder-loop/next-slices.md",
-                "docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md"
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md"
               ],
               "test_commands": [
                 "go test ./internal/cli -run TestCLIShellHTTPMethodShortcuts -count=1",

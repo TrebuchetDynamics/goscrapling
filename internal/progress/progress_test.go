@@ -104,8 +104,8 @@ func fixtureProgress() *Progress {
 			BuilderLoop: BuilderLoopMeta{
 				Entrypoint:      ".pi/skills/goscrapling-skill-manager/SKILL.md",
 				Plan:            "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
-				AgentQueue:      "docs/content/building-goscrapling/builder-loop/agent-queue.md",
-				ProgressSchema:  "docs/content/building-goscrapling/builder-loop/progress-schema.md",
+				AgentQueue:      "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+				ProgressSchema:  "docs/content/building-goscrapling/builder-loop/schema/progress-schema.md",
 				CandidateSource: "docs/content/building-goscrapling/architecture_plan/progress.json",
 				UnitTest:        "go test ./... -count=1",
 				CandidatePolicy: []string{"Use builder-ready rows."},

@@ -24,7 +24,7 @@ Use these files before splitting or building work:
 - `docs/content/building-goscrapling/architecture_plan/progress.json`
 - `docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md`
 - `docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md`
-- `docs/content/building-goscrapling/builder-loop/progress-schema.md`
+- `docs/content/building-goscrapling/builder-loop/schema/progress-schema.md`
 
 Do not create parallel backlogs. New feature work must either update an
 existing `progress.json` row or add a builder-sized row with source refs, write

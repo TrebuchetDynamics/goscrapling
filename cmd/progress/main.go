@@ -97,11 +97,11 @@ func writeDocs(stdout io.Writer, root string) error {
 		kind string
 		body string
 	}{
-		{path: "docs/content/building-goscrapling/builder-loop/builder-loop-handoff.md", kind: "builder-loop-handoff", body: progress.RenderBuilderLoopHandoff(p)},
-		{path: "docs/content/building-goscrapling/builder-loop/agent-queue.md", kind: "agent-queue", body: progress.RenderAgentQueue(p)},
-		{path: "docs/content/building-goscrapling/builder-loop/next-slices.md", kind: "next-slices", body: progress.RenderNextSlices(p)},
-		{path: "docs/content/building-goscrapling/builder-loop/blocked-slices.md", kind: "blocked-slices", body: progress.RenderBlockedSlices(p)},
-		{path: "docs/content/building-goscrapling/builder-loop/umbrella-cleanup.md", kind: "umbrella-cleanup", body: progress.RenderUmbrellaCleanup(p)},
+		{path: "docs/content/building-goscrapling/builder-loop/surfaces/handoff/builder-loop-handoff.md", kind: "builder-loop-handoff", body: progress.RenderBuilderLoopHandoff(p)},
+		{path: "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md", kind: "agent-queue", body: progress.RenderAgentQueue(p)},
+		{path: "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md", kind: "next-slices", body: progress.RenderNextSlices(p)},
+		{path: "docs/content/building-goscrapling/builder-loop/surfaces/queue/blocked-slices.md", kind: "blocked-slices", body: progress.RenderBlockedSlices(p)},
+		{path: "docs/content/building-goscrapling/builder-loop/surfaces/cleanup/umbrella-cleanup.md", kind: "umbrella-cleanup", body: progress.RenderUmbrellaCleanup(p)},
 	} {
 		if err := rewriteMarker(filepath.Join(root, target.path), target.kind, target.body); err != nil {
 			return err

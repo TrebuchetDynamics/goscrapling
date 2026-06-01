@@ -30,16 +30,16 @@ func TestRunWriteRegeneratesMarkedDocs(t *testing.T) {
 		filepath.Join("..", "..", "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
 		filepath.Join(root, "docs", "content", "building-goscrapling", "architecture_plan", "progress.json"),
 	)
-	builderLoop := filepath.Join(root, "docs", "content", "building-goscrapling", "builder-loop")
+	surfaces := filepath.Join(root, "docs", "content", "building-goscrapling", "builder-loop", "surfaces")
 	files := map[string]string{
-		"builder-loop-handoff.md": "builder-loop-handoff",
-		"agent-queue.md":          "agent-queue",
-		"next-slices.md":          "next-slices",
-		"blocked-slices.md":       "blocked-slices",
-		"umbrella-cleanup.md":     "umbrella-cleanup",
+		filepath.Join("handoff", "builder-loop-handoff.md"): "builder-loop-handoff",
+		filepath.Join("queue", "agent-queue.md"):           "agent-queue",
+		filepath.Join("queue", "next-slices.md"):           "next-slices",
+		filepath.Join("queue", "blocked-slices.md"):        "blocked-slices",
+		filepath.Join("cleanup", "umbrella-cleanup.md"):    "umbrella-cleanup",
 	}
 	for name, kind := range files {
-		writeMarkerFile(t, filepath.Join(builderLoop, name), kind)
+		writeMarkerFile(t, filepath.Join(surfaces, name), kind)
 	}
 
 	var stdout, stderr bytes.Buffer
@@ -48,7 +48,7 @@ func TestRunWriteRegeneratesMarkedDocs(t *testing.T) {
 		t.Fatalf("run write: %v\nstderr: %s", err, stderr.String())
 	}
 
-	agentQueue, err := os.ReadFile(filepath.Join(builderLoop, "agent-queue.md"))
+	agentQueue, err := os.ReadFile(filepath.Join(surfaces, "queue", "agent-queue.md"))
 	if err != nil {
 		t.Fatalf("read generated agent queue: %v", err)
 	}

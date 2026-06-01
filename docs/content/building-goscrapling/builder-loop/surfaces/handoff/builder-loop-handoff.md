@@ -10,8 +10,8 @@ execution facts on the rows.
 - Entrypoint: `.pi/skills/goscrapling-skill-manager/SKILL.md`
 - Plan: `docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md`
 - Coverage ledger: `docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md`
-- Agent queue: `docs/content/building-goscrapling/builder-loop/agent-queue.md`
-- Progress schema: `docs/content/building-goscrapling/builder-loop/progress-schema.md`
+- Agent queue: `docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md`
+- Progress schema: `docs/content/building-goscrapling/builder-loop/schema/progress-schema.md`
 - Candidate source: `docs/content/building-goscrapling/architecture_plan/progress.json`
 - Unit tests: `go test ./... -count=1`
 

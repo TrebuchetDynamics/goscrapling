@@ -10,8 +10,8 @@ Use these files before splitting or building work:
 - [Scrapling Feature Map](docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md)
 - [Upstream Coverage Ledger](docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md)
 - [Progress Ledger](docs/content/building-goscrapling/architecture_plan/progress.json)
-- [Agent Queue](docs/content/building-goscrapling/builder-loop/agent-queue.md)
-- [Progress Schema](docs/content/building-goscrapling/builder-loop/progress-schema.md)
+- [Agent Queue](docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md)
+- [Progress Schema](docs/content/building-goscrapling/builder-loop/schema/progress-schema.md)
 
 Before adding behavior, update or pick a builder-sized row in `progress.json`
 with source refs, write scope, tests, acceptance, and a done signal. Do not
