@@ -74,7 +74,6 @@ func (s *SitemapSpider) ParseSitemapBody(body []byte, contentType string) (Sitem
 	var result SitemapResult
 	var stack []string
 	var inURL bool
-	var inSitemap bool
 	for {
 		tok, err := decoder.Token()
 		if err == io.EOF {
@@ -90,9 +89,6 @@ func (s *SitemapSpider) ParseSitemapBody(body []byte, contentType string) (Sitem
 			if name == "url" {
 				inURL = true
 			}
-			if name == "sitemap" {
-				inSitemap = true
-			}
 			if s.AlternateLinks && inURL && name == "link" {
 				for _, attr := range token.Attr {
 					if attr.Name.Local == "href" && strings.TrimSpace(attr.Value) != "" {
@@ -105,28 +101,38 @@ func (s *SitemapSpider) ParseSitemapBody(body []byte, contentType string) (Sitem
 			if name == "url" {
 				inURL = false
 			}
-			if name == "sitemap" {
-				inSitemap = false
-			}
 			if len(stack) > 0 {
 				stack = stack[:len(stack)-1]
 			}
 		case xml.CharData:
-			if len(stack) == 0 || stack[len(stack)-1] != "loc" {
+			locParent, ok := sitemapDirectLocParent(stack)
+			if !ok {
 				continue
 			}
 			value := strings.TrimSpace(string(token))
 			if value == "" {
 				continue
 			}
-			if inSitemap {
+			switch locParent {
+			case "sitemap":
 				result.Sitemaps = append(result.Sitemaps, value)
-			} else if inURL {
+			case "url":
 				result.URLs = append(result.URLs, value)
 			}
 		}
 	}
 	return result, nil
+}
+
+func sitemapDirectLocParent(stack []string) (string, bool) {
+	if len(stack) < 2 || stack[len(stack)-1] != "loc" {
+		return "", false
+	}
+	parent := stack[len(stack)-2]
+	if parent != "url" && parent != "sitemap" {
+		return "", false
+	}
+	return parent, true
 }
 
 func (s *SitemapSpider) parseRobotsSitemaps(response spiders.Response) ([]spiders.Output, error) {
