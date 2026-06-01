@@ -2,6 +2,17 @@ package curlcommand
 
 import "testing"
 
+func TestParsePreservesDollarPrefixedDataValues(t *testing.T) {
+	request, err := Parse(`curl 'https://example.com/form' --data '$amount=10' --data-raw $'line=one'`)
+	if err != nil {
+		t.Fatalf("Parse returned error: %v", err)
+	}
+
+	if request.Body != "$amount=10&line=one" {
+		t.Fatalf("Body = %q, want literal dollars preserved unless they mark ANSI-C quoting", request.Body)
+	}
+}
+
 func TestParsePreservesRepeatedDataValues(t *testing.T) {
 	t.Run("get data becomes query params without dropping earlier fields", func(t *testing.T) {
 		request, err := Parse(`curl -G 'https://example.com/search?existing=1' --data 'q=kit' --data-raw 'page=2'`)

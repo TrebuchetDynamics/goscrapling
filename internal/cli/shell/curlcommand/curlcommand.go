@@ -26,7 +26,7 @@ func Parse(command string) (Request, error) {
 	if err != nil {
 		return Request{}, parseError("curl command parse error: %v", err)
 	}
-	if len(tokens) > 0 && tokens[0] == "curl" {
+	if len(tokens) > 0 && tokens[0].text == "curl" {
 		tokens = tokens[1:]
 	}
 	request := Request{
@@ -39,19 +39,19 @@ func Parse(command string) (Request, error) {
 	var data curlData
 	for i := 0; i < len(tokens); i++ {
 		token := tokens[i]
-		switch token {
+		switch token.text {
 		case "-X", "--request":
-			value, ok := nextToken(tokens, &i, token)
+			value, ok := nextToken(tokens, &i, token.text)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token)
+				return Request{}, parseError("%s requires a value", token.text)
 			}
-			request.Method = strings.ToLower(value)
+			request.Method = strings.ToLower(value.text)
 		case "-H", "--header":
-			value, ok := nextToken(tokens, &i, token)
+			value, ok := nextToken(tokens, &i, token.text)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token)
+				return Request{}, parseError("%s requires a value", token.text)
 			}
-			key, headerValue, err := arguments.ParseHeader(value)
+			key, headerValue, err := arguments.ParseHeader(value.text)
 			if err != nil {
 				return Request{}, err
 			}
@@ -61,36 +61,36 @@ func Parse(command string) (Request, error) {
 				request.Headers.Add(key, headerValue)
 			}
 		case "-b", "--cookie":
-			value, ok := nextToken(tokens, &i, token)
+			value, ok := nextToken(tokens, &i, token.text)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token)
+				return Request{}, parseError("%s requires a value", token.text)
 			}
-			mergeCookies(request.Cookies, value)
+			mergeCookies(request.Cookies, value.text)
 		case "-d", "--data", "--data-raw", "--data-binary":
-			value, ok := nextToken(tokens, &i, token)
+			value, ok := nextToken(tokens, &i, token.text)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token)
+				return Request{}, parseError("%s requires a value", token.text)
 			}
 			data.add(value)
 		case "-G", "--get":
 			data.forceQueryParams = true
 		case "--url":
-			value, ok := nextToken(tokens, &i, token)
+			value, ok := nextToken(tokens, &i, token.text)
 			if !ok {
-				return Request{}, parseError("%s requires a value", token)
+				return Request{}, parseError("%s requires a value", token.text)
 			}
-			rawURL = value
+			rawURL = value.text
 		case "--compressed", "-i", "--include", "-s", "--silent", "-v", "--verbose", "-k", "--insecure":
 			// Accepted DevTools/browser noise flags. They do not change goscrapling's
 			// hermetic shell behavior in this bounded command seam.
 		default:
-			if strings.HasPrefix(token, "-") {
-				return Request{}, parseError("unsupported curl option %q", token)
+			if strings.HasPrefix(token.text, "-") {
+				return Request{}, parseError("unsupported curl option %q", token.text)
 			}
 			if rawURL != "" {
 				return Request{}, parseError("curl command has multiple URLs")
 			}
-			rawURL = token
+			rawURL = token.text
 		}
 	}
 	if rawURL == "" {
@@ -118,8 +118,8 @@ type curlData struct {
 	forceQueryParams bool
 }
 
-func (d *curlData) add(value string) {
-	d.parts = append(d.parts, strings.TrimPrefix(value, "$"))
+func (d *curlData) add(value curlWord) {
+	d.parts = append(d.parts, value.text)
 }
 
 func (d curlData) applyTo(request *Request) error {
@@ -148,9 +148,9 @@ func (d curlData) applyTo(request *Request) error {
 	return nil
 }
 
-func nextToken(tokens []string, index *int, name string) (string, bool) {
-	if *index+1 >= len(tokens) || tokens[*index+1] == "" {
-		return "", false
+func nextToken(tokens []curlWord, index *int, name string) (curlWord, bool) {
+	if *index+1 >= len(tokens) || tokens[*index+1].text == "" {
+		return curlWord{}, false
 	}
 	*index = *index + 1
 	return tokens[*index], true
@@ -166,8 +166,12 @@ func mergeCookies(cookies map[string]string, raw string) {
 	}
 }
 
-func splitWords(command string) ([]string, error) {
-	var words []string
+type curlWord struct {
+	text string
+}
+
+func splitWords(command string) ([]curlWord, error) {
+	var words []curlWord
 	var current strings.Builder
 	var quote rune
 	escaped := false
@@ -191,10 +195,13 @@ func splitWords(command string) ([]string, error) {
 		}
 		switch r {
 		case '\'', '"':
+			if r == '\'' && strings.HasSuffix(current.String(), "$") {
+				trimBuilderSuffix(&current, "$")
+			}
 			quote = r
 		case ' ', '\t', '\n', '\r':
 			if current.Len() > 0 {
-				words = append(words, current.String())
+				words = append(words, curlWord{text: current.String()})
 				current.Reset()
 			}
 		default:
@@ -208,9 +215,15 @@ func splitWords(command string) ([]string, error) {
 		return nil, fmt.Errorf("unterminated quote")
 	}
 	if current.Len() > 0 {
-		words = append(words, current.String())
+		words = append(words, curlWord{text: current.String()})
 	}
 	return words, nil
+}
+
+func trimBuilderSuffix(builder *strings.Builder, suffix string) {
+	trimmed := strings.TrimSuffix(builder.String(), suffix)
+	builder.Reset()
+	builder.WriteString(trimmed)
 }
 
 func parseError(format string, args ...any) error {
