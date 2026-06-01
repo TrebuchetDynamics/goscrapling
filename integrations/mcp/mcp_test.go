@@ -16,6 +16,51 @@ import (
 	"github.com/TrebuchetDynamics/goscrapling/fetchers"
 )
 
+func TestMCPServerOpenSessionRejectsDuplicateWhileFirstCreateIsInFlight(t *testing.T) {
+	entered := make(chan struct{}, 2)
+	release := make(chan struct{})
+	factory := BrowserFactory(func(context.Context, SessionType, browser.BrowserOptions, int) (BrowserSession, error) {
+		entered <- struct{}{}
+		<-release
+		return &fakeBrowserSession{alive: true}, nil
+	})
+	server := NewServer(ServerOptions{BrowserFactory: factory})
+
+	firstDone := make(chan error, 1)
+	go func() {
+		_, err := server.OpenSession(context.Background(), OpenSessionRequest{SessionID: "shared"})
+		firstDone <- err
+	}()
+	<-entered
+
+	secondDone := make(chan error, 1)
+	go func() {
+		_, err := server.OpenSession(context.Background(), OpenSessionRequest{SessionID: "shared"})
+		secondDone <- err
+	}()
+
+	select {
+	case err := <-secondDone:
+		if err == nil || !strings.Contains(err.Error(), `session "shared" already exists`) {
+			t.Fatalf("second OpenSession error = %v, want duplicate-session error", err)
+		}
+	case <-time.After(50 * time.Millisecond):
+		close(release)
+		<-firstDone
+		t.Fatal("second OpenSession blocked behind duplicate in-flight session creation")
+	}
+
+	close(release)
+	if err := <-firstDone; err != nil {
+		t.Fatalf("first OpenSession returned error: %v", err)
+	}
+	select {
+	case <-entered:
+		t.Fatal("duplicate OpenSession called browser factory")
+	default:
+	}
+}
+
 func TestMCPServerTools(t *testing.T) {
 	static := &fakeStaticClient{pages: map[string]string{
 		"https://example.com/catalog": `<!doctype html><html><body><nav>Skip nav</nav><main><article class="product">Alpha Tool</article></main></body></html>`,

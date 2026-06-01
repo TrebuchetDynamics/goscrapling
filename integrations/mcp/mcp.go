@@ -127,6 +127,7 @@ type Server struct {
 
 	mu       sync.Mutex
 	sessions map[string]sessionEntry
+	opening  map[string]struct{}
 	counter  int
 }
 
@@ -147,7 +148,7 @@ func NewServer(opts ServerOptions) *Server {
 			return nil, fmt.Errorf("mcp browser factory is required for browser tools")
 		}
 	}
-	return &Server{static: static, browserFactory: factory, sessions: make(map[string]sessionEntry)}
+	return &Server{static: static, browserFactory: factory, sessions: make(map[string]sessionEntry), opening: make(map[string]struct{})}
 }
 
 func defaultStaticGet(ctx context.Context, rawURL string, opts fetchers.RequestOptions) (*goscrapling.Response, error) {
@@ -401,12 +402,9 @@ func (s *Server) OpenSession(ctx context.Context, req OpenSessionRequest) (Sessi
 	if sessionID == "" {
 		sessionID = s.nextSessionID()
 	}
-	s.mu.Lock()
-	if _, exists := s.sessions[sessionID]; exists {
-		s.mu.Unlock()
-		return SessionCreatedModel{}, fmt.Errorf("session %q already exists", sessionID)
+	if err := s.reserveSessionID(sessionID); err != nil {
+		return SessionCreatedModel{}, err
 	}
-	s.mu.Unlock()
 
 	options := req.Options
 	options.Headless = req.Headless
@@ -420,15 +418,40 @@ func (s *Server) OpenSession(ctx context.Context, req OpenSessionRequest) (Sessi
 	}
 	session, err := s.browserFactory(ctx, sessionType, options, maxPages)
 	if err != nil {
+		s.clearSessionReservation(sessionID)
 		return SessionCreatedModel{}, err
 	}
 	createdAt := time.Now().UTC().Format(time.RFC3339Nano)
 
-	s.mu.Lock()
-	s.sessions[sessionID] = sessionEntry{session: session, sessionType: sessionType, createdAt: createdAt}
-	s.mu.Unlock()
+	s.storeReservedSession(sessionID, sessionEntry{session: session, sessionType: sessionType, createdAt: createdAt})
 	info := SessionInfo{SessionID: sessionID, SessionType: sessionType, CreatedAt: createdAt, IsAlive: session.Alive()}
 	return SessionCreatedModel{SessionInfo: info, Message: fmt.Sprintf("Session %q (%s) created successfully.", sessionID, sessionType)}, nil
+}
+
+func (s *Server) reserveSessionID(sessionID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, exists := s.sessions[sessionID]; exists {
+		return fmt.Errorf("session %q already exists", sessionID)
+	}
+	if _, exists := s.opening[sessionID]; exists {
+		return fmt.Errorf("session %q already exists", sessionID)
+	}
+	s.opening[sessionID] = struct{}{}
+	return nil
+}
+
+func (s *Server) storeReservedSession(sessionID string, entry sessionEntry) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.opening, sessionID)
+	s.sessions[sessionID] = entry
+}
+
+func (s *Server) clearSessionReservation(sessionID string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.opening, sessionID)
 }
 
 func (s *Server) nextSessionID() string {
