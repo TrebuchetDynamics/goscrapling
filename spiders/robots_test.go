@@ -17,6 +17,50 @@ import (
 )
 
 func TestRobotsTxtManager(t *testing.T) {
+	t.Run("caches robots policies per URL scheme and host", func(t *testing.T) {
+		var fetched []string
+		manager := NewRobotsTxtManager(func(_ context.Context, robotsURL, sid string) (Response, error) {
+			fetched = append(fetched, robotsURL)
+			body := "User-agent: *\nAllow: /private\n"
+			if strings.HasPrefix(robotsURL, "http://") {
+				body = "User-agent: *\nDisallow: /private\n"
+			}
+			response, err := goscrapling.NewResponse(strings.NewReader(body), goscrapling.ResponseOptions{
+				URL:        robotsURL,
+				StatusCode: http.StatusOK,
+				Request: goscrapling.RequestMetadata{
+					Method: http.MethodGet,
+					URL:    robotsURL,
+				},
+			})
+			if err != nil {
+				return Response{}, err
+			}
+			return Response{Response: response, Request: Request{URL: robotsURL, SID: sid}}, nil
+		})
+
+		allowed, err := manager.CanFetch(context.Background(), "http://example.com/private/report", "sid", "AnyBot")
+		if err != nil {
+			t.Fatalf("CanFetch http returned error: %v", err)
+		}
+		if allowed {
+			t.Fatal("http robots policy should disallow /private")
+		}
+
+		allowed, err = manager.CanFetch(context.Background(), "https://example.com/private/report", "sid", "AnyBot")
+		if err != nil {
+			t.Fatalf("CanFetch https returned error: %v", err)
+		}
+		if !allowed {
+			t.Fatal("https robots policy should be fetched separately and allow /private")
+		}
+
+		want := []string{"http://example.com/robots.txt", "https://example.com/robots.txt"}
+		if !reflect.DeepEqual(fetched, want) {
+			t.Fatalf("fetched robots URLs = %#v, want %#v", fetched, want)
+		}
+	})
+
 	t.Run("merges duplicate matching user-agent groups", func(t *testing.T) {
 		parser := parseRobotsTxt(strings.Join([]string{
 			"User-agent: GoodBot",

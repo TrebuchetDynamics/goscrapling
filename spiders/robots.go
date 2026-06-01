@@ -127,11 +127,18 @@ func robotsCacheKeyAndURL(rawURL string) (string, string, error) {
 	if parsed.Host == "" {
 		return "", "", &url.Error{Op: "parse", URL: rawURL, Err: errMissingRobotsHost{}}
 	}
+	parsed.Scheme = strings.ToLower(parsed.Scheme)
+	parsed.Host = strings.ToLower(parsed.Host)
+	key := robotsOriginCacheKey(parsed)
 	parsed.Path = "/robots.txt"
 	parsed.RawPath = ""
 	parsed.RawQuery = ""
 	parsed.Fragment = ""
-	return strings.ToLower(parsed.Host), parsed.String(), nil
+	return key, parsed.String(), nil
+}
+
+func robotsOriginCacheKey(parsed *url.URL) string {
+	return parsed.Scheme + "://" + parsed.Host
 }
 
 type errMissingRobotsHost struct{}
