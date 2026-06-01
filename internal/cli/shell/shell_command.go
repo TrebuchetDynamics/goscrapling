@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,6 +26,7 @@ var (
 	shellCSSTextCall      = regexp.MustCompile(`^(page|response)\.css\((.*)\)\.text\(\)$`)
 	shellCurl2FetcherCall = regexp.MustCompile(`^curl2fetcher\((.*)\)$`)
 	shellHelpCall         = regexp.MustCompile(`^help\(\)$`)
+	shellViewCall         = regexp.MustCompile(`^view\((page|response)\)$`)
 	shellUncurlFieldCall  = regexp.MustCompile(`^uncurl\((.*)\)\.(method|url|body)$`)
 	shellPagesFieldCall   = regexp.MustCompile(`^pages\[(-?\d+)\]\.(url|status)$`)
 	shellUncurlValueCall  = regexp.MustCompile(`^uncurl\((.*)\)\.(header|cookie|param)\((.*)\)$`)
@@ -118,6 +120,16 @@ func (s *shellSession) run(stdout io.Writer, script string) error {
 		}
 		if shellHelpCall.MatchString(statement) {
 			if _, err := fmt.Fprint(stdout, shellHelpText()); err != nil {
+				return err
+			}
+			continue
+		}
+		if shellViewCall.MatchString(statement) {
+			path, err := s.writeViewArtifact()
+			if err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(stdout, "view wrote %s\n", path); err != nil {
 				return err
 			}
 			continue
@@ -466,6 +478,28 @@ func (s *shellSession) currentPage() (*goscrapling.Response, error) {
 		return nil, parseError("page is not set; call get(url) first")
 	}
 	return s.page, nil
+}
+
+func (s *shellSession) writeViewArtifact() (string, error) {
+	page, err := s.currentPage()
+	if err != nil {
+		return "", err
+	}
+	file, err := os.CreateTemp("", "goscrapling_view_*.html")
+	if err != nil {
+		return "", fmt.Errorf("write view artifact: %w", err)
+	}
+	path := file.Name()
+	if _, err := file.Write(page.Body()); err != nil {
+		_ = file.Close()
+		_ = os.Remove(path)
+		return "", fmt.Errorf("write view artifact: %w", err)
+	}
+	if err := file.Close(); err != nil {
+		_ = os.Remove(path)
+		return "", fmt.Errorf("write view artifact: %w", err)
+	}
+	return path, nil
 }
 
 func (s *shellSession) pageAt(rawIndex string) (*goscrapling.Response, error) {

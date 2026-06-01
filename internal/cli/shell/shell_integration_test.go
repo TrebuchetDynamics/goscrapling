@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -213,6 +214,46 @@ func TestCLIShellPagesHistoryExpressions(t *testing.T) {
 	err = cli.Run(&stdout, &stderr, []string{"shell", "-c", fmt.Sprintf("get(%q); print(pages[3].url)", server.URL+"/one")})
 	if err == nil || !strings.Contains(err.Error(), "pages index 3 out of range") {
 		t.Fatalf("out-of-range error = %v, stdout: %s, stderr: %s", err, stdout.String(), stderr.String())
+	}
+}
+
+func TestCLIShellViewCommandBoundary(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write([]byte(`<html><body><h1>View Fixture</h1></body></html>`))
+	}))
+	defer server.Close()
+
+	var stdout, stderr bytes.Buffer
+	err := cli.Run(&stdout, &stderr, []string{"shell", "-c", fmt.Sprintf("get(%q); view(page); view(response)", server.URL)})
+	if err != nil {
+		t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
+	}
+
+	lines := strings.Split(strings.TrimSpace(stdout.String()), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("stdout lines = %#v, want two view artifact paths", lines)
+	}
+	for _, line := range lines {
+		path := strings.TrimPrefix(line, "view wrote ")
+		if path == line || !strings.HasSuffix(path, ".html") {
+			t.Fatalf("view output = %q, want reported html artifact path", line)
+		}
+		body, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read view artifact %q: %v", path, err)
+		}
+		if got := string(body); got != `<html><body><h1>View Fixture</h1></body></html>` {
+			t.Fatalf("view artifact body = %q", got)
+		}
+		t.Cleanup(func() { _ = os.Remove(path) })
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	err = cli.Run(&stdout, &stderr, []string{"shell", "-c", "view(page)"})
+	if err == nil || !strings.Contains(err.Error(), "page is not set") {
+		t.Fatalf("view before fetch error = %v, stdout: %s, stderr: %s", err, stdout.String(), stderr.String())
 	}
 }
 
