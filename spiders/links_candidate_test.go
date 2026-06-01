@@ -24,6 +24,19 @@ func TestCollectLinkAttributeCandidatesExposesDOMOrder(t *testing.T) {
 	}
 }
 
+func TestNilLinkExtractorMatchHelpersAreSafe(t *testing.T) {
+	var extractor *LinkExtractor
+	if extractor.Matches("https://example.com/page") {
+		t.Fatal("nil extractor Matches should reject candidates")
+	}
+	if got, ok := extractor.MatchURL("https://example.com/page"); ok || got != "" {
+		t.Fatalf("nil extractor MatchURL = %q, %v; want empty false", got, ok)
+	}
+	if got, ok := extractor.MatchURLFrom("https://example.com/", "/page"); ok || got != "" {
+		t.Fatalf("nil extractor MatchURLFrom = %q, %v; want empty false", got, ok)
+	}
+}
+
 func TestLinkExtractorPrepareCandidateExposesURLStages(t *testing.T) {
 	extractor, err := NewLinkExtractor(LinkExtractorOptions{
 		Process: func(raw string) (string, bool) {
