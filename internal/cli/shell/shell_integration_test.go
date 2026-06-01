@@ -1,4 +1,4 @@
-package cli
+package shell_test
 
 import (
 	"bytes"
@@ -8,6 +8,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/TrebuchetDynamics/goscrapling/internal/cli"
 )
 
 func TestCLIShellCurlHelpers(t *testing.T) {
@@ -41,7 +43,7 @@ func TestCLIShellCurlHelpers(t *testing.T) {
 	}, "; ")
 
 	var stdout, stderr bytes.Buffer
-	err := Run(&stdout, &stderr, []string{"shell", "-c", script})
+	err := cli.Run(&stdout, &stderr, []string{"shell", "-c", script})
 	if err != nil {
 		t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
 	}
@@ -67,7 +69,7 @@ func TestCLIShellCurlHelpers(t *testing.T) {
 
 	stdout.Reset()
 	stderr.Reset()
-	err = Run(&stdout, &stderr, []string{"shell", "-c", `print(uncurl("curl https://example.com --unsupported").method)`})
+	err = cli.Run(&stdout, &stderr, []string{"shell", "-c", `print(uncurl("curl https://example.com --unsupported").method)`})
 	if err == nil || !strings.Contains(err.Error(), "unsupported curl option") {
 		t.Fatalf("unsupported curl error = %v", err)
 	}
@@ -99,7 +101,7 @@ func TestCLIShell(t *testing.T) {
 		}, "; ")
 
 		var stdout, stderr bytes.Buffer
-		err := Run(&stdout, &stderr, []string{"shell", "-c", script})
+		err := cli.Run(&stdout, &stderr, []string{"shell", "-c", script})
 		if err != nil {
 			t.Fatalf("Run returned error: %v\nstderr: %s", err, stderr.String())
 		}
