@@ -112,6 +112,20 @@ func TestParseHonorsExplicitMethodWithGetData(t *testing.T) {
 	}
 }
 
+func TestParseAcceptsBrowserCopiedNoiseOptions(t *testing.T) {
+	request, err := Parse(`curl --location --compressed -i -s 'https://example.com/search?q=kit'`)
+	if err != nil {
+		t.Fatalf("Parse returned error: %v", err)
+	}
+
+	if request.URL != "https://example.com/search" {
+		t.Fatalf("URL = %q, want normalized URL after copied browser noise options", request.URL)
+	}
+	if got := request.Params.Get("q"); got != "kit" {
+		t.Fatalf("Params.Get(%q) = %q, want %q", "q", got, "kit")
+	}
+}
+
 func TestParseAcceptsLongOptionsWithEqualsValues(t *testing.T) {
 	request, err := Parse(`curl --url=https://example.com/form --header='X-Trace: copied' --cookie='session=abc; theme=dark' --data-raw='q=kit'`)
 	if err != nil {

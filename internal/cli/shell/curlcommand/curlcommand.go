@@ -83,10 +83,12 @@ func Parse(command string) (Request, error) {
 				return Request{}, parseError("%s requires a value", option)
 			}
 			rawURL = value.text
-		case "--compressed", "-i", "--include", "-s", "--silent", "-v", "--verbose", "-k", "--insecure":
-			// Accepted DevTools/browser noise flags. They do not change goscrapling's
-			// hermetic shell behavior in this bounded command seam.
 		default:
+			if isAcceptedNoiseOption(option) {
+				// Accepted DevTools/browser noise flags. They do not change goscrapling's
+				// hermetic shell behavior in this bounded command seam.
+				continue
+			}
 			if strings.HasPrefix(token.text, "-") {
 				return Request{}, parseError("unsupported curl option %q", token.text)
 			}
@@ -207,6 +209,20 @@ func nextToken(tokens []curlWord, index *int) (curlWord, bool) {
 	}
 	*index = *index + 1
 	return tokens[*index], true
+}
+
+func isAcceptedNoiseOption(option string) bool {
+	switch option {
+	case "--compressed",
+		"-i", "--include",
+		"-s", "--silent",
+		"-v", "--verbose",
+		"-k", "--insecure",
+		"-L", "--location":
+		return true
+	default:
+		return false
+	}
 }
 
 func mergeCookies(cookies map[string]string, raw string) {
