@@ -1,4 +1,4 @@
-package live_test
+package e2e_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/TrebuchetDynamics/goscrapling/cmd/goscrapling/internal/clitest"
+	"github.com/TrebuchetDynamics/goscrapling/cmd/goscrapling/live/robots"
 )
 
 const (
@@ -28,7 +29,7 @@ func TestLivePracticeSitesEndToEnd(t *testing.T) {
 	binary := clitest.BuildBinary(t)
 	outputDir := t.TempDir()
 	client := &http.Client{Timeout: 15 * time.Second}
-	userAgentHeader := "User-Agent: " + liveE2EUserAgentValue
+	userAgentHeader := "User-Agent: " + robots.UserAgentValue
 
 	tests := []struct {
 		name        string
@@ -190,12 +191,12 @@ func TestLivePracticeSitesEndToEnd(t *testing.T) {
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 			defer cancel()
-			robots := fetchRobotsDecision(ctx, client, tt.url, liveE2EUserAgentValue)
-			if !robots.allowed {
-				t.Skipf("robots: %s", robots.reason)
+			robotsDecision := robots.FetchDecision(ctx, client, tt.url, robots.UserAgentValue)
+			if !robotsDecision.Allowed {
+				t.Skipf("robots: %s", robotsDecision.Reason)
 			}
 
-			delay := maxDuration(tt.delayBefore, robots.crawlDelay)
+			delay := maxDuration(tt.delayBefore, robotsDecision.CrawlDelay)
 			if delay > 0 {
 				t.Logf("honoring robots/test delay: %s", delay)
 				time.Sleep(delay)

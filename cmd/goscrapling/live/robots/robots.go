@@ -1,4 +1,4 @@
-package live_test
+package robots
 
 import (
 	"bytes"
@@ -13,14 +13,14 @@ import (
 )
 
 const (
-	liveE2EUserAgentToken = "goscrapling-live-e2e"
-	liveE2EUserAgentValue = "goscrapling-live-e2e/1.0 (testing; https://github.com/TrebuchetDynamics/goscrapling)"
+	UserAgentToken = "goscrapling-live-e2e"
+	UserAgentValue = "goscrapling-live-e2e/1.0 (testing; https://github.com/TrebuchetDynamics/goscrapling)"
 )
 
-type robotsDecision struct {
-	allowed    bool
-	reason     string
-	crawlDelay time.Duration
+type Decision struct {
+	Allowed    bool
+	Reason     string
+	CrawlDelay time.Duration
 }
 
 type robotsGroup struct {
@@ -34,45 +34,45 @@ type robotsRule struct {
 	pattern string
 }
 
-func fetchRobotsDecision(ctx context.Context, client *http.Client, rawURL string, userAgentHeader string) robotsDecision {
+func FetchDecision(ctx context.Context, client *http.Client, rawURL string, userAgentHeader string) Decision {
 	parsed, err := url.Parse(rawURL)
 	if err != nil {
-		return robotsDecision{reason: fmt.Sprintf("invalid target URL: %v", err)}
+		return Decision{Reason: fmt.Sprintf("invalid target URL: %v", err)}
 	}
 	if parsed.Scheme == "" || parsed.Host == "" {
-		return robotsDecision{reason: "target URL must include scheme and host"}
+		return Decision{Reason: "target URL must include scheme and host"}
 	}
 	robotsURL := parsed.Scheme + "://" + parsed.Host + "/robots.txt"
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, robotsURL, nil)
 	if err != nil {
-		return robotsDecision{reason: fmt.Sprintf("create robots request: %v", err)}
+		return Decision{Reason: fmt.Sprintf("create robots request: %v", err)}
 	}
 	request.Header.Set("User-Agent", userAgentHeader)
 
 	response, err := client.Do(request)
 	if err != nil {
-		return robotsDecision{reason: fmt.Sprintf("robots.txt unavailable: %v", err)}
+		return Decision{Reason: fmt.Sprintf("robots.txt unavailable: %v", err)}
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return robotsDecision{reason: fmt.Sprintf("robots.txt unavailable: status %d", response.StatusCode)}
+		return Decision{Reason: fmt.Sprintf("robots.txt unavailable: status %d", response.StatusCode)}
 	}
 	body, err := io.ReadAll(io.LimitReader(response.Body, 256*1024))
 	if err != nil {
-		return robotsDecision{reason: fmt.Sprintf("read robots.txt: %v", err)}
+		return Decision{Reason: fmt.Sprintf("read robots.txt: %v", err)}
 	}
-	return evaluateRobots(body, parsed.EscapedPath(), liveE2EUserAgentToken)
+	return Evaluate(body, parsed.EscapedPath(), UserAgentToken)
 }
 
-func evaluateRobots(body []byte, targetPath string, userAgentToken string) robotsDecision {
+func Evaluate(body []byte, targetPath string, userAgentToken string) Decision {
 	trimmed := bytes.TrimSpace(body)
 	if len(trimmed) == 0 {
-		return robotsDecision{reason: "empty robots.txt"}
+		return Decision{Reason: "empty robots.txt"}
 	}
 	lower := strings.ToLower(string(trimmed[:min(len(trimmed), 256)]))
 	if strings.HasPrefix(lower, "<!doctype html") || strings.HasPrefix(lower, "<html") || strings.Contains(lower, "<title>") {
-		return robotsDecision{reason: "not a usable robots.txt"}
+		return Decision{Reason: "not a usable robots.txt"}
 	}
 	if targetPath == "" {
 		targetPath = "/"
@@ -81,7 +81,7 @@ func evaluateRobots(body []byte, targetPath string, userAgentToken string) robot
 	groups := parseRobotsGroups(string(body))
 	matching, specific := matchingRobotsGroups(groups, strings.ToLower(userAgentToken))
 	if len(matching) == 0 {
-		return robotsDecision{allowed: true, reason: "no matching robots rules"}
+		return Decision{Allowed: true, Reason: "no matching robots rules"}
 	}
 
 	var best *robotsRule
@@ -109,12 +109,12 @@ func evaluateRobots(body []byte, targetPath string, userAgentToken string) robot
 		if specific {
 			scope = "specific"
 		}
-		return robotsDecision{allowed: true, reason: scope + " robots group has no matching path rule", crawlDelay: crawlDelay}
+		return Decision{Allowed: true, Reason: scope + " robots group has no matching path rule", CrawlDelay: crawlDelay}
 	}
 	if best.allow {
-		return robotsDecision{allowed: true, reason: "allowed by robots rule " + best.pattern, crawlDelay: crawlDelay}
+		return Decision{Allowed: true, Reason: "allowed by robots rule " + best.pattern, CrawlDelay: crawlDelay}
 	}
-	return robotsDecision{reason: "disallowed by robots rule " + best.pattern, crawlDelay: crawlDelay}
+	return Decision{Reason: "disallowed by robots rule " + best.pattern, CrawlDelay: crawlDelay}
 }
 
 func parseRobotsGroups(body string) []robotsGroup {
