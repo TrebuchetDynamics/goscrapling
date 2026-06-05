@@ -6,9 +6,9 @@ answers how we know the map is complete enough to plan from.
 goscrapling does not claim parity by README prose. A planner pass can claim an
 upstream surface is mapped only when every feature-bearing source class below
 has a feature-map anchor, a Go target, and either a `progress.json` row or an
-explicit owned/excluded decision. External projects such as Lightpanda may be
-used as design references, but they do not replace Scrapling as the parity
-oracle and must be cited as non-vendored references in `progress.json`.
+explicit owned/excluded decision. External projects such as Lightpanda and
+SearXNG may be used as design references, but they do not replace Scrapling as
+the parity oracle and must be cited as non-vendored references in `progress.json`.
 
 Use [Scrapling Behavior Atoms](scrapling-behavior-atoms.md) for behavior-level
 coverage. Use [Project Boundaries](boundaries.md) for owned Go-native package
@@ -89,6 +89,7 @@ core source-class names below when the local upstream checkout exists.
 | Reference | Observed ref | Used for | Progress rows | Boundary |
 |---|---|---|---|---|
 | `lightpanda-io/browser` | commit `5905319e78541110a0b4065b07ec7ce53f93a660` | Browser markdown dump, semantic tree, robots/private-network safety controls, and MCP-style tool taxonomy | `Browser fetch markdown dump`; `Browser semantic tree extraction`; `Fetch safety controls: robots and private network blocking`; `Gormes browser extraction tools` | Non-vendored design reference only; do not copy AGPL source into goscrapling without an explicit licensing decision. |
+| `searxng/searxng` | commit `37187dc2d` | Generic XPath/JSON engine request templates, request controls, selector-driven result extraction recipes, and simple output transforms for Gormes-facing static extraction | `Gormes declarative extraction recipes`; `Gormes recipe request controls and output transforms` | Non-vendored design reference only; do not copy AGPL source into goscrapling without an explicit licensing decision. |
 
 ## What Counts As Unmapped
 

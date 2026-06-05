@@ -1988,6 +1988,109 @@
               ]
             },
             {
+              "name": "Gormes declarative extraction recipes",
+              "status": "complete",
+              "priority": "P2",
+              "contract": "Add a Gormes-facing static extraction recipe layer that maps named recipes to request templates and CSS, XPath, and slash-delimited JSON field selectors, enabling deterministic multi-field web_extract outputs without Gormes importing core parser/fetcher internals.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "integration",
+              "source_refs": [
+                "external/searxng/searxng@37187dc2d:searx/engines/xpath.py",
+                "external/searxng/searxng@37187dc2d:searx/engines/json_engine.py",
+                "external/searxng/searxng@37187dc2d:docs/dev/engines/engine_overview.rst",
+                "integrations/gormes/statictools/static_tools.go",
+                "integrations/gormes/statictools/static_tools_test.go",
+                "parser/xpath.go",
+                "engines/toolbelt/response.go"
+              ],
+              "ready_when": [
+                "Static web_extract adapter and Response CSS/XPath/JSON helper behavior are validated.",
+                "A local httptest fixture can return HTML and JSON bodies for recipe extraction without live web access."
+              ],
+              "not_ready_when": [
+                "The row tries to add search-engine federation, external live search, browser rendering, plugin pipelines, or Gormes runtime registration.",
+                "The implementation copies SearXNG AGPL source instead of using the project as a non-vendored design reference."
+              ],
+              "write_scope": [
+                "integrations/gormes/statictools/",
+                "integrations/gormes/static_tools.go",
+                "integrations/gormes/testdata/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
+              ],
+              "test_commands": [
+                "go test ./integrations/gormes/... -run TestGormesDeclarativeExtractionRecipes -count=1",
+                "go test ./... -count=1"
+              ],
+              "acceptance": [
+                "Static tool-call fixtures can execute a named recipe against local HTML and JSON responses and return deterministic typed fields.",
+                "Recipes support request URL templates/query params plus CSS, XPath, and slash-delimited JSON field selectors while preserving existing ad-hoc CSSSelector behavior.",
+                "Recipe failures report field-level missing-selector and invalid-selector errors without live network access, browser launches, or Gormes runtime dependencies."
+              ],
+              "done_signal": [
+                "TestGormesDeclarativeExtractionRecipes passes from httptest fixtures.",
+                "Full repository validation passes after generated queue docs remove the completed row."
+              ]
+            },
+            {
+              "name": "Gormes recipe request controls and output transforms",
+              "status": "complete",
+              "priority": "P2",
+              "contract": "Extend the Gormes-facing static extraction recipe layer with SearXNG-inspired request controls and output transforms: method, headers, cookies, body, paging placeholders, safe/time placeholders, no-result status handling, URL/thumbnail prefixes, HTML-to-text field normalization, and suggestion extraction, while preserving hermetic tool-call behavior and the non-vendored AGPL boundary.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "integration",
+              "source_refs": [
+                "external/searxng/searxng@37187dc2d:searx/engines/xpath.py",
+                "external/searxng/searxng@37187dc2d:searx/engines/json_engine.py",
+                "external/searxng/searxng@37187dc2d:docs/dev/engines/engine_overview.rst",
+                "external/searxng/searxng@37187dc2d:tests/unit/engines/test_xpath.py",
+                "external/searxng/searxng@37187dc2d:tests/unit/engines/test_json_engine.py",
+                "integrations/gormes/statictools/recipes.go",
+                "integrations/gormes/statictools/static_tools_test.go",
+                "fetchers/fetcher_options.go"
+              ],
+              "ready_when": [
+                "Gormes declarative extraction recipes are validated with local HTML and JSON fixtures.",
+                "The builder keeps the recipe layer integration-local and uses httptest fixtures for every request-control behavior."
+              ],
+              "not_ready_when": [
+                "The row tries to add provider registry/search federation, result scoring, query mini-syntax, plugin pipelines, browser rendering, or Gormes runtime registration.",
+                "The implementation copies SearXNG AGPL source instead of using SearXNG as a non-vendored design reference.",
+                "The tests require live web access, a real browser, stealth behavior, or external services."
+              ],
+              "write_scope": [
+                "integrations/gormes/statictools/",
+                "integrations/gormes/static_tools.go",
+                "integrations/gormes/testdata/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
+              ],
+              "test_commands": [
+                "go test ./integrations/gormes/statictools -run TestGormesRecipeRequestControls -count=1",
+                "go test ./integrations/gormes/... -count=1",
+                "go test ./... -count=1"
+              ],
+              "acceptance": [
+                "A local httptest fixture proves named recipes can render SearXNG-style request controls for GET and POST, including headers, cookies, body/data, paging, language, safe-search, and time-range placeholders without live network access.",
+                "No-result HTTP status configuration returns deterministic empty/no-result extraction evidence instead of a hard fetch error, while normal non-2xx responses still remain operator-visible.",
+                "Field fixtures prove URL and thumbnail prefix transforms, HTML-to-text normalization for HTML-bearing JSON or selector values, and suggestion extraction without changing existing CSS/XPath/JSON field behavior.",
+                "The adapter remains integration-local, preserves existing ad-hoc CSSSelector and basic recipe behavior, and documents SearXNG as a non-vendored AGPL design reference only."
+              ],
+              "done_signal": [
+                "TestGormesRecipeRequestControls passes from httptest fixtures.",
+                "Full repository validation passes after generated queue docs list the next remaining row."
+              ]
+            },
+            {
               "name": "Gormes browser extraction tools",
               "status": "complete",
               "priority": "P1",

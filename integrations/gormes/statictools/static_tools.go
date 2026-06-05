@@ -17,13 +17,20 @@ var ErrUnknownTool = contract.ErrUnknownTool
 
 type StaticExtractionAdapter struct {
 	Fetcher fetchers.Fetcher
+	Recipes map[string]ExtractionRecipe
 }
 
 type StaticToolCall struct {
-	Tool        string
-	URLs        []string
-	CSSSelector string
-	Opts        fetchers.RequestOptions
+	Tool         string
+	URLs         []string
+	CSSSelector  string
+	Recipe       string
+	RecipeParams map[string]string
+	Pageno       int
+	Language     string
+	SafeSearch   int
+	TimeRange    string
+	Opts         fetchers.RequestOptions
 }
 
 type WebExtractResponse struct {
@@ -31,25 +38,42 @@ type WebExtractResponse struct {
 }
 
 type WebExtractResult struct {
-	URL        string         `json:"url"`
-	Title      string         `json:"title"`
-	Content    string         `json:"content"`
-	Error      string         `json:"error,omitempty"`
-	Extraction *WebExtraction `json:"extraction,omitempty"`
+	URL         string                    `json:"url"`
+	Title       string                    `json:"title"`
+	Content     string                    `json:"content"`
+	Fields      map[string]ExtractedField `json:"fields,omitempty"`
+	Suggestions []string                  `json:"suggestions,omitempty"`
+	Error       string                    `json:"error,omitempty"`
+	Extraction  *WebExtraction            `json:"extraction,omitempty"`
 }
 
 type WebExtraction struct {
 	Engine      string `json:"engine,omitempty"`
 	Mode        string `json:"mode,omitempty"`
+	Recipe      string `json:"recipe,omitempty"`
 	StatusCode  int    `json:"status_code,omitempty"`
 	ContentType string `json:"content_type,omitempty"`
 	CSSSelector string `json:"css_selector,omitempty"`
 	FinalURL    string `json:"final_url,omitempty"`
+	NoResult    bool   `json:"no_result,omitempty"`
 }
 
 func (a StaticExtractionAdapter) Call(ctx context.Context, call StaticToolCall) (WebExtractResponse, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	if call.Tool != ToolWebExtract {
 		return WebExtractResponse{}, ErrUnknownTool
+	}
+	if strings.TrimSpace(call.Recipe) != "" {
+		if err := ctx.Err(); err != nil {
+			return WebExtractResponse{}, err
+		}
+		result, err := a.extractRecipe(ctx, call)
+		if err != nil {
+			return WebExtractResponse{}, err
+		}
+		return WebExtractResponse{Results: []WebExtractResult{result}}, nil
 	}
 	if len(call.URLs) == 0 {
 		return WebExtractResponse{}, fmt.Errorf("%s: urls is required", ToolWebExtract)
