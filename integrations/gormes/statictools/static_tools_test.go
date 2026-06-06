@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/TrebuchetDynamics/goscrapling/fetchers"
 )
@@ -365,5 +366,150 @@ func TestGormesRecipeRequestControls(t *testing.T) {
 	}
 	if len(emptyResult.Fields) != 0 {
 		t.Fatalf("empty fields = %#v, want none", emptyResult.Fields)
+	}
+}
+
+func TestGormesResultContainerMergeScoring(t *testing.T) {
+	container := NewResultContainer()
+	container.Add(WebExtractResult{
+		URL:     "https://example.test/tool",
+		Title:   "Alpha Tool",
+		Content: "First provider content.",
+		Fields: map[string]ExtractedField{
+			"heading": {Type: SelectorCSS, Selector: "h2::text", Value: "Alpha Tool"},
+		},
+		Suggestions: []string{"alpha", "tools"},
+		Extraction:  &WebExtraction{Provider: "docs", ProviderWeight: 2, FinalURL: "https://example.test/tool"},
+	})
+	container.Add(WebExtractResult{
+		URL:     "https://example.test/other",
+		Title:   "Other Tool",
+		Content: "Other provider content.",
+		Fields: map[string]ExtractedField{
+			"heading": {Type: SelectorCSS, Selector: "h2::text", Value: "Other Tool"},
+		},
+		Extraction: &WebExtraction{Provider: "archive", ProviderWeight: 1.5, FinalURL: "https://example.test/other"},
+	})
+	container.Add(WebExtractResult{
+		URL:     "https://example.test/tool",
+		Title:   "Alpha Tool Mirror",
+		Content: "Duplicate provider content should not create another row.",
+		Fields: map[string]ExtractedField{
+			"summary": {Type: SelectorCSS, Selector: "p::text", Value: "Duplicate summary"},
+		},
+		Suggestions: []string{"tools", "scraping"},
+		Extraction:  &WebExtraction{Provider: "search", ProviderWeight: 3, FinalURL: "https://example.test/tool"},
+	})
+	container.AddUnresponsiveProvider("broken", "timeout")
+
+	output := container.Snapshot()
+	if len(output.Results) != 2 {
+		t.Fatalf("merged results = %d, want two", len(output.Results))
+	}
+	first := output.Results[0]
+	if first.URL != "https://example.test/tool" || first.Title != "Alpha Tool" || first.Content != "First provider content." {
+		t.Fatalf("first result = %#v, want merged alpha row", first)
+	}
+	if first.Score != 3 {
+		t.Fatalf("first score = %v, want 3", first.Score)
+	}
+	if got := strings.Join(first.ProviderNames(), ","); got != "docs,search" {
+		t.Fatalf("first providers = %q", got)
+	}
+	if got := first.Providers[0].Position; got != 1 {
+		t.Fatalf("first provider position = %d, want 1", got)
+	}
+	if got := first.Providers[1].Position; got != 3 {
+		t.Fatalf("duplicate provider position = %d, want 3", got)
+	}
+	if got := first.Providers[1].Fields["summary"].Value; got != "Duplicate summary" {
+		t.Fatalf("duplicate provider field evidence = %q", got)
+	}
+	if got := strings.Join(first.Suggestions, ","); got != "alpha,tools,scraping" {
+		t.Fatalf("merged suggestions = %q", got)
+	}
+	if got := output.Results[1].URL; got != "https://example.test/other" {
+		t.Fatalf("second URL = %q, want other result ordered after lower score", got)
+	}
+	if got := strings.Join(output.Suggestions, ","); got != "alpha,tools,scraping" {
+		t.Fatalf("container suggestions = %q", got)
+	}
+	if len(output.UnresponsiveProviders) != 1 || output.UnresponsiveProviders[0].Provider != "broken" || output.UnresponsiveProviders[0].Error != "timeout" {
+		t.Fatalf("unresponsive diagnostics = %#v", output.UnresponsiveProviders)
+	}
+}
+
+func TestGormesStaticProviderRegistry(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/provider/search" {
+			t.Fatalf("provider path = %q", r.URL.Path)
+		}
+		if got := r.URL.Query().Get("q"); got != "tools" {
+			t.Fatalf("provider query = %q, want tools", got)
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write([]byte(`<!doctype html>
+<html>
+<head><title>Provider Search</title></head>
+<body><article><h2>Provider Tool</h2></article></body>
+</html>`))
+	}))
+	defer server.Close()
+
+	adapter := StaticExtractionAdapter{
+		Fetcher: fetchers.Fetcher{Client: server.Client()},
+		Recipes: map[string]ExtractionRecipe{
+			"docs_recipe": {
+				URLTemplate: server.URL + "/provider/search?q={query}",
+				Fields: []ExtractionField{
+					{Name: "heading", Type: SelectorCSS, Selector: "article h2::text"},
+				},
+			},
+		},
+		Providers: []StaticProvider{
+			{Name: "docs", Shortcut: "d", Categories: []string{"general", "it"}, Enabled: true, Timeout: 25 * time.Millisecond, Weight: 2.5, Recipe: "docs_recipe"},
+			{Name: "disabled", Shortcut: "off", Categories: []string{"general"}, Enabled: false, Recipe: "docs_recipe"},
+			{Name: "ambiguous one", Shortcut: "dup", Categories: []string{"general"}, Enabled: true, Recipe: "docs_recipe"},
+			{Name: "ambiguous two", Shortcut: "dup", Categories: []string{"general"}, Enabled: true, Recipe: "docs_recipe"},
+		},
+	}
+
+	providers := adapter.ProvidersByCategory("it")
+	if len(providers) != 1 || providers[0].Name != "docs" || providers[0].Shortcut != "d" || providers[0].Weight != 2.5 || providers[0].Timeout != 25*time.Millisecond {
+		t.Fatalf("providers by category = %#v, want enabled docs provider", providers)
+	}
+
+	provider, err := adapter.ResolveProvider("d")
+	if err != nil {
+		t.Fatalf("resolve shortcut: %v", err)
+	}
+	if provider.Name != "docs" {
+		t.Fatalf("resolved provider = %#v, want docs", provider)
+	}
+
+	if _, err := adapter.ResolveProvider("disabled"); err == nil || !strings.Contains(err.Error(), "disabled") {
+		t.Fatalf("disabled provider error = %v, want disabled", err)
+	}
+	if _, err := adapter.ResolveProvider("dup"); err == nil || !strings.Contains(err.Error(), "ambiguous") {
+		t.Fatalf("ambiguous provider error = %v, want ambiguous", err)
+	}
+
+	response, err := adapter.Call(context.Background(), StaticToolCall{
+		Tool:         ToolWebExtract,
+		Provider:     "docs",
+		RecipeParams: map[string]string{"query": "tools"},
+	})
+	if err != nil {
+		t.Fatalf("provider call returned error: %v", err)
+	}
+	if len(response.Results) != 1 {
+		t.Fatalf("provider results = %d, want one", len(response.Results))
+	}
+	result := response.Results[0]
+	if got := result.Fields["heading"].Value; got != "Provider Tool" {
+		t.Fatalf("provider heading = %q, want Provider Tool", got)
+	}
+	if result.Extraction == nil || result.Extraction.Provider != "docs" || result.Extraction.ProviderShortcut != "d" || result.Extraction.ProviderWeight != 2.5 || result.Extraction.Recipe != "docs_recipe" {
+		t.Fatalf("provider extraction = %#v", result.Extraction)
 	}
 }

@@ -27,3 +27,17 @@ type ExtractionRecipe = statictools.ExtractionRecipe
 type ExtractionField = statictools.ExtractionField
 
 type ExtractedField = statictools.ExtractedField
+
+type StaticProvider = statictools.StaticProvider
+
+type ResultContainer = statictools.ResultContainer
+
+type ResultContainerSnapshot = statictools.ResultContainerSnapshot
+
+type MergedResult = statictools.MergedResult
+
+type ResultProviderEvidence = statictools.ResultProviderEvidence
+
+type UnresponsiveProvider = statictools.UnresponsiveProvider
+
+var NewResultContainer = statictools.NewResultContainer

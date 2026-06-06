@@ -6,6 +6,7 @@ import (
 	"mime"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/TrebuchetDynamics/goscrapling/fetchers"
 	"github.com/TrebuchetDynamics/goscrapling/integrations/gormes/contract"
@@ -16,14 +17,16 @@ const ToolWebExtract = "web_extract"
 var ErrUnknownTool = contract.ErrUnknownTool
 
 type StaticExtractionAdapter struct {
-	Fetcher fetchers.Fetcher
-	Recipes map[string]ExtractionRecipe
+	Fetcher   fetchers.Fetcher
+	Recipes   map[string]ExtractionRecipe
+	Providers []StaticProvider
 }
 
 type StaticToolCall struct {
 	Tool         string
 	URLs         []string
 	CSSSelector  string
+	Provider     string
 	Recipe       string
 	RecipeParams map[string]string
 	Pageno       int
@@ -48,14 +51,18 @@ type WebExtractResult struct {
 }
 
 type WebExtraction struct {
-	Engine      string `json:"engine,omitempty"`
-	Mode        string `json:"mode,omitempty"`
-	Recipe      string `json:"recipe,omitempty"`
-	StatusCode  int    `json:"status_code,omitempty"`
-	ContentType string `json:"content_type,omitempty"`
-	CSSSelector string `json:"css_selector,omitempty"`
-	FinalURL    string `json:"final_url,omitempty"`
-	NoResult    bool   `json:"no_result,omitempty"`
+	Engine           string        `json:"engine,omitempty"`
+	Mode             string        `json:"mode,omitempty"`
+	Recipe           string        `json:"recipe,omitempty"`
+	Provider         string        `json:"provider,omitempty"`
+	ProviderShortcut string        `json:"provider_shortcut,omitempty"`
+	ProviderWeight   float64       `json:"provider_weight,omitempty"`
+	ProviderTimeout  time.Duration `json:"provider_timeout,omitempty"`
+	StatusCode       int           `json:"status_code,omitempty"`
+	ContentType      string        `json:"content_type,omitempty"`
+	CSSSelector      string        `json:"css_selector,omitempty"`
+	FinalURL         string        `json:"final_url,omitempty"`
+	NoResult         bool          `json:"no_result,omitempty"`
 }
 
 func (a StaticExtractionAdapter) Call(ctx context.Context, call StaticToolCall) (WebExtractResponse, error) {
@@ -64,6 +71,16 @@ func (a StaticExtractionAdapter) Call(ctx context.Context, call StaticToolCall) 
 	}
 	if call.Tool != ToolWebExtract {
 		return WebExtractResponse{}, ErrUnknownTool
+	}
+	if strings.TrimSpace(call.Provider) != "" {
+		if err := ctx.Err(); err != nil {
+			return WebExtractResponse{}, err
+		}
+		result, err := a.extractProvider(ctx, call)
+		if err != nil {
+			return WebExtractResponse{}, err
+		}
+		return WebExtractResponse{Results: []WebExtractResult{result}}, nil
 	}
 	if strings.TrimSpace(call.Recipe) != "" {
 		if err := ctx.Err(); err != nil {

@@ -1795,7 +1795,7 @@
               "name": "Cross-layer local E2E validation harness",
               "status": "complete",
               "priority": "P1",
-              "contract": "Prove the implemented local layers compose end to end: static fetcher, response selectors, parser adaptive storage, spider flow, CLI binary extraction, and Gormes browser-tool adapter using only hermetic fixtures.",
+              "contract": "Prove the implemented local layers compose end to end: static fetcher, response selectors, parser adaptive storage, spider flow, CLI binary extraction, Gormes static recipe/provider/result-container adapters, Gormes browser evidence tools, and MCP browser session/screenshot tools using only hermetic fixtures.",
               "contract_status": "validated",
               "slice_size": "medium",
               "execution_owner": "integration",
@@ -1819,6 +1819,7 @@
               "write_scope": [
                 "cmd/goscrapling/e2e/crosslayer/cross_layer_e2e_test.go",
                 "cmd/goscrapling/e2e/complex/complex_e2e_test.go",
+                "cmd/goscrapling/e2e/fullproject/full_project_e2e_test.go",
                 "docs/content/building-goscrapling/architecture_plan/progress.json",
                 "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
                 "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
@@ -1826,6 +1827,8 @@
               "test_commands": [
                 "go test ./cmd/goscrapling/e2e/crosslayer -run TestGoscraplingCrossLayerLocalEndToEnd -count=1",
                 "go test ./cmd/goscrapling/e2e/complex -run TestGoscraplingComplexStatefulEndToEnd -count=1",
+                "go test ./cmd/goscrapling/e2e/fullproject -run TestFullProjectRenderedBrowserToolsEndToEnd -count=1",
+                "go test ./cmd/goscrapling/e2e/fullproject -run TestFullProjectGormesProviderRecipeContainerEndToEnd -count=1",
                 "go test ./... -count=1",
                 "go run ./cmd/progress validate",
                 "jq empty docs/content/building-goscrapling/architecture_plan/progress.json",
@@ -1837,11 +1840,14 @@
                 "A spider flow follows a local link and emits an item from the detail page.",
                 "The complex stateful E2E covers session cookies, basic auth POST, query params, concurrent detail fetching, adaptive relocation, multi-follow spider output, and CLI attribute extraction.",
                 "The goscrapling CLI binary writes selected fixture output to disk.",
-                "The Gormes browser extraction adapter returns rendered markdown from a fake browser engine."
+                "A full-project Gormes E2E composes static recipes, provider selection, weighted result-container merging, suggestions, and unresponsive diagnostics from local fixtures.",
+                "A full-project rendered-browser E2E composes Gormes rendered markdown, links, structured data, semantic tree, interactive elements, and MCP browser session screenshot lifecycle through fake browser seams."
               ],
               "done_signal": [
                 "go test ./cmd/goscrapling/e2e/crosslayer -run TestGoscraplingCrossLayerLocalEndToEnd -count=1 passed with hermetic fixtures.",
                 "go test ./cmd/goscrapling/e2e/complex -run TestGoscraplingComplexStatefulEndToEnd -count=1 passed with hermetic fixtures.",
+                "go test ./cmd/goscrapling/e2e/fullproject -run TestFullProjectRenderedBrowserToolsEndToEnd -count=1 passed with hermetic fixtures.",
+                "go test ./cmd/goscrapling/e2e/fullproject -run TestFullProjectGormesProviderRecipeContainerEndToEnd -count=1 passed with hermetic fixtures.",
                 "Full completion gate passed without live network dependencies."
               ]
             },
@@ -2087,6 +2093,164 @@
               ],
               "done_signal": [
                 "TestGormesRecipeRequestControls passes from httptest fixtures.",
+                "Full repository validation passes after generated queue docs list the next remaining row."
+              ]
+            },
+            {
+              "name": "Gormes static provider registry",
+              "status": "complete",
+              "priority": "P2",
+              "contract": "Add an integration-local static provider registry for Gormes extraction recipes, inspired by SearXNG engine metadata: named providers, shortcuts, categories, enabled/disabled flags, per-provider timeout and weight metadata, and deterministic provider selection without importing Gormes runtime dependencies or adding live search federation.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "integration",
+              "source_refs": [
+                "external/searxng/searxng@37187dc2d:searx/engines/__init__.py",
+                "external/searxng/searxng@37187dc2d:searx/search/processors/__init__.py",
+                "external/searxng/searxng@37187dc2d:searx/search/processors/abstract.py",
+                "external/searxng/searxng@37187dc2d:docs/dev/engines/engine_overview.rst",
+                "integrations/gormes/statictools/static_tools.go",
+                "integrations/gormes/statictools/recipes.go",
+                "integrations/gormes/statictools/static_tools_test.go"
+              ],
+              "ready_when": [
+                "Gormes recipe request controls and output transforms are validated.",
+                "Provider selection is scoped to static recipe metadata and fake/local fixtures, not live search-engine federation."
+              ],
+              "not_ready_when": [
+                "The row tries to implement result dedupe/scoring, failure backoff, query mini-syntax, plugin hooks, config-file loading, browser providers, or Gormes runtime registration.",
+                "The implementation copies SearXNG AGPL source instead of reimplementing the provider-registry pattern from the row contract.",
+                "The tests require live web access, real external providers, a browser, or credentials."
+              ],
+              "write_scope": [
+                "integrations/gormes/statictools/",
+                "integrations/gormes/static_tools.go",
+                "integrations/gormes/testdata/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
+              ],
+              "test_commands": [
+                "go test ./integrations/gormes/statictools -run TestGormesStaticProviderRegistry -count=1",
+                "go test ./integrations/gormes/... -count=1",
+                "go test ./... -count=1"
+              ],
+              "acceptance": [
+                "Local fixtures can register static recipe providers with name, shortcut, categories, enabled flag, timeout, weight, and recipe metadata while preserving existing recipe calls.",
+                "Provider lookup resolves exact names and shortcuts deterministically, rejects ambiguous or disabled providers with operator-visible errors, and can list enabled providers by category without contacting the network.",
+                "A fake static tool call can execute a selected provider against an httptest fixture and return provider-tagged extraction evidence alongside existing recipe evidence.",
+                "The adapter remains integration-local and explicitly excludes result scoring, multi-provider federation, query mini-syntax, plugin hooks, browser providers, and runtime Gormes registration."
+              ],
+              "done_signal": [
+                "TestGormesStaticProviderRegistry passes from local fixtures.",
+                "Full repository validation passes after generated queue docs list the next remaining row."
+              ]
+            },
+            {
+              "name": "Gormes result container merge/scoring",
+              "status": "complete",
+              "priority": "P2",
+              "contract": "Add an integration-local result container for Gormes static provider outputs, inspired by SearXNG result merging and score calculation: normalize provider results, merge duplicate URLs across providers, preserve provider/position evidence, apply provider weights to deterministic scores, collect suggestions and unresponsive-provider diagnostics, and return ordered results without adding live multi-provider federation.",
+              "contract_status": "validated",
+              "slice_size": "medium",
+              "execution_owner": "integration",
+              "source_refs": [
+                "external/searxng/searxng@37187dc2d:searx/results.py",
+                "external/searxng/searxng@37187dc2d:searx/result_types/_base.py",
+                "external/searxng/searxng@37187dc2d:tests/unit/test_results.py",
+                "integrations/gormes/statictools/static_tools.go",
+                "integrations/gormes/statictools/providers.go",
+                "integrations/gormes/statictools/static_tools_test.go"
+              ],
+              "ready_when": [
+                "Gormes static provider registry is validated with local fixtures.",
+                "The builder scopes aggregation to already-supplied provider results or fake tool-call outputs, not live parallel provider execution."
+              ],
+              "not_ready_when": [
+                "The row tries to add live search federation, provider scheduling, failure backoff, query mini-syntax, plugin hooks, config-file loading, browser providers, or runtime Gormes registration.",
+                "The implementation copies SearXNG AGPL source instead of reimplementing merge/scoring behavior from the row contract.",
+                "The tests require live web access, real external providers, browser launches, or credentials."
+              ],
+              "write_scope": [
+                "integrations/gormes/statictools/",
+                "integrations/gormes/static_tools.go",
+                "integrations/gormes/testdata/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
+              ],
+              "test_commands": [
+                "go test ./integrations/gormes/statictools -run TestGormesResultContainerMergeScoring -count=1",
+                "go test ./integrations/gormes/... -count=1",
+                "go test ./... -count=1"
+              ],
+              "acceptance": [
+                "Local fixtures can add provider-tagged WebExtractResult values to a result container and receive stable ordered output without contacting the network.",
+                "Duplicate final URLs merge into one result that preserves provider names, positions, original field evidence, and suggestions while avoiding duplicate content rows.",
+                "Scores are deterministic and weight-aware using provider weight and first/duplicate positions, with high/low priority hooks explicitly out of scope unless represented as simple test data flags.",
+                "Unresponsive provider diagnostics can be recorded and surfaced without suspending providers or scheduling retries.",
+                "The adapter remains integration-local and explicitly excludes live federation, backoff, query syntax, plugin hooks, browser providers, config loading, and runtime Gormes registration."
+              ],
+              "done_signal": [
+                "TestGormesResultContainerMergeScoring passes from local fixtures.",
+                "Full repository validation passes after generated queue docs list the next remaining row."
+              ]
+            },
+            {
+              "name": "Gormes provider failure diagnostics",
+              "status": "planned",
+              "priority": "P2",
+              "contract": "Add integration-local provider failure diagnostics for Gormes static providers, inspired by SearXNG processor error handling and suspended-engine reporting: record unresponsive providers with error type, optional suspended flag/reason, and deterministic diagnostic snapshots without adding retries, scheduler behavior, provider fanout, or live federation.",
+              "contract_status": "fixture_ready",
+              "slice_size": "small",
+              "execution_owner": "integration",
+              "source_refs": [
+                "external/searxng/searxng@37187dc2d:searx/search/processors/abstract.py",
+                "external/searxng/searxng@37187dc2d:searx/results.py",
+                "external/searxng/searxng@37187dc2d:searx/webutils.py",
+                "integrations/gormes/statictools/providers.go",
+                "integrations/gormes/statictools/results.go",
+                "integrations/gormes/statictools/static_tools_test.go"
+              ],
+              "ready_when": [
+                "Gormes result container merge/scoring is validated with local fixtures.",
+                "The builder scopes behavior to recording and surfacing diagnostics from fake/local provider results, not retrying or scheduling provider calls."
+              ],
+              "not_ready_when": [
+                "The row tries to add live provider federation, retry/backoff scheduling, provider suspension timers, query mini-syntax, plugin hooks, config-file loading, browser providers, or runtime Gormes registration.",
+                "The implementation copies SearXNG AGPL source instead of reimplementing the diagnostics pattern from the row contract.",
+                "The tests require live web access, real external providers, browser launches, timers that sleep, or credentials."
+              ],
+              "write_scope": [
+                "integrations/gormes/statictools/",
+                "integrations/gormes/static_tools.go",
+                "integrations/gormes/testdata/",
+                "docs/content/building-goscrapling/architecture_plan/progress.json",
+                "docs/content/building-goscrapling/architecture_plan/scrapling-feature-map.md",
+                "docs/content/building-goscrapling/architecture_plan/upstream-coverage-ledger.md",
+                "docs/research/scrapling-parity-matrix.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/agent-queue.md",
+                "docs/content/building-goscrapling/builder-loop/surfaces/queue/next-slices.md"
+              ],
+              "test_commands": [
+                "go test ./integrations/gormes/statictools -run TestGormesProviderFailureDiagnostics -count=1",
+                "go test ./integrations/gormes/... -count=1",
+                "go test ./... -count=1"
+              ],
+              "acceptance": [
+                "Local fixtures can record provider diagnostics with provider name, error type, message, suspended flag, and suspension reason without contacting the network.",
+                "Diagnostics appear in result-container snapshots alongside merged results and remain stable in insertion order for deterministic tool output.",
+                "A provider call failure can be converted into a diagnostic entry without retrying, sleeping, scheduling another provider, or hiding the operator-visible error.",
+                "The adapter remains integration-local and explicitly excludes retry/backoff timers, live federation, query syntax, plugin hooks, browser providers, config loading, and runtime Gormes registration."
+              ],
+              "done_signal": [
+                "TestGormesProviderFailureDiagnostics passes from local fixtures.",
                 "Full repository validation passes after generated queue docs list the next remaining row."
               ]
             },

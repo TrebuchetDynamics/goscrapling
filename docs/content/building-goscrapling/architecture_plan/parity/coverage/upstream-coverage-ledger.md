@@ -89,7 +89,7 @@ core source-class names below when the local upstream checkout exists.
 | Reference | Observed ref | Used for | Progress rows | Boundary |
 |---|---|---|---|---|
 | `lightpanda-io/browser` | commit `5905319e78541110a0b4065b07ec7ce53f93a660` | Browser markdown dump, semantic tree, robots/private-network safety controls, and MCP-style tool taxonomy | `Browser fetch markdown dump`; `Browser semantic tree extraction`; `Fetch safety controls: robots and private network blocking`; `Gormes browser extraction tools` | Non-vendored design reference only; do not copy AGPL source into goscrapling without an explicit licensing decision. |
-| `searxng/searxng` | commit `37187dc2d` | Generic XPath/JSON engine request templates, request controls, selector-driven result extraction recipes, and simple output transforms for Gormes-facing static extraction | `Gormes declarative extraction recipes`; `Gormes recipe request controls and output transforms` | Non-vendored design reference only; do not copy AGPL source into goscrapling without an explicit licensing decision. |
+| `searxng/searxng` | commit `37187dc2d` | Generic XPath/JSON engine request templates, request controls, selector-driven result extraction recipes, simple output transforms, engine metadata/selection patterns, result merge/scoring patterns, and provider failure diagnostics for Gormes-facing static extraction | `Gormes declarative extraction recipes`; `Gormes recipe request controls and output transforms`; `Gormes static provider registry`; `Gormes result container merge/scoring`; `Gormes provider failure diagnostics` | Non-vendored design reference only; do not copy AGPL source into goscrapling without an explicit licensing decision. |
 
 ## What Counts As Unmapped
 
